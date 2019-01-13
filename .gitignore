@@ -261,5 +261,13 @@ __pycache__/
 *.pyc
 
  
-external/
-!external/venv.py
+
+external/*
+examples/external/*
+examples/external/assimp/*
+
+!venv.bat
+!setup_dependencies.bat
+!setup_dependencies.py
+!copy_libraries.bat
+!copy_libraries.py
