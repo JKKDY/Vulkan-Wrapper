@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Example.cpp">
+      <Filter>Source\Implementation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source\Implementation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source\Assets\Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Example.h">
+      <Filter>Source\Implementation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.hpp">
+      <Filter>Source\Implementation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Source\Assets\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Source\Assets\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Source\Assets\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Source\Assets\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="init.h">
+      <Filter>Source\Implementation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Source\Assets\Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{6e270ba2-c61f-4694-9f87-308affc72496}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Assets">
+      <UniqueIdentifier>{8a4a31f8-bea9-4f43-b8a2-204591421a94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Implementation">
+      <UniqueIdentifier>{dff6322a-b00d-43b0-a7e9-d116013c88c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Implementation\Source Files">
+      <UniqueIdentifier>{c3197aca-14eb-4c36-8d9d-8fe88c13c84a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Implementation\Header Files">
+      <UniqueIdentifier>{327b114e-29dd-4e38-a22d-62d33a398fb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Assets\Source Files">
+      <UniqueIdentifier>{08bd99ed-8964-445f-97e9-7a1a4f35ca16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Assets\Header Files">
+      <UniqueIdentifier>{84bd1503-8a45-4571-8f43-f0c1b0228610}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

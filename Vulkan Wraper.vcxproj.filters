@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{f2790400-9697-4530-a8ec-a5faf8a73df0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Base Code">
+      <UniqueIdentifier>{d0766c35-c4c1-428f-9ce0-69766945672c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Base Code\Header Files">
+      <UniqueIdentifier>{15643565-1ee2-45c4-b8b6-74d0e866de4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Base Code\Source Files">
+      <UniqueIdentifier>{56ec5421-8991-45c2-be22-13b3558d1a40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Debug">
+      <UniqueIdentifier>{42944be4-a393-4ffb-9843-e3fd825f6881}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Objects">
+      <UniqueIdentifier>{ceefcb89-d342-4c84-8627-e234c4b47851}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Objects\Header Files">
+      <UniqueIdentifier>{c95a971e-3a23-40be-b87a-7486106b11fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Objects\Source Files">
+      <UniqueIdentifier>{bc17d4ca-8631-446a-8c25-135423d1a7ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Include">
+      <UniqueIdentifier>{e4d5ad0a-e20e-4045-8683-aa10cd60348e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\init.hpp">
+      <Filter>Source\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Foundation.h">
+      <Filter>Source\Base Code\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Utils.h">
+      <Filter>Source\Base Code\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Config.h">
+      <Filter>Source\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Debug.h">
+      <Filter>Source\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Initializers.h">
+      <Filter>Source\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Include.h">
+      <Filter>Source\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Assets.h">
+      <Filter>Source\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Core.h">
+      <Filter>Source\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Operations.h">
+      <Filter>Source\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vkw_Resources.h">
+      <Filter>Source\Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\vulkan_wraper.h">
+      <Filter>Source\Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\vkw_Utils.cpp">
+      <Filter>Source\Base Code\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vkw_Debug.cpp">
+      <Filter>Source\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vkw_Assets.cpp">
+      <Filter>Source\Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vkw_Core.cpp">
+      <Filter>Source\Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vkw_Operations.cpp">
+      <Filter>Source\Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vkw_Resources.cpp">
+      <Filter>Source\Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vkw_Foundation.cpp">
+      <Filter>Source\Base Code\Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

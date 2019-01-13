@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <vkwExternals>$(SolutionDir)examples\external\</vkwExternals>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)intermediates\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalLibraryDirectories>$(vkwExternals)glfw\$(Platform);$(vkwExternals)assimp\Release\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(vkwExternals)tinyobjloader;$(vkwExternals)stb;$(vkwExternals)glm;$(vkwExternals)gli;$(vkwExternals)assimp\include;$(vkwExternals)glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy /y /d "$(SolutionDir)bin\$(Platform)\$(Configuration)\Vulkan Wraper.dll" "$(OutDir)"
+copy /y /d "$(vkwExternals)assimp\Release\$(Platform)\assimp-vc140-mt.dll" "$(OutDir)"
+copy /y /d "$(vkwExternals)glfw\$(Platform)\glfw3.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy DLLs in the exec directory</Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>REM del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="vkwExternals">
+      <Value>$(vkwExternals)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
