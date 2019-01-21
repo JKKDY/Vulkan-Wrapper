@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vulkan/vulkan.h>
-#include <vulkan_wraper.h>
+#include <vulkan_wrapper.h>
 #include <glfw/glfw3.h>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>

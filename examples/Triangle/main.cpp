@@ -1,5 +1,5 @@
 #include <vulkan/vulkan.h>
-#include <vulkan_wraper.h>
+#include <vulkan_wrapper.h>
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
@@ -40,7 +40,6 @@ public:
 
 	operator GLFWwindow * () { return static_cast<GLFWwindow*>(window); }
 };
-
 
 
 std::string dataPath = "../data/";
@@ -87,9 +86,9 @@ int main() {
 	vkw::Device device(deviceCreateInfo);
 	vkw::Swapchain swapChain(surface);
 
-	vkw::TransferCommandPool transferCommandPool;
-	vkw::GraphicsCommandPool graphicsCommandPool;
-	vkw::ComputeCommandPool computeCommandPool;
+	vkw::TransferCommandPool transferCommandPool(VKW_DEFAULT_QUEUE);
+	vkw::GraphicsCommandPool graphicsCommandPool(VKW_DEFAULT_QUEUE);
+	vkw::ComputeCommandPool computeCommandPool(VKW_DEFAULT_QUEUE);
 
 
 
@@ -173,26 +172,15 @@ int main() {
 	subVertesBuffer.copyFrom(subVertesStagingBuffer);
 
 
-//	vkw::Buffer b = vertexBuffer;
 
-	/*vkw::Fence f;
-	vkw::Fence f1 = f;*/
-
-	//std::vector<vkw::Buffer> buffers = { indexBuffer, vertexBuffer };
-	//buffers[1].copyFrom(vertexStagingBuffer);
-
-
-
-
-
-
-	/// Graphics Pipeline
-	// pipeline Layout
-	vkw::PipelineLayout layout({}, {});
 
 	// Shader Modules
 	vkw::ShaderModule vertShaderModule(shaderPath + "/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);   //Shader Module for vertex Shader
 	vkw::ShaderModule fragShaderModule(shaderPath + "/shader.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);	// Shader Module for fragment Shader
+
+	/// Graphics Pipeline
+	// pipeline Layout
+	vkw::PipelineLayout layout({}, {});
 
 	// Pipeline Sates
 	vkw::GraphicsPipeline::CreateInfo pipelineCreateInfo = {};
@@ -259,14 +247,14 @@ int main() {
 
 
 
-
 	/// Frame Buffers
 	std::vector<vkw::FrameBuffer> framebuffers(swapChain.imageCount);
 	for (uint32_t i = 0; i < framebuffers.size(); i++) {
-		framebuffers[i].renderPass = renderPass;
-		framebuffers[i].attachments = { swapChain.imageView(i) };
-		framebuffers[i].extent = swapChain.extent;
-		framebuffers[i].createFrameBuffer();
+		vkw::FrameBuffer::CreateInfo createInfo = {};
+		createInfo.attachments = { swapChain.imageView(i) };
+		createInfo.renderPass = renderPass;
+		createInfo.extent = swapChain.extent;
+		framebuffers[i].createFrameBuffer(createInfo);
 	}
 
 
@@ -310,8 +298,8 @@ int main() {
 
 
 	/// Rendering and Presenting
-	vkw::Semaphore semaphore(0);
-	vkw::Fence fence;
+	vkw::Semaphore semaphore({});
+	vkw::Fence fence({});
 
 	uint32_t index = swapChain.getNextImage(VK_NULL_HANDLE, fence);
 	fence.wait();

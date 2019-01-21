@@ -63,7 +63,7 @@
     <ClInclude Include="include\vkw_Resources.h">
       <Filter>Source\Objects\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\vulkan_wraper.h">
+    <ClInclude Include="include\vulkan_wrapper.h">
       <Filter>Source\Include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -89,5 +89,8 @@
     <ClCompile Include="src\vkw_Foundation.cpp">
       <Filter>Source\Base Code\Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

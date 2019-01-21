@@ -238,7 +238,7 @@ namespace vkw {
 		vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, availablePresentModes_m.data());//T001
 	}
 
-	VULKAN_WRAPER_API Surface & Surface::operator=(const Surface & rhs)
+	Surface & Surface::operator=(const Surface & rhs)
 	{
 		availableFomats_m = rhs.availableFomats_m;
 		availablePresentModes_m = rhs.availablePresentModes_m;

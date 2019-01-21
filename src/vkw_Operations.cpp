@@ -2,16 +2,26 @@
 
 
 namespace vkw {
+
 	/// Command Pool
-	CommandPool::CommandPool(uint32_t queueFamily, VkCommandPoolCreateFlags flags) :
-		queueFamily(queueFamily), flags(flags)
+	CommandPool::CommandPool(const CreateInfo & createInfo) :
+		CommandPool(createInfo.queueFamily, createInfo.flags)
+	{}
+
+	CommandPool::CommandPool(uint32_t queueFamily, VkCommandPoolCreateFlags flags)
 	{
-		createCommandPool();
+		createCommandPool(queueFamily, flags);
 	}
 
-	void CommandPool::createCommandPool()
+	void CommandPool::createCommandPool(const CreateInfo & createInfo)
 	{
-		
+		createCommandPool(createInfo.queueFamily, createInfo.flags);
+	}
+
+	void CommandPool::createCommandPool(uint32_t queueFamily, VkCommandPoolCreateFlags flags)
+	{
+		this->queueFamily = queueFamily;
+		this->flags = flags;
 
 		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
 		createInfo.flags = flags;
@@ -25,22 +35,75 @@ namespace vkw {
 
 
 
-
-
 	/// Command Buffers
-	CommandBuffer::CommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level) :
-		commandPool(commandPool), level(level)
+	void CommandBuffer::allocateCommandBuffers(std::vector<std::reference_wrapper<CommandBuffer>> commandBuffers, const AllocationInfo & allocInfo)
+	{
+		CommandBuffer::allocateCommandBuffers(commandBuffers, allocInfo.commandPool, allocInfo.level);
+	}
+
+	void CommandBuffer::allocateCommandBuffers(std::vector<CommandBuffer> & commandBuffers, const AllocationInfo & allocInfo)
+	{
+		CommandBuffer::allocateCommandBuffers(commandBuffers, allocInfo.commandPool, allocInfo.level);
+	}
+
+	void CommandBuffer::allocateCommandBuffers(std::vector<CommandBuffer> & commandBuffers, VkCommandPool commandPool, VkCommandBufferLevel level)
+	{
+		std::vector<VkCommandBuffer> vkCommandBuffers(commandBuffers.size());
+
+		VkCommandBufferAllocateInfo allocInfo = Init::commandBufferAllocateInfo();
+		allocInfo.level = level;
+		allocInfo.commandPool = commandPool;
+		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+
+		if (commandBuffers.size()) vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(commandBuffers[0].registry.device, &allocInfo, vkCommandBuffers.data()), "Failed to allocate ommandBuffers");
+
+		for (uint32_t i = 0; i < commandBuffers.size(); i++) {
+			commandBuffers[i].commandPool = commandPool;
+			commandBuffers[i].level = level;
+			commandBuffers[i].vkObject = vkCommandBuffers[i];
+		}
+	}
+
+	void CommandBuffer::allocateCommandBuffers(std::vector<std::reference_wrapper<CommandBuffer>> commandBuffers, VkCommandPool commandPool, VkCommandBufferLevel level)
+	{
+		std::vector<VkCommandBuffer> vkCommandBuffers(commandBuffers.size());
+
+		VkCommandBufferAllocateInfo allocInfo = Init::commandBufferAllocateInfo();
+		allocInfo.level = level;
+		allocInfo.commandPool = commandPool;
+		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+
+		if (commandBuffers.size()) vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(commandBuffers[0].get().registry.device, &allocInfo, vkCommandBuffers.data()), "Failed to allocate ommandBuffers");
+
+		for (uint32_t i = 0; i < commandBuffers.size(); i++) {
+			commandBuffers[i].get().commandPool = commandPool;
+			commandBuffers[i].get().level = level;
+			commandBuffers[i].get().vkObject = vkCommandBuffers[i];
+		}
+	}
+
+	CommandBuffer::CommandBuffer()
 	{
 		destructionControl = impl::VKW_DESTR_CONTRL_DO_NOTHING;
-		allocateCommandBuffer();
 	}
 
-	void CommandBuffer::destroyObject()
+	CommandBuffer::CommandBuffer(const AllocationInfo & allocInfo):
+		CommandBuffer(allocInfo.commandPool, allocInfo.level)
 	{
-		vkObject.destroyObject(destructionControl, [=](VkCommandBuffer obj) {vkFreeCommandBuffers(registry.device, this->commandPool, 1, &obj); });
 	}
 
-	void CommandBuffer::allocateCommandBuffer()
+	CommandBuffer::CommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level) :
+		CommandBuffer()
+	{
+		allocateCommandBuffer(commandPool, level);
+	}
+
+	void CommandBuffer::allocateCommandBuffer(const AllocationInfo & allocInfo)
+	{
+		allocateCommandBuffer(allocInfo.commandPool, allocInfo.level);
+	}
+
+	void CommandBuffer::allocateCommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level)
 	{
 		VkCommandBufferAllocateInfo allocInfo = Init::commandBufferAllocateInfo();
 		allocInfo.level = level;
@@ -48,6 +111,11 @@ namespace vkw {
 		allocInfo.commandBufferCount = 1;
 
 		vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(registry.device, &allocInfo, vkObject), "Failed to allocate Command Buffer");
+	}
+
+	void CommandBuffer::destroyObject()
+	{
+		vkObject.destroyObject(destructionControl, [=](VkCommandBuffer obj) {vkFreeCommandBuffers(registry.device, this->commandPool, 1, &obj); });
 	}
 
 	void CommandBuffer::freeCommandBuffer()
@@ -84,85 +152,85 @@ namespace vkw {
 		vkw::Debug::errorCodeCheck(vkQueueSubmit(queue, 1, &submitInfo, fence), "Failed to submit Command Buffer");
 	}
 
-	void CommandBuffer::allocateCommandBuffers(std::vector<CommandBuffer> & commandBuffers, VkCommandPool commandPool, VkCommandBufferLevel level)
+
+
+
+
+	/// TranferCimmandPool
+	TransferCommandPool::TransferCommandPool(int queueFamilyIndex)
 	{
-		std::vector<VkCommandBuffer> vkCommandBuffers(commandBuffers.size());
-
-		VkCommandBufferAllocateInfo allocInfo = Init::commandBufferAllocateInfo();
-		allocInfo.level = level;
-		allocInfo.commandPool = commandPool;
-		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-
-		vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(commandBuffers[0].registry.device, &allocInfo, vkCommandBuffers.data()), "Failed to allocate ommandBuffers");
-
-
-		for (uint32_t i = 0; i < commandBuffers.size(); i++) {
-			commandBuffers[i].commandPool = commandPool;
-			//commandBuffers[i].
-			commandBuffers[i].level = level;
-			commandBuffers[i].vkObject = vkCommandBuffers[i];
-		}
+		create(queueFamilyIndex);
 	}
 
+	TransferCommandPool::TransferCommandPool(const CreateInfo & createInfo):
+		TransferCommandPool()
+	{}
 
-
-
-
-
-
-	TransferCommandPool::TransferCommandPool()
+	void TransferCommandPool::create(const CreateInfo & createInfo)
 	{
-		//VKW_assert()
-		create();
+		create(createInfo.queueFamilyIndex);
 	}
 
-	void TransferCommandPool::create()
+	void TransferCommandPool::create(int queueFamilyIndex)
 	{
 		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
 		createInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
-		createInfo.queueFamilyIndex = registry.transferQueue.family;
+		createInfo.queueFamilyIndex = queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.transferQueue.family : queueFamilyIndex;
 
 		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &createInfo, nullptr, vkObject), "Failed to create Transfer Command Pool");
 	}
 
 
 
-
-
-
-
-	GraphicsCommandPool::GraphicsCommandPool()
+	/// GraphicsCommandPool
+	GraphicsCommandPool::GraphicsCommandPool(int queueFamilyIndex)
 	{
-		if (registry.device != VK_NULL_HANDLE) {
-			create();
-		}
+		create(queueFamilyIndex);
 	}
 
-	void GraphicsCommandPool::create()
+	GraphicsCommandPool::GraphicsCommandPool(const CreateInfo & createInfo):
+		GraphicsCommandPool(createInfo.queueFamilyIndex)
+	{}
+
+	void GraphicsCommandPool::create(const CreateInfo & createInfo)
+	{
+		create(createInfo.queueFamilyIndex);
+	}
+
+	void GraphicsCommandPool::create(int queueFamilyIndex)
 	{
 		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
 		createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		createInfo.queueFamilyIndex = registry.graphicsQueue.family;
+		createInfo.queueFamilyIndex = queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.graphicsQueue.family : queueFamilyIndex;
 
 		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &createInfo, nullptr, vkObject), "Failed to create Graphics Command Pool");
 	}
 
 
 
-	ComputeCommandPool::ComputeCommandPool()
+	/// ComputeCommandPool
+	ComputeCommandPool::ComputeCommandPool(int queueFamilyIndex)
 	{
-		if (registry.device != VK_NULL_HANDLE) {
-			create();
-		}
+		create(queueFamilyIndex);
 	}
 
-	VULKAN_WRAPER_API void ComputeCommandPool::create()
+	ComputeCommandPool::ComputeCommandPool(const CreateInfo & createInfo):
+		ComputeCommandPool(createInfo.queueFamilyIndex)
+	{}
+
+	void ComputeCommandPool::create(const CreateInfo & createInfo)
+	{
+		create(createInfo.queueFamilyIndex);
+	}
+
+	void ComputeCommandPool::create(int queueFamilyIndex)
 	{
 		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
 		createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		createInfo.queueFamilyIndex = registry.computeQueue.family;
+		createInfo.queueFamilyIndex = queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.computeQueue.family : queueFamilyIndex;
 
 		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &createInfo, nullptr, vkObject), "Failed to create Compute Command Pool");
 	}
+
 }
 

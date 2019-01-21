@@ -15,6 +15,7 @@ namespace vkw {
 	};
 
 
+
 	struct QueueFamilyTypes {
 		std::vector<uint32_t> graphicFamilies;
 		std::vector<uint32_t> computeFamilies;
@@ -22,6 +23,7 @@ namespace vkw {
 		std::vector<uint32_t> sparseBindingFamilies;
 		std::vector<uint32_t> protectedFamilies;
 	};
+
 
 	struct PhysicalDevice {
 		PhysicalDevice() = default;

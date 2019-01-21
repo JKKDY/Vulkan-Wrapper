@@ -193,7 +193,7 @@ namespace vkw{
 	namespace DebugInformationPrint{
 
 
-#ifdef VKW_PRINT_STATS
+#ifdef VKW_VERBOSE
 
 		std::string physicalDeviceTypeString(VkPhysicalDeviceType type)
 		{

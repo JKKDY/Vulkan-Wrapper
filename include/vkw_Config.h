@@ -1,16 +1,16 @@
 #pragma once
 
 #define VKW_DEBUG 1
-#define VKW_PRINT_STATS 1
+#define VKW_VERBOSE 1
   
 
-#ifdef VKW_PRINT_STATS
+#ifdef VKW_VERBOSE
 	#include <iostream>
 	#include <string>
 #endif 
 
 
-#if VKW_DEBUG >= 1
+#if VKW_DEBUG > 0
 	#include <iostream>
 	#include <sstream>
 	#include <cstdlib>

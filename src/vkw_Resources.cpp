@@ -6,13 +6,48 @@
 
 
 namespace vkw {
-	DescriptorPool::DescriptorPool():
+
+	/// Descriptor Pool
+	uint32_t DescriptorPool::CreateInfo2::operator()(int descr) const
+	{
+		switch (descr) {
+		case VK_DESCRIPTOR_TYPE_SAMPLER:
+			return samplerCount;
+		case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+			return combinedImageSamplerCount;
+		case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+			return sampledImageCount;
+		case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+			return storageImageCount;
+		case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+			return uniformBufferCount;
+		case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+			return storageTexelBufferCount;
+		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+			return uniformBufferCount;
+		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+			return storageBufferCount;
+		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+			return uniformBufferCount;
+		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+			return storageBufferCount;
+		case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+			return inputAttachementCount;
+		case VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT:
+			return inlineUniformBlockEXTCount;
+		case VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV:
+			return accelerationStructureNVCount;
+		}
+
+		return 0;
+	}
+
+	DescriptorPool::DescriptorPool() :
 		poolSizes(poolSizes_m),
 		maxSets(maxSets_m),
 		flags(flags_m)
-	{
-	}
-	/// Descriptor Pool
+	{}
+
 	DescriptorPool::DescriptorPool(const CreateInfo & createInfo): DescriptorPool()
 	{
 		createDescriptorPool(createInfo);
@@ -23,40 +58,28 @@ namespace vkw {
 		createDescriptorPool(createInfo);
 	}
 
-	DescriptorPool::DescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags):
-		poolSizes(poolSizes), 
-		maxSets(maxSets), 
-		flags(flags)
+	DescriptorPool::DescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags): DescriptorPool()
 	{
 		createDescriptorPool(poolSizes, maxSets, flags);
 	}
 
-	DescriptorPool & DescriptorPool::operator=(const DescriptorPool & p)
+	void DescriptorPool::createDescriptorPool(const CreateInfo2 & createInfo)
 	{
-		poolSizes_m = p.poolSizes_m;
-		maxSets_m = p.maxSets_m;
-		flags_m = p.flags_m;
+		poolSizes_m.reserve(12);
 
-		return *this;
+		for (int descrSizeType = VK_DESCRIPTOR_TYPE_BEGIN_RANGE; descrSizeType != VK_DESCRIPTOR_TYPE_END_RANGE; descrSizeType++) {
+			poolSizes_m.emplace_back(VkDescriptorPoolSize { static_cast<VkDescriptorType>(descrSizeType), createInfo(descrSizeType) });
+		}
+		
+		poolSizes_m.emplace_back(VkDescriptorPoolSize{ static_cast<VkDescriptorType>(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT), createInfo(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT) });
+		poolSizes_m.emplace_back(VkDescriptorPoolSize{ static_cast<VkDescriptorType>(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV), createInfo(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV) });
+
+		createDescriptorPool(poolSizes_m, createInfo.maxSets, createInfo.flags);
 	}
-
-	/* DescriptorPool & DescriptorPool::operator=(DescriptorPool && p)
-	{
-		poolSizes_m = p.poolSizes_m;
-		maxSets_m = p.maxSets_m;
-		flags_m = p.flags_m;
-
-		return *this;
-	}*/
 
 	void DescriptorPool::createDescriptorPool(const CreateInfo & createInfo)
 	{
 		createDescriptorPool(createInfo.poolSizes, createInfo.maxSets, createInfo.flags);
-	}
-
-	void DescriptorPool::createDescriptorPool(const CreateInfo2 & createInfo)
-	{
-		//createDescriptorPool(createInfo);
 	}
 
 	void DescriptorPool::createDescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags)
@@ -80,27 +103,43 @@ namespace vkw {
 		vkw::Debug::errorCodeCheck(vkResetDescriptorPool(registry.device, *vkObject, flags), "Failed to reset the command Pool");
 	}
 
+	DescriptorPool & DescriptorPool::operator=(const DescriptorPool & p)
+	{
+		poolSizes_m = p.poolSizes_m;
+		maxSets_m = p.maxSets_m;
+		flags_m = p.flags_m;
+
+		return *this;
+	}
+
 
 
 
 
 	/// Descriptor Set Layout
-	DescriptorSetLayout::DescriptorSetLayout(std::vector<VkDescriptorSetLayoutBinding> bindings, VkDescriptorSetLayoutCreateFlags flags):
-		flags(flags)
+	DescriptorSetLayout::DescriptorSetLayout() :
+		layoutBindings(layoutBindings_m)
+	{}
+
+	DescriptorSetLayout::DescriptorSetLayout(const CreateInfo & createInfo) : DescriptorSetLayout()
 	{
-		for (auto x : bindings) {
-			layoutBindings[x.binding] = x;
-		}
-		createDescriptorSetLayout();
+		createDescriptorSetLayout(createInfo);
 	}
 
-
-	void DescriptorSetLayout::createDescriptorSetLayout()
+	DescriptorSetLayout::DescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags) : DescriptorSetLayout()
 	{
-		
-		std::vector<VkDescriptorSetLayoutBinding> bindings;
-		for (auto x : layoutBindings) {
-			bindings.push_back(x.second);
+		createDescriptorSetLayout(bindings, flags);
+	}
+
+	void DescriptorSetLayout::createDescriptorSetLayout(const CreateInfo & createInfo)
+	{
+		createDescriptorSetLayout(createInfo.layoutBindings, createInfo.flags);
+	}
+
+	void DescriptorSetLayout::createDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags)
+	{
+		for (auto x : bindings) {
+			layoutBindings_m[x.binding] = x;
 		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo = vkw::Init::descriptorSetLayoutCreateInfo();
@@ -110,54 +149,78 @@ namespace vkw {
 		vkw::Debug::errorCodeCheck(vkCreateDescriptorSetLayout(registry.device, &layoutInfo, nullptr, vkObject), "Failed to create DescriptorSetLayout");
 	}
 
+	DescriptorSetLayout & DescriptorSetLayout::operator=(const DescriptorSetLayout & rhs)
+	{
+		layoutBindings_m = rhs.layoutBindings;
+		flags = rhs.flags;
+
+		return *this;
+	}
 
 
 
 
 
 	/// Descriptor Set
-	DescriptorSet::DescriptorSet(VkDescriptorPool descriptorPool, DescriptorSetLayout & layout, bool shouldAllocateDescriptorSet):
-		descriptorPool(descriptorPool), layout(&layout)
+	DescriptorSet::DescriptorSet() :
+		layout(layout_m)
+	{}
+
+	DescriptorSet::DescriptorSet(const CreateInfo & createInfo) :
+		DescriptorSet(createInfo.descriptorPool, createInfo.layout)
+	{}
+
+	DescriptorSet::DescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout): DescriptorSet()
 	{
-		allocateDescriptorSet();
+		allocateDescriptorSet(descriptorPool, layout);
 	}
 
-
-
-	void DescriptorSet::allocateDescriptorSet()
+	void DescriptorSet::allocateDescriptorSet(const CreateInfo & createInfo)
 	{
-		
+		allocateDescriptorSet(createInfo.descriptorPool, createInfo.layout);
+	}
+
+	void DescriptorSet::allocateDescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout)
+	{
+		layout_m = &layout;
+		this->descriptorPool = descriptorPool;
 
 		VkDescriptorSetAllocateInfo allocInfo = Init::descriptorSetAllocateInfo();
 		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.pSetLayouts = layout->get();
+		allocInfo.pSetLayouts = layout.get();
 		allocInfo.descriptorSetCount = 1;
 
-		vkw::Debug::errorCodeCheck(vkAllocateDescriptorSets(registry.device, &allocInfo, vkObject), "Failed to create Descriptor Set");
+		Debug::errorCodeCheck(vkAllocateDescriptorSets(registry.device, &allocInfo, vkObject), "Failed to create Descriptor Set");
 	}
 
+	DescriptorSet & DescriptorSet::operator=(const DescriptorSet & rhs)
+	{
+		descriptorPool = rhs.descriptorPool;
+		layout_m = rhs.layout_m;
 
-	void DescriptorSet::update(std::vector<WriteInfo> * writeInfos, std::vector<CopyInfo> * copyInfos)
+		return *this;
+	}
+
+	void DescriptorSet::update(const std::vector<WriteInfo> & writeInfos, const std::vector<CopyInfo> & copyInfos)
 	{
 		std::vector<VkWriteDescriptorSet> writes;
 		
-		for (auto x : *writeInfos) {
+		for (auto x : writeInfos) {
 			VkWriteDescriptorSet write = vkw::Init::writeDescriptorSet();
 			write.dstSet = *vkObject;
 			write.dstBinding = x.dstBinding;
 			write.dstArrayElement = x.dstArrayElement;
 			write.descriptorCount = x.descriptorCount;
-			write.descriptorType = this->layout->layoutBindings[x.dstBinding].descriptorType;
+			write.descriptorType = layout->layoutBindings.at(x.dstBinding).descriptorType;
 			write.pImageInfo = x.pImageInfo;
 			write.pBufferInfo = x.pBufferInfo;
 			write.pTexelBufferView = x.pTexelBufferView;
 			writes.push_back(write);
 		}
 
-
 		std::vector<VkCopyDescriptorSet> copys;
 
-		for (auto x : *copyInfos) {
+		for (auto x : copyInfos) {
 			VkCopyDescriptorSet copy = Init::copyDescriptorSet();
 			copy.descriptorCount = x.descriptorCount;
 			copy.dstArrayElement = x.dstArrayElement;
@@ -166,7 +229,6 @@ namespace vkw {
 			copys.push_back(copy);
 		}
 
-
 		vkUpdateDescriptorSets(registry.device, static_cast<uint32_t>(writes.size()), writes.data(), static_cast<uint32_t>(copys.size()), copys.data());
 	}
 
@@ -174,30 +236,61 @@ namespace vkw {
 
 
 
-
-
-
 	/// Device Memory
-	Memory::Memory(VkMemoryPropertyFlags memoryFlags, VkDeviceSize size) :
-		memoryFlags(memoryFlags),
-		size(size)
+	Memory::Memory() :
+		memoryMap(memoryMap_m),
+		memoryFlags(memoryFlags_m),
+		size(size_m),
+		memoryTypeBits(memoryTypeBits_m),
+		memoryType(memoryType_m),
+		memoryType_m(std::numeric_limits<uint32_t>::max()),
+		memoryTypeBits_m(std::numeric_limits<uint32_t>::max())
 	{}
 
+	Memory::Memory(const CreateInfo & createInfo) : Memory(createInfo.memoryFlags, createInfo.size)
+	{}
 
-	void Memory::allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers, std::initializer_list<std::reference_wrapper<Image>> images) // this has to be by reference
-	{	
-		for (auto x : buffers) setMemoryTypeBitsBuffer(x);
-		for (auto x : images) setMemoryTypeBitsImage(x);
-
-		VkMemoryAllocateInfo allocInfo = vkw::Init::memoryAllocateInfo();
-		allocInfo.allocationSize = size;
-		allocInfo.memoryTypeIndex = findMemoryType();
-		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, vkObject), "Failed to allocate Memory");
-
-		for (auto x : buffers) bindBufferToMemory(x);
-		for (auto x : images) bindImageToMemory(x);
+	Memory::Memory(VkMemoryPropertyFlags memoryFlags, VkDeviceSize size) :
+		Memory()
+	{
+		memoryFlags_m = memoryFlags;
+		size_m = size;
 	}
 
+	void Memory::allocateMemory(AllocationInfo & allocInfo)
+	{
+		memoryFlags_m = allocInfo.memoryFlags;
+		allocateMemory(allocInfo.buffers, allocInfo.images, allocInfo.memoryType, allocInfo.additionalSize);
+	}
+
+	void Memory::allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers, std::initializer_list< std::reference_wrapper<Image>> images, uint32_t memoryType, VkDeviceSize additionalSize) 
+		// this has to be by reference otherwise memory cannot be set 
+		// IDEA: maybe make memory a shared state
+		// IDEA: maybe even go as far as giving every Object a customizable internal shared state
+	{	
+		for (auto & x : buffers) setMemoryTypeBitsBuffer(x);
+		for (auto & x : images) setMemoryTypeBitsImage(x);
+
+		VkMemoryAllocateInfo allocInfo = vkw::Init::memoryAllocateInfo();
+		allocInfo.allocationSize = size + additionalSize;
+		allocInfo.memoryTypeIndex = memoryType == std::numeric_limits<uint32_t>::max() ? findMemoryType() : memoryType;
+		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, vkObject), "Failed to allocate Memory");
+
+		for (auto & x : buffers) bindBufferToMemory(x);
+		for (auto & x : images) bindImageToMemory(x);
+	}
+
+	Memory & Memory::operator=(const Memory & rhs)
+	{
+		memoryMap_m = rhs.memoryMap_m;
+		memoryFlags_m = rhs.memoryFlags_m;
+		size_m = rhs.size_m;
+		memoryTypeBits_m = rhs.memoryTypeBits_m;
+		memoryType_m = rhs.memoryType_m;
+		memoryRanges = memoryRanges;
+
+		return *this;
+	}
 
 	void Memory::setMemoryTypeBitsBuffer(Buffer & buffer)
 	{
@@ -206,31 +299,28 @@ namespace vkw {
 		vkGetBufferMemoryRequirements(registry.device, buffer, &memoryRequirements);
 		setMemoryTypeBits(memoryRequirements);
 
-		buffer.sizeInMemory = memoryRequirements.size;
-		buffer.allignement = memoryRequirements.alignment;
+		buffer.sizeInMemory_m = memoryRequirements.size;
+		buffer.allignement_m = memoryRequirements.alignment;
 	}
-
 
 	void Memory::setMemoryTypeBitsImage(Image & image)
 	{
 		VkMemoryRequirements memoryRequirements;
-			vkGetImageMemoryRequirements(registry.device, image, &memoryRequirements);
-			setMemoryTypeBits(memoryRequirements);
+		vkGetImageMemoryRequirements(registry.device, image, &memoryRequirements);
+		setMemoryTypeBits(memoryRequirements);
 	}
-
 
 	void Memory::bindBufferToMemory(Buffer & buffer)
 	{
 		VKW_assert(buffer.memory == nullptr, "Buffer is already bound to memory");
 
 		buffer.memory = this;
-		buffer.offset = getOffset(buffer.sizeInMemory, size, memoryRanges);
+		buffer.offset_m = getOffset(buffer.sizeInMemory, size, memoryRanges);
 
 		memoryRanges[buffer.offset] = buffer.sizeInMemory;
 
 		Debug::errorCodeCheck(vkBindBufferMemory(registry.device, buffer, *vkObject, buffer.offset), "Failed to bind Memory to Buffer");
 	}
-
 
 	void Memory::bindImageToMemory(Image & image)
 	{
@@ -240,26 +330,23 @@ namespace vkw {
 		Debug::errorCodeCheck(vkBindImageMemory(registry.device, image, *vkObject, 0), "Failed to bind Memory to Image");
 	}
 
-
 	void * Memory::map(VkDeviceSize size, VkDeviceSize offset, VkMemoryMapFlags flags)
 	{
-		memoryMap.offset = offset;
-		memoryMap.size = size;
-		vkw::Debug::errorCodeCheck(vkMapMemory(registry.device, *vkObject, offset, size, flags, &memoryMap.mapped), "Failed to map memory");
+		memoryMap_m.offset = offset;
+		memoryMap_m.size = size;
+		vkw::Debug::errorCodeCheck(vkMapMemory(registry.device, *vkObject, offset, size, flags, &memoryMap_m.mapped), "Failed to map memory");
 		return memoryMap.mapped;
 	}
-
 
 	void Memory::unMap()
 	{
 		VKW_assert(memoryMap.mapped != nullptr, "Memory is not mapped");
 
 		vkUnmapMemory(registry.device, *vkObject);
-		memoryMap.mapped = nullptr;
-		memoryMap.offset = 0;
-		memoryMap.size = 0;
+		memoryMap_m.mapped = nullptr;
+		memoryMap_m.offset = 0;
+		memoryMap_m.size = 0;
 	}
-
 
 	uint32_t Memory::findMemoryType()
 	{
@@ -267,7 +354,7 @@ namespace vkw {
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((memoryTypeBits & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & memoryFlags) == memoryFlags) {
-				memoryType = i;
+				memoryType_m = i;
 				return i;
 			}
 		}
@@ -275,8 +362,7 @@ namespace vkw {
 		throw std::runtime_error("failed to find suitable memory type!");
 	}
 
-
-	VkDeviceSize Memory::getOffset(VkDeviceSize & dataSize, VkDeviceSize maxSize, std::map<VkDeviceSize, VkDeviceSize> & memoryRanges, VkDeviceSize allignement)
+	VkDeviceSize Memory::getOffset(VkDeviceSize dataSize, VkDeviceSize maxSize, std::map<VkDeviceSize, VkDeviceSize> & memoryRanges, VkDeviceSize allignement)
 	{
 		VkDeviceSize offset = 0;
 		dataSize = static_cast<VkDeviceSize>(std::ceil(dataSize / allignement) * allignement);
@@ -299,66 +385,83 @@ namespace vkw {
 		return offset;
 	}
 
-
 	void Memory::setMemoryTypeBits(VkMemoryRequirements & memoryRequirements)
 	{
-		memoryTypeBits = memoryTypeBits & memoryRequirements.memoryTypeBits;
-		size += memoryRequirements.size;
+		memoryTypeBits_m = memoryTypeBits_m & memoryRequirements.memoryTypeBits;
+		size_m += memoryRequirements.size;
 	}
-
-
-
 
 
 
 
 
 	/// Buffer
-	Buffer::Buffer(CreateInfo createInfo) :
-		usageFlags(createInfo.usageFlags),
-		createFlags(createInfo.createflags),
-		size(createInfo.size),
-		offset(createInfo.offset),
-		sharingMode(createInfo.sharingMode)
+	Buffer::Buffer():
+		sizeInMemory(sizeInMemory_m),
+		allignement(allignement_m),
+		offset(offset_m),
+		size(size_m)
+	{}
+
+	Buffer::Buffer(const CreateInfo & createInfo) : Buffer()
 	{
-		createBuffer();
+		createBuffer(createInfo);
 	}
 
-
-	Buffer::Buffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode, VkDeviceSize offset, VkBufferCreateFlags createflags) :
-		usageFlags(usageFlags),
-		createFlags(createflags),
-		size(size),
-		offset(offset),
-		sharingMode(sharingMode)
+	Buffer::Buffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode, VkDeviceSize offset, VkBufferCreateFlags createflags) : Buffer()
 	{
-		createBuffer();
+		createBuffer(usageFlags, size, sharingMode, offset, createflags);
 	}
-
 
 	Buffer::~Buffer()
 	{
 		if (memory) {
 			if (memory->memoryRanges.size() > 0) { // if size > 0 memory has been most likely destroid
-				memory->memoryRanges.erase(offset);
+				memory->memoryRanges.erase(offset); // NOTE: review if this is avtually the case
 			}
 		}
 	}
 
-
-	void Buffer::createBuffer()
+	void Buffer::createBuffer(const CreateInfo & createInfo)
 	{
-		
+		createBuffer(createInfo.usageFlags, createInfo.size, createInfo.sharingMode, createInfo.offset, createInfo.createflags);
+	}
+
+	void Buffer::createBuffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode, VkDeviceSize offset, VkBufferCreateFlags createflags)
+	{
+		this->usageFlags = usageFlags;
+		this->flags = createflags;
+		this->sharingMode = sharingMode;
+		this->size_m = size;
+		this->offset_m = offset;
 
 		VkBufferCreateInfo bufferInfo = vkw::Init::bufferCreateInfo();
-		bufferInfo.flags = createFlags;
+		bufferInfo.flags = createflags;
 		bufferInfo.size = size;
 		bufferInfo.sharingMode = sharingMode;
 		bufferInfo.usage = usageFlags;
+		// NOTE: look at how this works
+		// bufferInfo.pQueueFamilyIndices = 
+		// bufferInfo.queueFamilyIndexCount = 
 
 		vkw::Debug::errorCodeCheck(vkCreateBuffer(registry.device, &bufferInfo, nullptr, vkObject), "Failed to create buffer");
 	}
 
+	Buffer & Buffer::operator=(const Buffer & rhs)
+	{
+		usageFlags = rhs.usageFlags;
+		flags = rhs.flags;
+		sharingMode = rhs.sharingMode;
+
+		size_m = rhs.size_m;
+		offset_m = rhs.offset_m;
+		sizeInMemory_m = rhs.sizeInMemory_m;
+		allignement_m = rhs.allignement_m;
+		memoryRanges = rhs.memoryRanges;
+		memory = memory;
+
+		return *this;
+	}
 
 	void Buffer::write(const void * data, size_t sizeOfData, VkDeviceSize offset, bool leaveMapped) // offset is not relative to the bound memory block but to the start of the buffer 
 	{
@@ -370,7 +473,8 @@ namespace vkw {
 			memory->map(sizeOfData, offsetInUse);
 			memcpy(memory->memoryMap.mapped, data, static_cast<size_t>(sizeOfData));
 		}  
-		else if (memory->memoryMap.offset <= offsetInUse && memory->memoryMap.offset + memory->memoryMap.size >= offsetInUse + sizeOfData) {// if memory is mapped and encompassitates the needed area
+		else if (memory->memoryMap.offset <= offsetInUse && 
+				memory->memoryMap.offset + memory->memoryMap.size >= offsetInUse + sizeOfData) {// if memory is mapped and encompassitates the needed area
 			memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(memory->memoryMap.mapped) - memory->memoryMap.offset + offsetInUse), data, static_cast<size_t>(sizeOfData));
 		}
 		else { // if memory is mapped and does not encompassitate the needed area
@@ -382,10 +486,9 @@ namespace vkw {
 		if (leaveMapped == false) { memory->unMap(); }	
 	}
 
-
 	void Buffer::copyFromBuffer(VkBuffer srcBuffer, VkBufferCopy copyRegion, VkCommandPool cmdPool)
 	{
-		Fence fence;
+		Fence fence(0);
 
 		VkCommandPool commandPool = cmdPool ?  cmdPool : registry.transferCommandPool;
 		CommandBuffer commandBuffer(commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
@@ -405,109 +508,146 @@ namespace vkw {
 		commandBuffer.freeCommandBuffer();
 	}
 
-
 	SubBuffer Buffer::createSubBuffer(VkDeviceSize subBufferSize)
 	{
-		return SubBuffer(subBufferSize, Memory::getOffset(subBufferSize, size, this->memoryRanges), *this);
+		return SubBuffer(subBufferSize, Memory::getOffset(subBufferSize, size, this->memoryRanges), this);
 	}
 
 	//void Buffer::copyFrom(VkImage image, VkBufferCopy copyRegion, VkCommandPool cmdPool)
 	//{
 	//	Fence fence;
-
+	//
 	//	VkCommandPool commandPool = cmdPool ? cmdPool : registry.transferCommandPool;
 	//	CommandBuffer commandBuffer(commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	//	commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-
+	//
 	//	//vkCmdCopyImageToBuffer(commandBuffer, image, )
-
+	//
 	//	commandBuffer.endCommandBuffer();
-
+	//
 	//	commandBuffer.submitCommandBuffer(Info::deviceQueuesInUse->transferQueue, {}, fence);
 	//	fence.wait();
-
+	//
 	//	commandBuffer.freeCommandBuffer();
 	//	fence.deleteObject();
 	//}
 
 
 	
-	
 
 
 	/// Sub Buffer
-	SubBuffer::SubBuffer(VkDeviceSize size, VkDeviceSize offset, Buffer & buffer):
-		buffer(buffer),
-		size(size),
-		offset(offset)
+	SubBuffer::SubBuffer():
+		size(size_m),
+		offset(offset_m)
 	{}
 
+	SubBuffer::SubBuffer(VkDeviceSize size, VkDeviceSize offset, Buffer * buffer):
+		size(size_m),
+		offset(offset_m),
+		buffer(buffer),
+		offset_m(offset),
+		size_m(size)
+	{}
 
 	SubBuffer::~SubBuffer()
 	{
-		buffer.memoryRanges.erase(offset);
+		buffer->memoryRanges.erase(offset);
 	}
 
+	SubBuffer & SubBuffer::operator=(const SubBuffer & rhs)
+	{
+		if (buffer) clear();
+
+		size_m = rhs.size_m;
+		offset_m = rhs.offset_m;
+
+		buffer = rhs.buffer;
+
+		return *this;
+	}
 
 	void SubBuffer::write(const void * data, size_t sizeOfData, bool leaveMapped)
 	{
-		buffer.write(data, sizeOfData, this->offset, leaveMapped);
+		buffer->write(data, sizeOfData, this->offset, leaveMapped);
 	}
-
 
 	void SubBuffer::copyFrom(SubBuffer & srcBuffer, VkCommandPool commandPool)
 	{
-		buffer.copyFromBuffer(srcBuffer.buffer, VkBufferCopy{srcBuffer.offset, this->offset, srcBuffer.size}, commandPool);
+		buffer->copyFromBuffer(*srcBuffer.buffer, VkBufferCopy{srcBuffer.offset, this->offset, srcBuffer.size}, commandPool);
 	}
-
 
 	void SubBuffer::clear()
 	{
-		buffer.memoryRanges.erase(offset);
+		buffer->memoryRanges.erase(offset);
 	}
+
 
 
 
 
 
 	/// Image
-	Image::Image(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, uint32_t miplvls, uint32_t layers, VkImageCreateFlags flags) :
-		extent(extent),
-		format(format),
-		usage(usage),
-		mipLevels(miplvls),
-		arrayLayers(layers),
-		flags(flags)
+	Image::Image():
+		layout(layout_m),
+		extent(extent_m)
+	{}
+
+	Image::Image(const CreateInfo & createInfo): Image()
 	{
-		if (this->extent.depth == 0) {
-			this->extent.depth = 1;
-		}
-		createImage();
+		createImage(createInfo);
 	}
 
-
-	void Image::createImage()
+	Image::Image(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType, VkImageCreateFlags flags) : Image()
 	{
-		
+		createImage(extent, format, usage, imageType, flags);
+	}
 
-		VkImageCreateInfo createInfo = vkw::Init::imageCreateInfo();
-		createInfo.flags = flags;
-		createInfo.imageType = imageType;
+	void Image::createImage(const CreateInfo & createInfo)
+	{
+		layout_m = createInfo.layout;
+		extent_m = createInfo.extent;
+
+		imageType = createInfo.imageType;
+		sharingMode = createInfo.sharingMode;
+		samples = createInfo.samples;
+		mipLevels = createInfo.mipLevels;
+		arrayLayers = createInfo.arrayLayers;
+		tiling = createInfo.tiling;
+		format = createInfo.format;
+		usage = createInfo.usage;
+		familyQueueIndicies = createInfo.familyQueueIndicies;
+
+		VkImageCreateInfo info = vkw::Init::imageCreateInfo();
+		info.flags = createInfo.flags;
+		info.imageType = createInfo.imageType;
+		info.format = createInfo.format;
+		info.extent = createInfo.extent;
+		info.mipLevels = createInfo.mipLevels;
+		info.arrayLayers = createInfo.arrayLayers;
+		info.samples = createInfo.samples;
+		info.tiling = createInfo.tiling;
+		info.usage = createInfo.usage;
+		info.sharingMode = createInfo.sharingMode;
+		info.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.familyQueueIndicies.size());
+		info.pQueueFamilyIndices = createInfo.familyQueueIndicies.data();
+		info.initialLayout = createInfo.layout;
+
+		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &info, nullptr, vkObject), "Failed to create Image");
+
+	}
+
+	void Image::createImage(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType, VkImageCreateFlags flags)
+	{
+		CreateInfo createInfo;
 		createInfo.format = format;
 		createInfo.extent = extent;
-		createInfo.mipLevels = mipLevels;
-		createInfo.arrayLayers = arrayLayers;
-		createInfo.samples = samples;
-		createInfo.tiling = tiling;
 		createInfo.usage = usage;
-		createInfo.sharingMode = sharingMode;
-		createInfo.queueFamilyIndexCount = static_cast<uint32_t>(familyQueueIndicies.size());
-		createInfo.pQueueFamilyIndices = familyQueueIndicies.data();
-		createInfo.initialLayout = layout;
+		createInfo.imageType = imageType;
+		createInfo.flags = flags;
 
-		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &createInfo, nullptr, vkObject), "Failed to create Image");
+		createImage(createInfo);
 	}
-
 
 	void Image::transitionImageLayout(VkImageLayout newLayout, VkCommandPool cmdPool, VkImageSubresourceRange range, VkAccessFlags srcAccess, VkAccessFlags dstAccess)
 	{
@@ -521,7 +661,7 @@ namespace vkw {
 
 		VkImageMemoryBarrier barrier = vkw::Init::imageMemoryBarrier();
 		barrier.oldLayout = this->layout;
-		barrier.newLayout = this->layout = newLayout;
+		barrier.newLayout = this->layout_m = newLayout;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = *vkObject;
@@ -589,7 +729,6 @@ namespace vkw {
 		fence.destroyObject();
 	}
 
-
 	//void Image::writeWithStagingBuffer(void * data, VkDeviceSize size, VkImageLayout desiredImageLayout, VkCommandPool transferPool) // this should be write(...) and should be implememntet in  class Texture2D : public : Image
 	//{
 	//	VkCommandPool cmdPool = transferPool == VK_NULL_HANDLE ? this->registry->transferCommandPool : transferPool;
@@ -614,7 +753,6 @@ namespace vkw {
 	//	}
 	//}
 
-
 	void Image::copyFromImage(Image & srcImage, std::vector<VkImageCopy> regions, VkCommandPool cmdPool)
 	{
 		if (regions.size() == 0) {
@@ -632,7 +770,7 @@ namespace vkw {
 			region.dstSubresource = subResource;
 			regions.push_back(region);
 		}
-		vkw::Fence fence;
+		vkw::Fence fence(0);
 		VkCommandPool commandPool = (cmdPool == VK_NULL_HANDLE) ? registry.transferCommandPool : cmdPool;
 		vkw::CommandBuffer commandBuffer(commandPool);
 		commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -646,7 +784,6 @@ namespace vkw {
 		commandBuffer.freeCommandBuffer();
 		fence.destroyObject();
 	}
-
 
 	void Image::copyFromBuffer(Buffer & srcBuffer, std::vector<VkBufferImageCopy> copyRegions, VkCommandPool cmdPool) // TODO: switch param copyRegions with param srcBuffer
 	{
@@ -668,7 +805,7 @@ namespace vkw {
 			copyRegions.push_back(region);
 		}
 
-		vkw::Fence fence;
+		vkw::Fence fence(0);
 		VkCommandPool commandPool = cmdPool == VK_NULL_HANDLE ? registry.transferCommandPool : cmdPool;
 		vkw::CommandBuffer commandBuffer(commandPool);
 		commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -687,19 +824,24 @@ namespace vkw {
 
 
 
-
 	/// Image View
-	ImageView::ImageView(Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType, VkComponentMapping components) :
-		image(image), subresource(subresource), viewType(viewType), components(components)
+	ImageView::ImageView(const CreateInfo & createInfo)
 	{
-		createImageView();
+		createImageView(createInfo);
 	}
 
-
-	void ImageView::createImageView()
+	ImageView::ImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType, VkComponentMapping components)
 	{
-		
+		createImageView(image, subresource, viewType, components);
+	}
 
+	void ImageView::createImageView(const CreateInfo & createInfo)
+	{
+		createImageView(createInfo.image, createInfo.subresource, createInfo.viewType, createInfo.components);
+	}
+
+	void ImageView::createImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType, VkComponentMapping components)
+	{
 		VkImageViewCreateInfo createInfo = vkw::Init::imageViewCreateInfo();
 		createInfo.image = image;
 		createInfo.format = image.format;
@@ -715,32 +857,44 @@ namespace vkw {
 
 
 	/// Sampler
-	Sampler::Sampler()
+	Sampler::Sampler(const CreateInfo & createInfo)
 	{
-		//createSampler();
+		createSampler(createInfo);
 	}
-
 
 	void Sampler::createSampler()
 	{
-		
+		createSampler(CreateInfo());
+	}
+
+	void Sampler::createSampler(const CreateInfo & createInfo)
+	{
+		filter = createInfo.filter;
+		addressMode = createInfo.addressMode;
+		mipMap = createInfo.mipMap;
+		borderColor = createInfo.borderColor;
+		anisotropyEnable = createInfo.anisotropyEnable;
+		maxAnisotropy = createInfo.maxAnisotropy;
+		unnormalizedCoordinates = createInfo.unnormalizedCoordinates;
+		compareEnable = createInfo.compareEnable;
+		compareOp = createInfo.compareOp;
 
 		VkSamplerCreateInfo samplerInfo = vkw::Init::samplerCreateInfo();
-		samplerInfo.addressModeU = addressMode.addressModeU;
-		samplerInfo.addressModeV = addressMode.addressModeV;
-		samplerInfo.addressModeW = addressMode.addressModeW;
-		samplerInfo.magFilter = filter.magFilter;
-		samplerInfo.minFilter = filter.minFilter;
-		samplerInfo.anisotropyEnable = anisotropyEnable;
-		samplerInfo.maxAnisotropy = maxAnisotropy;
-		samplerInfo.borderColor = borderColor;
-		samplerInfo.unnormalizedCoordinates = unnormalizedCoordinates;
-		samplerInfo.compareEnable = compareEnable;
-		samplerInfo.compareOp = compareOp;
-		samplerInfo.mipmapMode = mipMap.mipmapMode;
-		samplerInfo.mipLodBias = mipMap.mipLodBias;
-		samplerInfo.minLod = mipMap.minLod;
-		samplerInfo.maxLod = mipMap.maxLod;
+		samplerInfo.addressModeU = createInfo.addressMode.U;
+		samplerInfo.addressModeV = createInfo.addressMode.V;
+		samplerInfo.addressModeW = createInfo.addressMode.W;
+		samplerInfo.magFilter = createInfo.filter.magFilter;
+		samplerInfo.minFilter = createInfo.filter.minFilter;
+		samplerInfo.anisotropyEnable = createInfo.anisotropyEnable;
+		samplerInfo.maxAnisotropy = createInfo.maxAnisotropy;
+		samplerInfo.borderColor = createInfo.borderColor;
+		samplerInfo.unnormalizedCoordinates = createInfo.unnormalizedCoordinates;
+		samplerInfo.compareEnable = createInfo.compareEnable;
+		samplerInfo.compareOp = createInfo.compareOp;
+		samplerInfo.mipmapMode = createInfo.mipMap.mipmapMode;
+		samplerInfo.mipLodBias = createInfo.mipMap.mipLodBias;
+		samplerInfo.minLod = createInfo.mipMap.minLod;
+		samplerInfo.maxLod = createInfo.mipMap.maxLod;
 
 		vkw::Debug::errorCodeCheck(vkCreateSampler(registry.device, &samplerInfo, nullptr, vkObject), "Failed to create Sampler");
 	}
@@ -748,11 +902,29 @@ namespace vkw {
 
 
 
-
 	/// Frame Buffer
-	void FrameBuffer::createFrameBuffer()
+	FrameBuffer::FrameBuffer(const CreateInfo & createInfo)
 	{
-		
+		createFrameBuffer(createInfo);
+	}
+
+	FrameBuffer::FrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers, VkFramebufferCreateFlags flags)
+	{
+		createFrameBuffer(renderPass, extent, attachments, layers, flags);
+	}
+
+	void FrameBuffer::createFrameBuffer(const CreateInfo & createInfo)
+	{
+		createFrameBuffer(createInfo.renderPass, createInfo.extent, createInfo.attachments, createInfo.layers, createInfo.flags);
+	}
+
+	void FrameBuffer::createFrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers, VkFramebufferCreateFlags flags)
+	{
+		this->flags = flags;
+		this->renderPass = renderPass;
+		this->attachments = attachments;
+		this->extent = extent;
+		this->layers = layers;
 
 		VkFramebufferCreateInfo createInfo = Init::framebufferCreateInfo();
 		createInfo.flags = flags;
@@ -765,4 +937,5 @@ namespace vkw {
 
 		vkw::Debug::errorCodeCheck(vkCreateFramebuffer(registry.device, &createInfo, nullptr, vkObject), "Failed to create FrameBuffer");
 	}
+
 }

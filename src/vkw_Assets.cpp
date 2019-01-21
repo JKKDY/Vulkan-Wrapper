@@ -4,7 +4,7 @@
 namespace vkw {
 
 	/// Swapchain
-	Swapchain::Swapchain():
+	Swapchain::Swapchain() :
 		surfaceFormat(surfaceFormat_m),
 		presentMode(presentMode_m),
 		extent(extent_m),
@@ -16,11 +16,11 @@ namespace vkw {
 		createSwapchain(surface);
 	}
 
-	Swapchain::Swapchain(const CreateInfo & createInfo): Swapchain() {
-		
+	Swapchain::Swapchain(const CreateInfo & createInfo) : Swapchain() {
+
 	}
 
-	Swapchain::~Swapchain() 
+	Swapchain::~Swapchain()
 	{
 		for (auto x : swapChainImageViews) {
 			vkDestroyImageView(registry.device, x, nullptr);
@@ -84,7 +84,20 @@ namespace vkw {
 	}
 
 	void Swapchain::createSwapchain(const CreateInfo & createInfo) {
-		
+
+	}
+
+	Swapchain & Swapchain::operator=(const Swapchain & rhs)
+	{
+		swapChainImages = rhs.swapChainImages;
+		swapChainImageViews = rhs.swapChainImageViews;
+
+		surfaceFormat_m = rhs.surfaceFormat_m;
+		presentMode_m = rhs.presentMode_m;
+		extent_m = rhs.extent_m;
+		imageCount_m = rhs.imageCount_m;
+
+		return *this;
 	}
 
 	uint32_t Swapchain::getNextImage(VkSemaphore semaphore, VkFence fence)
@@ -136,18 +149,31 @@ namespace vkw {
 
 		return VK_PRESENT_MODE_FIFO_KHR;	// else take VK_PRESENT_MODE_FIFO_KHR (this presentmode is always supported)
 	}
-												
+
+
 
 
 
 
 	/// Semaphore
+	Semaphore::Semaphore(const CreateInfo & createInfo):
+		Semaphore(createInfo.flags)
+	{
+	}
+
 	Semaphore::Semaphore(VkSemaphoreCreateFlags flags)
 	{
 		createSemaphore(flags);
 	}
 
+	void Semaphore::createSemaphore(const CreateInfo & createInfo)
+	{
+		createSemaphore(createInfo.flags);
+	}
+
 	void Semaphore::createSemaphore(VkSemaphoreCreateFlags flags) {
+		this->flags = flags;
+
 		VkSemaphoreCreateInfo createInfo = Init::semaphoreCreateInfo();
 		createInfo.flags = flags;
 		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &createInfo, nullptr, vkObject), "Failed to create Semaphore");
@@ -156,10 +182,26 @@ namespace vkw {
 
 
 
-
 	/// Fence
+	Fence::Fence(const CreateInfo & createInfo):
+		Fence(createInfo.flags)
+	{
+	}
+
 	Fence::Fence(VkFenceCreateFlags flags)
 	{
+		createFence(flags);
+	}
+
+	void Fence::createFence(const CreateInfo & createInfo)
+	{
+		createFence(createInfo.flags);
+	}
+
+	void Fence::createFence(VkFenceCreateFlags flags)
+	{
+		this->flags = flags;
+
 		VkFenceCreateInfo createInfo = Init::fenceCreateInfo();
 		createInfo.flags = flags;
 		Debug::errorCodeCheck(vkCreateFence(registry.device, &createInfo, nullptr, vkObject), "Failed to create Fence");
@@ -168,7 +210,7 @@ namespace vkw {
 	void Fence::wait(bool reset, uint64_t timeOut)
 	{
 		Debug::errorCodeCheck(vkWaitForFences(registry.device, 1, vkObject, VK_TRUE, timeOut), "Failed to wait for Fence");
-		if (reset) { this->reset(); }
+		if (reset) this->reset();
 	}
 
 	void Fence::reset()
@@ -176,23 +218,35 @@ namespace vkw {
 		vkResetFences(registry.device, 1, vkObject);
 	}
 
+	void Fence::reset(std::vector<Fence> & fences)
+	{
+		std::vector<VkFence> vkFences (fences.size());
+
+		for (auto x : fences) vkFences.push_back(x);
+
+		// TODO
+		// debug: check if all fences have same registry
+
+		vkResetFences(fences[0].registry.device, static_cast<uint32_t>(vkFences.size()), vkFences.data());
+	}
+
 
 
 
 
 	/// Render Passs
-	RenderPass::RenderPass(CreateInfo & createInfo):
-		subPassDependencys(createInfo.dependencys),
-		subPassDescriptions(createInfo.subPasses),
-		attachementsDescriptions(createInfo.attachements),
-		flags(createInfo.flags)
+	RenderPass::RenderPass(const CreateInfo & createInfo)
 	{
-		createRenderPass();
+		createRenderPass(createInfo);
 	}
 
-	void RenderPass::createRenderPass()
+	VULKAN_WRAPER_API void RenderPass::createRenderPass(const CreateInfo & createInfo)
 	{
-		
+		subPassDependencys = createInfo.dependencys;
+		subPassDescriptions = createInfo.subPasses;
+		attachementsDescriptions = createInfo.attachements;
+		flags = createInfo.flags;
+
 		VkRenderPassCreateInfo renderPassInfo = Init::renderPassCreateInfo();
 		renderPassInfo.flags = flags;
 		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachementsDescriptions.size());
@@ -209,17 +263,30 @@ namespace vkw {
 
 
 
+	ShaderModule::ShaderModule(const CreateInfo & createInfo) :
+		ShaderModule(createInfo.filename, createInfo.stage, createInfo.flags)
+	{
+	}
+
 	/// Shader Module
 	ShaderModule::ShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags) :
 		filename(filename.c_str()), stage(stage), flags(flags)
 	{
-		createShaderModule();
+		createShaderModule(filename, stage, flags);
 	}
 
-	void ShaderModule::createShaderModule()
+	void ShaderModule::createShaderModule(const CreateInfo & createInfo)
 	{
-		
-		std::ifstream file(filename, std::ios::ate | std::ios::binary); // ate: start the end , binary:read the thing in binary
+		createShaderModule(createInfo.filename, createInfo.stage, createInfo.flags);
+	}
+
+	void ShaderModule::createShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags)
+	{
+		this->filename = filename.c_str();
+		this->stage = stage;
+		this->flags = flags;
+
+		std::ifstream file(this->filename, std::ios::ate | std::ios::binary); // ate: start the end , binary:read the thing in binary
 
 		VKW_assert(file.is_open(), "failed to open shader file for shaderModule! ");
 
@@ -237,13 +304,14 @@ namespace vkw {
 		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &createInfo, nullptr, vkObject), "Failed to create ShaderModule!");
 	}
 
-	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo)
+
+	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo, const char * name)
 	{
 		VkPipelineShaderStageCreateInfo createInfo = Init::pipelineShaderStageCreateInfo();
 		createInfo.module = *vkObject;
 		createInfo.flags = flags;
 		createInfo.stage = stage;
-		createInfo.pName = "main";
+		createInfo.pName = name;
 		createInfo.pSpecializationInfo = specializationInfo;
 		return createInfo;
 	}
@@ -254,15 +322,25 @@ namespace vkw {
 
 
 	/// Pipeline Layout
-	PipelineLayout::PipelineLayout(std::vector<VkDescriptorSetLayout> setLayouts, std::vector<VkPushConstantRange> pushConstants)
+	PipelineLayout::PipelineLayout(const CreateInfo & createInfo) :
+		PipelineLayout(createInfo.setLayouts, createInfo.pushConstants)
+	{}
+
+	PipelineLayout::PipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants)
+	{
+		createPipelineLayout(setLayouts, pushConstants);
+	}
+
+	void PipelineLayout::createPipelineLayout(const CreateInfo & createInfo)
+	{
+		createPipelineLayout(createInfo.setLayouts, createInfo.pushConstants);
+	}
+
+	void PipelineLayout::createPipelineLayout(const std::vector<VkDescriptorSetLayout>& setLayouts, const std::vector<VkPushConstantRange>& pushConstants)
 	{
 		descriptorSetLayouts = setLayouts;
 		pushConstantRanges = pushConstants;
-		createPipelineLayout();
-	}
 
-	void PipelineLayout::createPipelineLayout()
-	{
 		VkPipelineLayoutCreateInfo createInfo = Init::pipelineLayoutCreateInfo();
 		createInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
 		createInfo.pSetLayouts = descriptorSetLayouts.data();
@@ -276,6 +354,11 @@ namespace vkw {
 
 
 
+
+
+	PipelineCache::PipelineCache(const CreateInfo & createInfo) :
+		PipelineCache(createInfo.size, createInfo.data, createInfo.flags)
+	{}
 
 	/// Pipeline Cache
 	PipelineCache::PipelineCache(size_t size, void * data, VkPipelineCacheCreateFlags flags) :
@@ -299,23 +382,22 @@ namespace vkw {
 
 
 	/// GraphicsPipeline 
-	GraphicsPipeline::GraphicsPipeline(CreateInfo & createInfo) :
-		shaderStages(createInfo.shaderStages),
-		layout(createInfo.layout),
-		renderPass(createInfo.renderPass),
-		subPass(createInfo.subPass),
-		flags(createInfo.flags),
-		cache(createInfo.cache),
-		basePipelineIndex(createInfo.basePipelineIndex),
-		basePipelineHandle(createInfo.basePipelineHandle),
-		pipelineStates(createInfo.pipelineStates)
+	GraphicsPipeline::GraphicsPipeline(CreateInfo & createInfo)
 	{
-		createPipeline();
+		createPipeline(createInfo);
 	}
 
-	void GraphicsPipeline::createPipeline()
+	void GraphicsPipeline::createPipeline(const CreateInfo & createInfo)
 	{
-		
+		shaderStages = createInfo.shaderStages;
+		layout = createInfo.layout;
+		renderPass = createInfo.renderPass;
+		subPass = createInfo.subPass;
+		flags = createInfo.flags;
+		cache = createInfo.cache;
+		basePipelineHandle = createInfo.basePipelineHandle;
+		basePipelineIndex = createInfo.basePipelineIndex;
+		pipelineStates = createInfo.pipelineStates;
 
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\vulkan_wraper.h" />
+    <ClInclude Include="include\vulkan_wrapper.h" />
     <ClInclude Include="include\vkw_Config.h" />
     <ClInclude Include="include\vkw_Include.h" />
     <ClInclude Include="include\init.hpp" />
@@ -40,6 +40,9 @@
     <ClCompile Include="src\vkw_Debug.cpp" />
     <ClCompile Include="src\vkw_Operations.cpp" />
     <ClCompile Include="src\vkw_Resources.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C97CFF6A-1557-4D3D-A7EF-3402D3961BD7}</ProjectGuid>

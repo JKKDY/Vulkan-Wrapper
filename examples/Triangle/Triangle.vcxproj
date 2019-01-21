@@ -95,6 +95,9 @@
     <PostBuildEvent />
     <PreBuildEvent />
     <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -144,6 +147,9 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

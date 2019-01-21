@@ -93,15 +93,15 @@ namespace vkw {
 			void copy(const VkPointer<T, RegType> & obj, DestructionControl destrContr);
 			void destroyObject(DestructionControl destrContr, std::function<void(Type)> deleterf = 0);
 
-			operator Type * ();
-			Type operator *();
+			operator Type * () const;
+			Type operator *() const;
 			void operator = (Type rhs);
 			//VkPointer<T, RegType> & operator = (VkPointer<T, RegType> & rhs);
 
 		private:
 			RegType & registry;
-			virtual void createNewObject();
-			VkObject<T> * pObject = nullptr;
+			virtual void createNewObject() const;
+			mutable VkObject<T> * pObject = nullptr;
 		};
 
 
@@ -119,8 +119,8 @@ namespace vkw {
 			VULKAN_WRAPER_API virtual void destroyObject();
 			VULKAN_WRAPER_API Base<T, RegType> & operator = (const Base<T, RegType> & rhs);
 			//VULKAN_WRAPER_API Base<T, RegType> & operator = (Base<T, RegType> && rhs);
-			VULKAN_WRAPER_API operator typename T::Type ();
-			VULKAN_WRAPER_API Type * get(); // make const
+			VULKAN_WRAPER_API operator typename T::Type () const;
+			VULKAN_WRAPER_API Type * get() const; // make const
 		protected:
 			RegType & registry;
 			VkPointer<T, RegType> vkObject;

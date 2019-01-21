@@ -58,15 +58,23 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\vulkan_client.props" />
+    <Import Project="..\..\examples\vkw_examples.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\vulkan_client.props" />
+    <Import Project="..\..\examples\vkw_examples.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\vulkan_client.props" />
+    <Import Project="..\..\examples\vkw_examples.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\vulkan_client.props" />
+    <Import Project="..\..\examples\vkw_examples.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -91,19 +99,15 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDIr)include;$(SolutionDIr)external\stb-master;$(SolutionDIr)external\gli;$(SolutionDIr)external\Vulkan;$(SolutionDIr)external\glm;$(SolutionDIr)external\assimp;$(SolutionDIr)external\glfw;$(SolutionDIr)external\tinyobjloader-master</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DATA_PATH="$(SolutionDir)examples\data";MODEL_PATH=std::string("$(SolutionDir)examples\data\models\");%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>vulkan-1.lib;assimp-vc140-mt.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\assimp\$(Platform)\$(Configuration);$(SolutionDir)\lib\glfw\WIN64;$(SolutionDir)\lib\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /y /d "$(SolutionDir)bin\$(Platform)\$(Configuration)\Vulkan Wraper.dll" "$(OutDir)"
-copy /y /d "$(SolutionDir)lib\assimp\$(Platform)\$(Configuration)\assimp-vc140-mt.dll" "$(OutDir)"</Command>
-      <Message>Copy DLLs in the exec directory</Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,21 +115,16 @@ copy /y /d "$(SolutionDir)lib\assimp\$(Platform)\$(Configuration)\assimp-vc140-m
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDIr)include;$(SolutionDIr)external\stb-master;$(SolutionDIr)external\gli;$(SolutionDIr)external\Vulkan;$(SolutionDIr)external\glm;$(SolutionDIr)external\assimp;$(SolutionDIr)external\glfw;$(SolutionDIr)external\tinyobjloader-master</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>APP_NAME="$(ProjectName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>vulkan-1.lib;assimp-vc140-mt.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\assimp\$(Platform)\$(Configuration);$(SolutionDir)lib\glfw\WIN32;$(SolutionDir)lib\Vulkan\Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /y /d "$(SolutionDir)bin\$(Platform)\$(Configuration)\Vulkan Wraper.dll" "$(OutDir)"
-copy /y /d "$(SolutionDir)lib\assimp\$(Platform)\$(Configuration)\assimp-vc140-mt.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy DLLs in the exec directory</Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
+    <PostBuildEvent />
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -135,23 +134,18 @@ copy /y /d "$(SolutionDir)lib\assimp\$(Platform)\$(Configuration)\assimp-vc140-m
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDIr)include;$(SolutionDIr)external\stb-master;$(SolutionDIr)external\gli;$(SolutionDIr)external\Vulkan;$(SolutionDIr)external\glm;$(SolutionDIr)external\assimp;$(SolutionDIr)external\glfw;$(SolutionDIr)external\tinyobjloader-master</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>APP_NAME="$(ProjectName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>vulkan-1.lib;assimp-vc140-mt.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\assimp\$(Platform)\$(Configuration);$(SolutionDir)lib\glfw\WIN32;$(SolutionDir)lib\Vulkan\Lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /y /d "$(SolutionDir)bin\$(Platform)\$(Configuration)\Vulkan Wraper.dll" "$(OutDir)"
-copy /y /d "$(SolutionDir)lib\assimp\$(Platform)\$(Configuration)\assimp-vc140-mt.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy DLLs in the exec directory</Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
+    <PostBuildEvent />
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,21 +155,17 @@ copy /y /d "$(SolutionDir)lib\assimp\$(Platform)\$(Configuration)\assimp-vc140-m
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDIr)include;$(SolutionDIr)external\stb-master;$(SolutionDIr)external\gli;$(SolutionDIr)external\Vulkan;$(SolutionDIr)external\glm;$(SolutionDIr)external\assimp;$(SolutionDIr)external\glfw;$(SolutionDIr)external\tinyobjloader-master</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DATA_PATH="$(SolutionDir)examples\data";MODEL_PATH=std::string("$(SolutionDir)examples\data\models\");%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>vulkan-1.lib;assimp-vc140-mt.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib\assimp\$(Platform)\$(Configuration);$(SolutionDir)\lib\glfw\WIN64;$(SolutionDir)\lib\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /y /d "$(SolutionDir)bin\$(Platform)\$(Configuration)\Vulkan Wraper.dll" "$(OutDir)"
-copy /y /d "$(SolutionDir)lib\assimp\$(Platform)\$(Configuration)\assimp-vc140-mt.dll" "$(OutDir)"</Command>
-      <Message>Copy DLLs in the exec directory</Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

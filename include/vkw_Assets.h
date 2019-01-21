@@ -14,6 +14,7 @@ namespace vkw {
 	public:
 		struct CreateInfo {
 			Surface & surface;
+			// more preferences should be added
 			VkSurfaceFormatKHR format;
 			VkPresentModeKHR presentMode;
 			VkExtent2D extent;
@@ -57,10 +58,19 @@ namespace vkw {
 
 	class Semaphore : public impl::Entity<impl::VkwSemaphore> {
 	public:
-		VULKAN_WRAPER_API Semaphore() = default;
-		VULKAN_WRAPER_API Semaphore(VkSemaphoreCreateFlags flags);
+		struct CreateInfo {
+			VkSemaphoreCreateFlags flags = 0;
+		};
 
+		VULKAN_WRAPER_API Semaphore() = default;
+		VULKAN_WRAPER_API Semaphore(const CreateInfo & createInfo);
+		VULKAN_WRAPER_API Semaphore(VkSemaphoreCreateFlags flags);
+		VULKAN_WRAPER_API ~Semaphore() = default;
+
+		VULKAN_WRAPER_API void createSemaphore(const CreateInfo & createInfo);
 		VULKAN_WRAPER_API void createSemaphore(VkSemaphoreCreateFlags flags = 0);
+
+		VkSemaphoreCreateFlags flags;
 	};
 
 
@@ -68,10 +78,24 @@ namespace vkw {
 
 	class Fence : public impl::Entity<impl::VkwFence> {
 	public:
-		VULKAN_WRAPER_API Fence(VkFenceCreateFlags flags = 0);
+		struct CreateInfo {
+			VkSemaphoreCreateFlags flags = 0;
+		};
+
+		VULKAN_WRAPER_API Fence() = default;
+		VULKAN_WRAPER_API Fence(const CreateInfo & createInfo);
+		VULKAN_WRAPER_API Fence(VkFenceCreateFlags flags);
 		VULKAN_WRAPER_API ~Fence() = default;
+
+		VULKAN_WRAPER_API void createFence(const CreateInfo & createInfo);
+		VULKAN_WRAPER_API void createFence(VkFenceCreateFlags flags = 0);
+
+		VkFenceCreateFlags flags;
+
 		VULKAN_WRAPER_API void wait(bool reset = true, uint64_t timeOut = std::numeric_limits<uint64_t>::max());
 		VULKAN_WRAPER_API void reset();
+
+		VULKAN_WRAPER_API static void reset(std::vector<Fence> & fences);
 	};
 	
 
@@ -84,19 +108,18 @@ namespace vkw {
 			std::vector<VkSubpassDependency> dependencys;
 			std::vector<VkAttachmentDescription> attachements;
 			VkRenderPassCreateFlags flags = 0;
-
 		};
 
 		VULKAN_WRAPER_API RenderPass() = default;
-		VULKAN_WRAPER_API RenderPass(CreateInfo & createInfo);
+		VULKAN_WRAPER_API RenderPass(const CreateInfo & createInfo);
 		VULKAN_WRAPER_API ~RenderPass() = default;
+
+		VULKAN_WRAPER_API void createRenderPass(const CreateInfo & createInfo);
 		
 		std::vector<VkSubpassDescription> subPassDescriptions;
 		std::vector<VkSubpassDependency> subPassDependencys;
 		std::vector<VkAttachmentDescription> attachementsDescriptions;
 		VkRenderPassCreateFlags flags = 0;
-
-		VULKAN_WRAPER_API void createRenderPass();
 	};
 
 
@@ -104,16 +127,25 @@ namespace vkw {
 
 	class ShaderModule : public impl::Entity<impl::VkwShaderModule> {
 	public:
+		struct CreateInfo {
+			std::string filename; 
+			VkShaderStageFlagBits stage;
+			VkShaderModuleCreateFlags flags = 0;
+		};
+
 		VULKAN_WRAPER_API ShaderModule() = default;
+		VULKAN_WRAPER_API ShaderModule(const CreateInfo & createInfo);
 		VULKAN_WRAPER_API ShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags = 0);
 		VULKAN_WRAPER_API ~ShaderModule() = default;
+
+		VULKAN_WRAPER_API void createShaderModule(const CreateInfo & createInfo);
+		VULKAN_WRAPER_API void createShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags = 0);
 
 		const char * filename;
 		VkShaderStageFlagBits stage;
 		VkShaderModuleCreateFlags flags = 0;
 
-		VULKAN_WRAPER_API void createShaderModule();
-		VULKAN_WRAPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo = nullptr);
+		VULKAN_WRAPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo = nullptr, const char * name = "main");
 	};
 
 
@@ -121,14 +153,22 @@ namespace vkw {
 
 	class PipelineLayout : public impl::Entity<impl::VkwPipelineLayout>{
 	public:
+		struct CreateInfo {
+			std::vector<VkDescriptorSetLayout> setLayouts;
+			std::vector<VkPushConstantRange> pushConstants;
+		};
+
 		VULKAN_WRAPER_API PipelineLayout() = default;
-		VULKAN_WRAPER_API PipelineLayout(std::vector<VkDescriptorSetLayout> setLayouts, std::vector<VkPushConstantRange> pushConstants);
+		VULKAN_WRAPER_API PipelineLayout(const CreateInfo & createInfo);
+		VULKAN_WRAPER_API PipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
 		VULKAN_WRAPER_API ~PipelineLayout() = default;
+
+		void createPipelineLayout(const CreateInfo & createInfo);
+		void createPipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
 
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 		std::vector<VkPushConstantRange> pushConstantRanges;
-
-		VULKAN_WRAPER_API void createPipelineLayout();
+                                                                                                                                                        
 	};
 
 
@@ -136,7 +176,14 @@ namespace vkw {
 
 	class PipelineCache : public impl::Entity<impl::VkwPipelineCache> {
 	public:
+		struct CreateInfo {
+			size_t size;
+			void* data;
+			VkPipelineCacheCreateFlags flags = 0;
+		};
+
 		VULKAN_WRAPER_API PipelineCache() = default;
+		VULKAN_WRAPER_API PipelineCache(const CreateInfo & createInfo);
 		VULKAN_WRAPER_API PipelineCache(size_t size, void* data, VkPipelineCacheCreateFlags flags = 0);
 		VULKAN_WRAPER_API ~PipelineCache() = default;
 
@@ -191,7 +238,7 @@ namespace vkw {
 		int32_t											basePipelineIndex = -1;
 		VkPipelineCache									cache = VK_NULL_HANDLE;
 
-		VULKAN_WRAPER_API void createPipeline();	
+		VULKAN_WRAPER_API void createPipeline(const CreateInfo & createInfo);
 	};
 
 

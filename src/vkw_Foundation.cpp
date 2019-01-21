@@ -276,16 +276,24 @@ namespace vkw {
 			pObject(obj.pObject),
 			registry(obj.registry)
 		{
-			if (pObject) pObject->add(pObject);
+			if (!pObject) {
+				pObject = registry.getNew<T>();
+				obj.pObject = pObject;
+				pObject->add(pObject);
+				obj.pObject->add(obj.pObject);
+			}
+			else {
+				pObject->add(pObject);
+			}
 		}
 
 		template<typename T, typename RegType> void VkPointer<T, RegType>::copy(const VkPointer<T, RegType> & obj, DestructionControl destrContr)
 		{
-			if (pObject) pObject->remove(pObject);
+			pObject->remove(pObject);
 			
 			pObject = obj.pObject;
 
-			if (pObject) pObject->add(pObject); 
+			pObject->add(pObject); 
 		}
 
 		template<typename T, typename RegType> void VkPointer<T, RegType>::destroyObject(DestructionControl destrContr, std::function<void(Type)> deleterf) // gets called manualy
@@ -303,7 +311,7 @@ namespace vkw {
 			}
 		}
 
-		template<typename T, typename RegType> void VkPointer<T, RegType>::createNewObject()
+		template<typename T, typename RegType> void VkPointer<T, RegType>::createNewObject() const
 		{
 			if (!pObject) {
 				pObject = registry.getNew<T>();
@@ -325,13 +333,13 @@ namespace vkw {
 			return *this;
 		}*/
 
-		template<typename T, typename RegType> VkPointer<T, RegType>::operator Type*()
+		template<typename T, typename RegType> VkPointer<T, RegType>::operator Type*() const
 		{
 			createNewObject();
 			return pObject->getPointer();
 		}
 
-		template<typename T, typename RegType> typename T::Type VkPointer<T, RegType>::operator * ()
+		template<typename T, typename RegType> typename T::Type VkPointer<T, RegType>::operator * () const
 		{
 			createNewObject();
 			return pObject->getObject();
@@ -388,12 +396,12 @@ namespace vkw {
 			vkObject.destroyObject(destructionControl);
 		}
 
-		template<typename T, typename RegType>  Base<T, RegType>::operator typename T::Type ()
+		template<typename T, typename RegType>  Base<T, RegType>::operator typename T::Type () const
 		{
 			return *vkObject;
 		}
 
-		template<typename T, typename RegType> typename T::Type * Base<T, RegType>::get()
+		template<typename T, typename RegType> typename T::Type * Base<T, RegType>::get() const
 		{
 			return vkObject;
 		}
