@@ -315,6 +315,8 @@ namespace vkw {
 		VULKAN_WRAPER_API void createImage(const CreateInfo & createInfo);
 		VULKAN_WRAPER_API void createImage(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType = VK_IMAGE_TYPE_2D, VkImageCreateFlags flags = 0);
 
+		VULKAN_WRAPER_API Image & operator = (const Image & rhs);
+
 		const VkImageLayout & layout;
 		const VkExtent3D & extent;
 		VkImageCreateFlags flags = 0;
@@ -331,7 +333,7 @@ namespace vkw {
 		VULKAN_WRAPER_API void transitionImageLayout(VkImageLayout newLayout, VkCommandPool commandPool = VK_NULL_HANDLE, VkImageSubresourceRange range = { 0x7FFFFFFF }, VkAccessFlags srcAccess = 0x7FFFFFFF, VkAccessFlags dstAccess = 0x7FFFFFFF);
 		VULKAN_WRAPER_API void copyFromImage(Image & srcImage, std::vector<VkImageCopy> regions = {}, VkCommandPool cmdPool = VK_NULL_HANDLE);
 		VULKAN_WRAPER_API void copyFromBuffer(Buffer & srcBuffer, std::vector<VkBufferImageCopy> copyRegions = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
-		// make fkt to copy from an image
+		// make function to copy from an image
 	private:
 		VkImageLayout layout_m = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkExtent3D extent_m;

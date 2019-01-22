@@ -649,6 +649,25 @@ namespace vkw {
 		createImage(createInfo);
 	}
 
+	Image & Image::operator=(const Image & rhs)
+	{
+		layout_m = rhs.layout_m;
+		extent_m = rhs.extent_m;
+		memory = rhs.memory;
+		flags = rhs.flags;
+		imageType = rhs.imageType;
+		sharingMode = rhs.sharingMode;
+		samples = rhs.samples;
+		mipLevels = rhs.mipLevels;
+		arrayLayers = rhs.arrayLayers;
+		tiling = rhs.tiling;
+		format = rhs.format;
+		usage = rhs.usage;
+		familyQueueIndicies = rhs.familyQueueIndicies;
+
+		return *this;
+	}
+
 	void Image::transitionImageLayout(VkImageLayout newLayout, VkCommandPool cmdPool, VkImageSubresourceRange range, VkAccessFlags srcAccess, VkAccessFlags dstAccess)
 	{
 		Fence fence;
