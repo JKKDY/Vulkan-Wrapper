@@ -240,7 +240,7 @@ namespace vkw {
 		createRenderPass(createInfo);
 	}
 
-	VULKAN_WRAPER_API void RenderPass::createRenderPass(const CreateInfo & createInfo)
+	void RenderPass::createRenderPass(const CreateInfo & createInfo)
 	{
 		subPassDependencys = createInfo.dependencys;
 		subPassDescriptions = createInfo.subPasses;
@@ -263,12 +263,12 @@ namespace vkw {
 
 
 
-	ShaderModule::ShaderModule(const CreateInfo & createInfo) :
-		ShaderModule(createInfo.filename, createInfo.stage, createInfo.flags)
-	{
-	}
 
 	/// Shader Module
+	ShaderModule::ShaderModule(const CreateInfo & createInfo) :
+		ShaderModule(createInfo.filename, createInfo.stage, createInfo.flags)
+	{}
+
 	ShaderModule::ShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags) :
 		filename(filename.c_str()), stage(stage), flags(flags)
 	{
@@ -303,7 +303,6 @@ namespace vkw {
 
 		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &createInfo, nullptr, vkObject), "Failed to create ShaderModule!");
 	}
-
 
 	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo, const char * name)
 	{

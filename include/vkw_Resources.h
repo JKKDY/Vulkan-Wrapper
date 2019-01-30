@@ -38,22 +38,22 @@ namespace vkw {
 			uint32_t operator ()(int descr) const;
 		};
 
-		VULKAN_WRAPER_API DescriptorPool();
-		VULKAN_WRAPER_API DescriptorPool(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API DescriptorPool(const CreateInfo2 & createInfo);
-		VULKAN_WRAPER_API DescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags = 0);
+		VULKAN_WRAPPER_API DescriptorPool();
+		VULKAN_WRAPPER_API DescriptorPool(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API DescriptorPool(const CreateInfo2 & createInfo);
+		VULKAN_WRAPPER_API DescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags = 0);
 
-		VULKAN_WRAPER_API void createDescriptorPool(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createDescriptorPool(const CreateInfo2 & createInfo);
-		VULKAN_WRAPER_API void createDescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags = 0);
+		VULKAN_WRAPPER_API void createDescriptorPool(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createDescriptorPool(const CreateInfo2 & createInfo);
+		VULKAN_WRAPPER_API void createDescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags = 0);
 
-		VULKAN_WRAPER_API DescriptorPool & operator = (const DescriptorPool & rhs);
+		VULKAN_WRAPPER_API DescriptorPool & operator = (const DescriptorPool & rhs);
 
 		const std::vector<VkDescriptorPoolSize> & poolSizes;
 		const uint32_t & maxSets;
 		const VkDescriptorPoolCreateFlags & flags;
 
-		VULKAN_WRAPER_API void resetDescriptorPool(VkDescriptorPoolResetFlags flags = 0);
+		VULKAN_WRAPPER_API void resetDescriptorPool(VkDescriptorPoolResetFlags flags = 0);
 	private:
 		std::vector<VkDescriptorPoolSize> poolSizes_m;
 		uint32_t maxSets_m;
@@ -72,15 +72,15 @@ namespace vkw {
 			VkDescriptorSetLayoutCreateFlags flags = 0;
 		};
 
-		VULKAN_WRAPER_API DescriptorSetLayout();
-		VULKAN_WRAPER_API DescriptorSetLayout(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API DescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags = 0);
-		VULKAN_WRAPER_API ~DescriptorSetLayout() = default;
+		VULKAN_WRAPPER_API DescriptorSetLayout();
+		VULKAN_WRAPPER_API DescriptorSetLayout(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API DescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags = 0);
+		VULKAN_WRAPPER_API ~DescriptorSetLayout() = default;
 
-		VULKAN_WRAPER_API void createDescriptorSetLayout(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags = 0);
+		VULKAN_WRAPPER_API void createDescriptorSetLayout(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags = 0);
 
-		VULKAN_WRAPER_API DescriptorSetLayout & operator = (const DescriptorSetLayout & p);
+		VULKAN_WRAPPER_API DescriptorSetLayout & operator = (const DescriptorSetLayout & p);
 
 		const std::map<uint32_t, VkDescriptorSetLayoutBinding> & layoutBindings;
 		VkDescriptorSetLayoutCreateFlags flags = 0;
@@ -120,23 +120,23 @@ namespace vkw {
 		};
 
 		// TODO: implement
-		VULKAN_WRAPER_API static void allocateDescriptorSets(std::vector<DescriptorSet&> descriptorSets);	//TODO: impelement
+		VULKAN_WRAPPER_API static void allocateDescriptorSets(std::vector<DescriptorSet&> descriptorSets);	//TODO: impelement
 
-		VULKAN_WRAPER_API DescriptorSet();
-		VULKAN_WRAPER_API DescriptorSet(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API DescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout);
-		VULKAN_WRAPER_API ~DescriptorSet() = default;
+		VULKAN_WRAPPER_API DescriptorSet();
+		VULKAN_WRAPPER_API DescriptorSet(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API DescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout);
+		VULKAN_WRAPPER_API ~DescriptorSet() = default;
 
-		VULKAN_WRAPER_API void allocateDescriptorSet(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void allocateDescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout);
+		VULKAN_WRAPPER_API void allocateDescriptorSet(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void allocateDescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout);
 
-		VULKAN_WRAPER_API DescriptorSet & operator = (const DescriptorSet & rhs);
+		VULKAN_WRAPPER_API DescriptorSet & operator = (const DescriptorSet & rhs);
 
 		VkDescriptorPool descriptorPool;
 		const DescriptorSetLayout *& layout;
 
-		VULKAN_WRAPER_API void update(const std::vector<WriteInfo> & writeInfos, const std::vector<CopyInfo> & copyInfos); //TODO implement copying
-		VULKAN_WRAPER_API void write(uint32_t dstBinding, uint32_t dstArrayElement, uint32_t descriptorCount, const VkDescriptorImageInfo * pImageInfo = nullptr, const VkDescriptorBufferInfo * pBufferInfo = nullptr, const VkBufferView * pTexelBufferView = nullptr);
+		VULKAN_WRAPPER_API void update(const std::vector<WriteInfo> & writeInfos, const std::vector<CopyInfo> & copyInfos); //TODO implement copying
+		VULKAN_WRAPPER_API void write(uint32_t dstBinding, uint32_t dstArrayElement, uint32_t descriptorCount, const VkDescriptorImageInfo * pImageInfo = nullptr, const VkDescriptorBufferInfo * pBufferInfo = nullptr, const VkBufferView * pTexelBufferView = nullptr);
 	private:
 		const DescriptorSetLayout * layout_m = nullptr;
 	};
@@ -167,15 +167,15 @@ namespace vkw {
 			uint32_t memoryType = std::numeric_limits<uint32_t>::max();
 		};
 
-		VULKAN_WRAPER_API Memory();
-		VULKAN_WRAPER_API Memory(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API Memory(VkMemoryPropertyFlags memoryFlags, VkDeviceSize size = 0);
-		VULKAN_WRAPER_API ~Memory() = default;
+		VULKAN_WRAPPER_API Memory();
+		VULKAN_WRAPPER_API Memory(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API Memory(VkMemoryPropertyFlags memoryFlags, VkDeviceSize size = 0);
+		VULKAN_WRAPPER_API ~Memory() = default;
 
-		VULKAN_WRAPER_API void allocateMemory(AllocationInfo & allocInfo);
-		VULKAN_WRAPER_API void allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers = {}, std::initializer_list<std::reference_wrapper<Image>> images = {}, uint32_t memoryType = std::numeric_limits<uint32_t>::max(), VkDeviceSize additionalSize = 0);
+		VULKAN_WRAPPER_API void allocateMemory(AllocationInfo & allocInfo);
+		VULKAN_WRAPPER_API void allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers = {}, std::initializer_list<std::reference_wrapper<Image>> images = {}, uint32_t memoryType = std::numeric_limits<uint32_t>::max(), VkDeviceSize additionalSize = 0);
 
-		VULKAN_WRAPER_API Memory & operator = (const Memory & rhs);
+		VULKAN_WRAPPER_API Memory & operator = (const Memory & rhs);
 
 		const VkMemoryPropertyFlags & memoryFlags;
 		const Mapped & memoryMap;
@@ -183,15 +183,15 @@ namespace vkw {
 		const uint32_t & memoryTypeBits;
 		const uint32_t & memoryType;
 
-		VULKAN_WRAPER_API void setMemoryTypeBitsBuffer(Buffer & buffer);
-		VULKAN_WRAPER_API void bindBufferToMemory(Buffer & buffer);
+		VULKAN_WRAPPER_API void setMemoryTypeBitsBuffer(Buffer & buffer);
+		VULKAN_WRAPPER_API void bindBufferToMemory(Buffer & buffer);
 
-		VULKAN_WRAPER_API void setMemoryTypeBitsImage(Image & image);
-		VULKAN_WRAPER_API void bindImageToMemory(Image & image);
+		VULKAN_WRAPPER_API void setMemoryTypeBitsImage(Image & image);
+		VULKAN_WRAPPER_API void bindImageToMemory(Image & image);
 
-		VULKAN_WRAPER_API void setMemoryTypeBits(VkMemoryRequirements & memoryRequirements);
-		VULKAN_WRAPER_API void * map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
-		VULKAN_WRAPER_API void unMap();
+		VULKAN_WRAPPER_API void setMemoryTypeBits(VkMemoryRequirements & memoryRequirements);
+		VULKAN_WRAPPER_API void * map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
+		VULKAN_WRAPPER_API void unMap();
 	private:
 		VkDeviceSize size_m = 0;
 		Mapped memoryMap_m;
@@ -220,15 +220,15 @@ namespace vkw {
 			VkDeviceSize offset = 0;
 		};
 
-		VULKAN_WRAPER_API Buffer();
-		VULKAN_WRAPER_API Buffer(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API Buffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkDeviceSize offset = 0, VkBufferCreateFlags createflags = 0);
-		VULKAN_WRAPER_API ~Buffer();
+		VULKAN_WRAPPER_API Buffer();
+		VULKAN_WRAPPER_API Buffer(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API Buffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkDeviceSize offset = 0, VkBufferCreateFlags createflags = 0);
+		VULKAN_WRAPPER_API ~Buffer();
 
-		VULKAN_WRAPER_API void createBuffer(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createBuffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkDeviceSize offset = 0, VkBufferCreateFlags createflags = 0);
+		VULKAN_WRAPPER_API void createBuffer(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createBuffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkDeviceSize offset = 0, VkBufferCreateFlags createflags = 0);
 
-		VULKAN_WRAPER_API Buffer & operator = (const Buffer & rhs);
+		VULKAN_WRAPPER_API Buffer & operator = (const Buffer & rhs);
 
 		VkBufferUsageFlags usageFlags;
 		VkBufferCreateFlags flags;
@@ -236,10 +236,10 @@ namespace vkw {
 		const VkDeviceSize & size;
 		const VkDeviceSize & offset; // offset in Memory
 
-		VULKAN_WRAPER_API SubBuffer createSubBuffer(VkDeviceSize size);
+		VULKAN_WRAPPER_API SubBuffer createSubBuffer(VkDeviceSize size);
 
-		VULKAN_WRAPER_API void write(const void * data, size_t sizeOfData, VkDeviceSize offset = 0, bool leaveMapped = true);
-		VULKAN_WRAPER_API void copyFromBuffer(VkBuffer srcBuffer, VkBufferCopy copyRegion = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData, VkDeviceSize offset = 0, bool leaveMapped = true);
+		VULKAN_WRAPPER_API void copyFromBuffer(VkBuffer srcBuffer, VkBufferCopy copyRegion = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
 		//VULKAN_WRAPER_API void copyFrom(VkImage image, VkBufferCopy copyRegion, VkCommandPool commandPool = VK_NULL_HANDLE);
 
 		const VkDeviceSize & sizeInMemory; // Size is alligned with allignement e.g. "size" = usable size, "sizeInMemory" = size the buffer takes up in its Vk::Memory
@@ -265,14 +265,15 @@ namespace vkw {
 		friend Buffer;
 	public:
 		// TODO: make default constr so that it can be declared in a header file
-		VULKAN_WRAPER_API SubBuffer();
-		VULKAN_WRAPER_API ~SubBuffer();
+		VULKAN_WRAPPER_API SubBuffer();
+		VULKAN_WRAPPER_API SubBuffer(const SubBuffer & rhs);
+		VULKAN_WRAPPER_API ~SubBuffer();
 
-		VULKAN_WRAPER_API SubBuffer & operator = (const SubBuffer & rhs);
+		VULKAN_WRAPPER_API SubBuffer & operator = (const SubBuffer & rhs);
 
-		VULKAN_WRAPER_API void write(const void * data, size_t sizeOfData = 0, bool leaveMapped = false);
-		VULKAN_WRAPER_API void copyFrom(SubBuffer & srcBuffer, VkCommandPool commandPool = VK_NULL_HANDLE);
-		VULKAN_WRAPER_API void clear();
+		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData = 0, bool leaveMapped = false);
+		VULKAN_WRAPPER_API void copyFrom(SubBuffer & srcBuffer, VkCommandPool commandPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void clear();
 
 		const VkDeviceSize & size;
 		const VkDeviceSize & offset;
@@ -307,15 +308,15 @@ namespace vkw {
 			std::vector<uint32_t>	 familyQueueIndicies;
 		};
 
-		VULKAN_WRAPER_API Image();
-		VULKAN_WRAPER_API Image(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API Image(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType = VK_IMAGE_TYPE_2D, VkImageCreateFlags flags = 0);
-		VULKAN_WRAPER_API ~Image() = default;
+		VULKAN_WRAPPER_API Image();
+		VULKAN_WRAPPER_API Image(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API Image(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType = VK_IMAGE_TYPE_2D, VkImageCreateFlags flags = 0);
+		VULKAN_WRAPPER_API ~Image() = default;
 
-		VULKAN_WRAPER_API void createImage(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createImage(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType = VK_IMAGE_TYPE_2D, VkImageCreateFlags flags = 0);
+		VULKAN_WRAPPER_API void createImage(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createImage(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType = VK_IMAGE_TYPE_2D, VkImageCreateFlags flags = 0);
 
-		VULKAN_WRAPER_API Image & operator = (const Image & rhs);
+		VULKAN_WRAPPER_API Image & operator = (const Image & rhs);
 
 		const VkImageLayout & layout;
 		const VkExtent3D & extent;
@@ -330,9 +331,9 @@ namespace vkw {
 		VkImageUsageFlags usage;
 		std::vector<uint32_t> familyQueueIndicies;
 
-		VULKAN_WRAPER_API void transitionImageLayout(VkImageLayout newLayout, VkCommandPool commandPool = VK_NULL_HANDLE, VkImageSubresourceRange range = { 0x7FFFFFFF }, VkAccessFlags srcAccess = 0x7FFFFFFF, VkAccessFlags dstAccess = 0x7FFFFFFF);
-		VULKAN_WRAPER_API void copyFromImage(Image & srcImage, std::vector<VkImageCopy> regions = {}, VkCommandPool cmdPool = VK_NULL_HANDLE);
-		VULKAN_WRAPER_API void copyFromBuffer(Buffer & srcBuffer, std::vector<VkBufferImageCopy> copyRegions = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void transitionImageLayout(VkImageLayout newLayout, VkCommandPool commandPool = VK_NULL_HANDLE, VkImageSubresourceRange range = { 0x7FFFFFFF }, VkAccessFlags srcAccess = 0x7FFFFFFF, VkAccessFlags dstAccess = 0x7FFFFFFF);
+		VULKAN_WRAPPER_API void copyFromImage(const Image & srcImage, const std::vector<VkImageCopy> & regions = {}, VkCommandPool cmdPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void copyFromBuffer(const Buffer & srcBuffer, const std::vector<VkBufferImageCopy> & copyRegions = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
 		// make function to copy from an image
 	private:
 		VkImageLayout layout_m = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -357,13 +358,13 @@ namespace vkw {
 			VkComponentMapping components = {};
 		};
 
-		VULKAN_WRAPER_API ImageView() = default;
-		VULKAN_WRAPER_API ImageView(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API ImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D, VkComponentMapping components = {});
-		VULKAN_WRAPER_API ~ImageView() = default;
+		VULKAN_WRAPPER_API ImageView() = default;
+		VULKAN_WRAPPER_API ImageView(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API ImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D, VkComponentMapping components = {});
+		VULKAN_WRAPPER_API ~ImageView() = default;
 
-		VULKAN_WRAPER_API void createImageView(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D, VkComponentMapping components = {});
+		VULKAN_WRAPPER_API void createImageView(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D, VkComponentMapping components = {});
 
 		Image image;
 		VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -408,12 +409,12 @@ namespace vkw {
 			VkCompareOp compareOp = VK_COMPARE_OP_ALWAYS;
 		};
 
-		VULKAN_WRAPER_API Sampler() = default;
-		VULKAN_WRAPER_API Sampler(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API ~Sampler() = default;
+		VULKAN_WRAPPER_API Sampler() = default;
+		VULKAN_WRAPPER_API Sampler(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API ~Sampler() = default;
 
-		VULKAN_WRAPER_API void createSampler(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createSampler();
+		VULKAN_WRAPPER_API void createSampler(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createSampler();
 
 		Filter filter;
 		AddressMode addressMode;
@@ -443,13 +444,13 @@ namespace vkw {
 			uint32_t layers = 1;
 		};
 
-		VULKAN_WRAPER_API FrameBuffer() = default;
-		VULKAN_WRAPER_API FrameBuffer(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API FrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers = 1, VkFramebufferCreateFlags flags = 0);
-		VULKAN_WRAPER_API ~FrameBuffer() = default;
+		VULKAN_WRAPPER_API FrameBuffer() = default;
+		VULKAN_WRAPPER_API FrameBuffer(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API FrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers = 1, VkFramebufferCreateFlags flags = 0);
+		VULKAN_WRAPPER_API ~FrameBuffer() = default;
 
-		VULKAN_WRAPER_API void createFrameBuffer(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createFrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers = 1, VkFramebufferCreateFlags flags = 0);
+		VULKAN_WRAPPER_API void createFrameBuffer(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createFrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers = 1, VkFramebufferCreateFlags flags = 0);
 
 		VkFramebufferCreateFlags flags = 0;
 		VkRenderPass renderPass;

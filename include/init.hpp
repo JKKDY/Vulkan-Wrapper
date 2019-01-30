@@ -5,7 +5,7 @@
 
 namespace vkw {
 	namespace Init {
-		inline VULKAN_WRAPER_API VkImageSubresourceRange imageSubresourceRange(VkImageAspectFlags ImageAspectFlags) {
+		inline VULKAN_WRAPPER_API VkImageSubresourceRange imageSubresourceRange(VkImageAspectFlags ImageAspectFlags) {
 			VkImageSubresourceRange subresourceRange = {};
 			subresourceRange.aspectMask = ImageAspectFlags;  // subrecourse range describes what the image's purpose is
 			subresourceRange.baseMipLevel = 0;
@@ -16,7 +16,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkImageViewCreateInfo imageViewCreateInfo(VkImageSubresourceRange subresourceRange, VkImage image, VkFormat format) {
+		inline VULKAN_WRAPPER_API VkImageViewCreateInfo imageViewCreateInfo(VkImageSubresourceRange subresourceRange, VkImage image, VkFormat format) {
 			VkImageViewCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			createInfo.image = image;
@@ -31,14 +31,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkImageViewCreateInfo imageViewCreateInfo() {
+		inline VULKAN_WRAPPER_API VkImageViewCreateInfo imageViewCreateInfo() {
 			VkImageViewCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			return createInfo;
 		}
 
 		///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		inline VULKAN_WRAPER_API VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(std::vector<VkDescriptorSetLayout> descriptorSetLayouts, std::vector<VkPushConstantRange> pushCconstants) {
+		inline VULKAN_WRAPPER_API VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(std::vector<VkDescriptorSetLayout> descriptorSetLayouts, std::vector<VkPushConstantRange> pushCconstants) {
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
@@ -50,7 +50,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(VkDescriptorSetLayout * setLayouts, uint32_t setLayoutCount, VkPushConstantRange * pushConstantRange, uint32_t pushConstantRangeCount) {
+		inline VULKAN_WRAPPER_API VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(VkDescriptorSetLayout * setLayouts, uint32_t setLayoutCount, VkPushConstantRange * pushConstantRange, uint32_t pushConstantRangeCount) {
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			pipelineLayoutInfo.pushConstantRangeCount = pushConstantRangeCount;
@@ -61,14 +61,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo() {
+		inline VULKAN_WRAPPER_API VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo() {
 			VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			return pipelineLayoutInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t descriptorCount = 1, VkSampler * sampler = nullptr)
+		inline VULKAN_WRAPPER_API VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t descriptorCount = 1, VkSampler * sampler = nullptr)
 		{
 			VkDescriptorSetLayoutBinding setLayoutBinding = {};
 			setLayoutBinding.descriptorType = type;
@@ -80,7 +80,7 @@ namespace vkw {
 		}	
 
 
-		inline VULKAN_WRAPER_API VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(uint32_t bindingCount, const VkDescriptorSetLayoutBinding* pBindings) {
+		inline VULKAN_WRAPPER_API VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(uint32_t bindingCount, const VkDescriptorSetLayoutBinding* pBindings) {
 			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo ={};
 			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorSetLayoutCreateInfo.pBindings = pBindings;
@@ -89,14 +89,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo() {
+		inline VULKAN_WRAPPER_API VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo() {
 			VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo = {};
 			descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			return descriptorLayoutInfo;
 		}
 		
 		
-		inline VULKAN_WRAPER_API VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(const std::vector<VkDescriptorSetLayoutBinding> & bindings)
+		inline VULKAN_WRAPPER_API VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(const std::vector<VkDescriptorSetLayoutBinding> & bindings)
 		{
 			VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo = {};
 			descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -106,14 +106,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo() {
+		inline VULKAN_WRAPPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo() {
 			VkPipelineShaderStageCreateInfo shaderStageInfo = {};
 			shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			return shaderStageInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(VkShaderModule module, VkShaderStageFlagBits flags, VkSpecializationInfo * specializationInfo = nullptr, const char* name = "main") {
+		inline VULKAN_WRAPPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(VkShaderModule module, VkShaderStageFlagBits flags, VkSpecializationInfo * specializationInfo = nullptr, const char* name = "main") {
 			VkPipelineShaderStageCreateInfo shaderStageInfo = {};
 			shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 			shaderStageInfo.stage = flags;
@@ -124,7 +124,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkViewport viewport(VkExtent2D size, VkExtent2D pos = {0,0}) {
+		inline VULKAN_WRAPPER_API VkViewport viewport(VkExtent2D size, VkExtent2D pos = {0,0}) {
 			VkViewport viewport = {};
 			viewport.x = (float)pos.width;
 			viewport.y = (float)pos.height;
@@ -137,14 +137,14 @@ namespace vkw {
 
 
 
-		inline VULKAN_WRAPER_API VkPipelineViewportStateCreateInfo pipelineViewportSatetCreateInfo() {
+		inline VULKAN_WRAPPER_API VkPipelineViewportStateCreateInfo pipelineViewportSatetCreateInfo() {
 			VkPipelineViewportStateCreateInfo viewportState = {};
 			viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 			return viewportState;
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineViewportStateCreateInfo pipelineViewportSatetCreateInfo(VkViewport & viewport, VkRect2D & scissor, VkPipelineViewportStateCreateFlags flags = 0) {
+		inline VULKAN_WRAPPER_API VkPipelineViewportStateCreateInfo pipelineViewportSatetCreateInfo(VkViewport & viewport, VkRect2D & scissor, VkPipelineViewportStateCreateFlags flags = 0) {
 			VkPipelineViewportStateCreateInfo viewportState = {};
 			viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 			viewportState.flags = flags;
@@ -156,7 +156,7 @@ namespace vkw {
 		}
 		
 		
-		inline VULKAN_WRAPER_API VkPipelineViewportStateCreateInfo pipelineViewportSatetCreateInfo(std::vector<VkViewport> & viewports, std::vector<VkRect2D> & scissors, VkPipelineViewportStateCreateFlags flags = 0) {
+		inline VULKAN_WRAPPER_API VkPipelineViewportStateCreateInfo pipelineViewportSatetCreateInfo(std::vector<VkViewport> & viewports, std::vector<VkRect2D> & scissors, VkPipelineViewportStateCreateFlags flags = 0) {
 			VkPipelineViewportStateCreateInfo viewportState = {};
 			viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 			viewportState.flags = flags;
@@ -168,7 +168,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkVertexInputBindingDescription vertexInputBindingDescription(uint32_t binding, uint32_t stride, VkVertexInputRate inputRate)
+		inline VULKAN_WRAPPER_API VkVertexInputBindingDescription vertexInputBindingDescription(uint32_t binding, uint32_t stride, VkVertexInputRate inputRate)
 		{
 			VkVertexInputBindingDescription bindingDescription = {};
 			bindingDescription.binding = binding;
@@ -178,7 +178,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkVertexInputAttributeDescription vertexInputAttributeDescription( uint32_t binding, uint32_t location, VkFormat format, uint32_t offset) 
+		inline VULKAN_WRAPPER_API VkVertexInputAttributeDescription vertexInputAttributeDescription( uint32_t binding, uint32_t location, VkFormat format, uint32_t offset) 
 		{
 			VkVertexInputAttributeDescription vInputAttribDescription = {};
 			vInputAttribDescription.location = location;
@@ -189,7 +189,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo()
+		inline VULKAN_WRAPPER_API VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo()
 		{
 			VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
 			pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -197,7 +197,7 @@ namespace vkw {
 		}
 		
 		
-		inline VULKAN_WRAPER_API VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions, std::vector<VkVertexInputBindingDescription> & bindingDiscriptions)
+		inline VULKAN_WRAPPER_API VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions, std::vector<VkVertexInputBindingDescription> & bindingDiscriptions)
 		{
 			VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
 			pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -210,7 +210,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VkBool32 primitiveRestartEnable =  VK_FALSE) {
+		inline VULKAN_WRAPPER_API VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VkBool32 primitiveRestartEnable =  VK_FALSE) {
 			// input assembly: how the verticies should be assembled e.g triangle list, line strip etc
 			VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};  
 			inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -221,14 +221,14 @@ namespace vkw {
 
 
 
-		inline VULKAN_WRAPER_API VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo() {
+		inline VULKAN_WRAPPER_API VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo() {
 			VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo = {};
 			pipelineRasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 			return pipelineRasterizationStateCreateInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlags cullMode, VkFrontFace frontFace, VkPipelineRasterizationStateCreateFlags flags = 0)
+		inline VULKAN_WRAPPER_API VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo(VkPolygonMode polygonMode, VkCullModeFlags cullMode, VkFrontFace frontFace, VkPipelineRasterizationStateCreateFlags flags = 0)
 		{
 			// rasterizer: turns verticies into fragments to be colored by the fragment shader (also performs depth testing,  face culling and scissor test)
 			VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo = {};
@@ -248,7 +248,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo(VkPipelineMultisampleStateCreateFlags flags = 0)
+		inline VULKAN_WRAPPER_API VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo(VkPipelineMultisampleStateCreateFlags flags = 0)
 		{
 			// multisampling:  combines the output of the fragment shader of multiple fragments in to the same pixel
 			VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = {};
@@ -264,7 +264,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState( VkColorComponentFlags colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT)
+		inline VULKAN_WRAPPER_API VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState( VkColorComponentFlags colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT)
 		{
 			VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState = {};
 			pipelineColorBlendAttachmentState.colorWriteMask = colorWriteMask;
@@ -279,14 +279,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo() {
+		inline VULKAN_WRAPPER_API VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo() {
 			VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
 			pipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 			return pipelineColorBlendStateCreateInfo;
 		}
 		
 		
-		inline VULKAN_WRAPER_API VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo( std::vector<VkPipelineColorBlendAttachmentState> & attachments)
+		inline VULKAN_WRAPPER_API VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo( std::vector<VkPipelineColorBlendAttachmentState> & attachments)
 		{
 			VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {};
 			pipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -301,7 +301,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo(const VkDynamicState * pDynamicStates, uint32_t dynamicStateCount, VkPipelineDynamicStateCreateFlags flags = 0)
+		inline VULKAN_WRAPPER_API VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo(const VkDynamicState * pDynamicStates, uint32_t dynamicStateCount, VkPipelineDynamicStateCreateFlags flags = 0)
 		{
 			VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {};
 			pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -312,21 +312,21 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo() {
+		inline VULKAN_WRAPPER_API VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo() {
 			VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {};
 			pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 			return pipelineDynamicStateCreateInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo(){
+		inline VULKAN_WRAPPER_API VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo(){
 			VkPipelineDepthStencilStateCreateInfo depthStencil = {};
 			depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 			return depthStencil;
 		}
 
 
-		inline VULKAN_WRAPER_API VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo(VkPipelineCreateFlags flags = 0)
+		inline VULKAN_WRAPPER_API VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo(VkPipelineCreateFlags flags = 0)
 		{
 			VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
 			graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -337,7 +337,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkFramebufferCreateInfo framebufferCreateInfo(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> & attachements, uint32_t layers = 1, VkFramebufferCreateFlags flags = 0){
+		inline VULKAN_WRAPPER_API VkFramebufferCreateInfo framebufferCreateInfo(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> & attachements, uint32_t layers = 1, VkFramebufferCreateFlags flags = 0){
 			VkFramebufferCreateInfo framebufferCreateInfo{};
 			framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferCreateInfo.flags = flags;
@@ -354,14 +354,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkFramebufferCreateInfo framebufferCreateInfo() {
+		inline VULKAN_WRAPPER_API VkFramebufferCreateInfo framebufferCreateInfo() {
 			VkFramebufferCreateInfo framebufferCreateInfo{};
 			framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			return framebufferCreateInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkMemoryAllocateInfo memoryAllocateInfo(VkDeviceSize size, uint32_t memoryType){
+		inline VULKAN_WRAPPER_API VkMemoryAllocateInfo memoryAllocateInfo(VkDeviceSize size, uint32_t memoryType){
 			VkMemoryAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			allocInfo.pNext = nullptr;
@@ -371,14 +371,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkMemoryAllocateInfo memoryAllocateInfo() {
+		inline VULKAN_WRAPPER_API VkMemoryAllocateInfo memoryAllocateInfo() {
 			VkMemoryAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			return allocInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool commandPool, uint32_t commandBufferCount, VkCommandBufferLevel level ) {
+		inline VULKAN_WRAPPER_API VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool commandPool, uint32_t commandBufferCount, VkCommandBufferLevel level ) {
 			VkCommandBufferAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			allocInfo.level = level;
@@ -388,14 +388,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkCommandBufferAllocateInfo commandBufferAllocateInfo() {
+		inline VULKAN_WRAPPER_API VkCommandBufferAllocateInfo commandBufferAllocateInfo() {
 			VkCommandBufferAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 			return allocInfo;
 		}
 
 		
-		inline VULKAN_WRAPER_API VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlagBits usageFlags) {
+		inline VULKAN_WRAPPER_API VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlagBits usageFlags) {
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = usageFlags;
@@ -403,14 +403,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkCommandBufferBeginInfo commandBufferBeginInfo() {
+		inline VULKAN_WRAPPER_API VkCommandBufferBeginInfo commandBufferBeginInfo() {
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			return beginInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkSubmitInfo submitInfo(uint32_t commandBufferCount, VkCommandBuffer * commandBuffer){
+		inline VULKAN_WRAPPER_API VkSubmitInfo submitInfo(uint32_t commandBufferCount, VkCommandBuffer * commandBuffer){
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submitInfo.commandBufferCount = commandBufferCount;
@@ -419,28 +419,28 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkFenceCreateInfo fenceCreateInfo() {
+		inline VULKAN_WRAPPER_API VkFenceCreateInfo fenceCreateInfo() {
 			VkFenceCreateInfo fenceInfo = {};
 			fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			return fenceInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkSemaphoreCreateInfo semaphoreCreateInfo() {
+		inline VULKAN_WRAPPER_API VkSemaphoreCreateInfo semaphoreCreateInfo() {
 			VkSemaphoreCreateInfo semaphoreInfo = {};
 			semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 			return semaphoreInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkRenderPassCreateInfo renderPassCreateInfo() {
+		inline VULKAN_WRAPPER_API VkRenderPassCreateInfo renderPassCreateInfo() {
 			VkRenderPassCreateInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 			return renderPassInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkSubpassDescription subpassDescription( 
+		inline VULKAN_WRAPPER_API VkSubpassDescription subpassDescription( 
 			std::vector<VkAttachmentReference> * inputAttachments = nullptr, std::vector<VkAttachmentReference> * colorAttachements = nullptr, 
 			std::vector<VkAttachmentReference> * resolveAttachments = nullptr, VkAttachmentReference * depthStencilAttachment = nullptr,
 			std::vector<uint32_t> * preserveAttachments = nullptr, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS)
@@ -474,7 +474,7 @@ namespace vkw {
 			return subPass;
 		}
 
-		inline VULKAN_WRAPER_API VkAttachmentReference attachmentReference(uint32_t attachment, VkImageLayout layout) {
+		inline VULKAN_WRAPPER_API VkAttachmentReference attachmentReference(uint32_t attachment, VkImageLayout layout) {
 			VkAttachmentReference colorAttachmentRef = {};
 			colorAttachmentRef.attachment = attachment;
 			colorAttachmentRef.layout = layout;
@@ -482,7 +482,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkAttachmentDescription attachmentDescription(VkFormat format, VkAttachmentDescriptionFlags flags = 0) {
+		inline VULKAN_WRAPPER_API VkAttachmentDescription attachmentDescription(VkFormat format, VkAttachmentDescriptionFlags flags = 0) {
 			VkAttachmentDescription attachement = {};
 			attachement.flags = flags;
 			attachement.format = format;
@@ -490,13 +490,13 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkSubpassDependency subpassDependency() {
+		inline VULKAN_WRAPPER_API VkSubpassDependency subpassDependency() {
 			VkSubpassDependency dependency = {};
 			return dependency;
 		}
 
 
-		inline VULKAN_WRAPER_API VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamily, VkCommandPoolCreateFlags flags = 0) {
+		inline VULKAN_WRAPPER_API VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamily, VkCommandPoolCreateFlags flags = 0) {
 			VkCommandPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			poolInfo.flags = flags;
@@ -505,21 +505,21 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkCommandPoolCreateInfo commandPoolCreateInfo() {
+		inline VULKAN_WRAPPER_API VkCommandPoolCreateInfo commandPoolCreateInfo() {
 			VkCommandPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			return poolInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkRenderPassBeginInfo renderPassBeginInfo() {
+		inline VULKAN_WRAPPER_API VkRenderPassBeginInfo renderPassBeginInfo() {
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			return renderPassInfo;
 		}
 		
 		///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		inline VULKAN_WRAPER_API VkRenderPassBeginInfo renderPassBeginInfo(VkRenderPass renderPass, VkFramebuffer frameBuffer, VkRect2D renderArea, std::vector<VkClearValue> & clearValues) {
+		inline VULKAN_WRAPPER_API VkRenderPassBeginInfo renderPassBeginInfo(VkRenderPass renderPass, VkFramebuffer frameBuffer, VkRect2D renderArea, std::vector<VkClearValue> & clearValues) {
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassInfo.renderPass = renderPass;
@@ -532,7 +532,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPresentInfoKHR presentInfoKHR(uint32_t * image, std::vector<VkSwapchainKHR> * swapchains, std::vector<VkSemaphore> * semaphores = nullptr, VkResult * result = nullptr) {
+		inline VULKAN_WRAPPER_API VkPresentInfoKHR presentInfoKHR(uint32_t * image, std::vector<VkSwapchainKHR> * swapchains, std::vector<VkSemaphore> * semaphores = nullptr, VkResult * result = nullptr) {
 			VkPresentInfoKHR presentInfo = {};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			if (semaphores != nullptr) {
@@ -548,14 +548,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkPresentInfoKHR presentInfoKHR() {
+		inline VULKAN_WRAPPER_API VkPresentInfoKHR presentInfoKHR() {
 			VkPresentInfoKHR presentInfo = {};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			return presentInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkSubmitInfo submitInfo(std::vector<VkCommandBuffer> * commandBuffers, std::vector<VkSemaphore> *  waitSemaphores = nullptr, 
+		inline VULKAN_WRAPPER_API VkSubmitInfo submitInfo(std::vector<VkCommandBuffer> * commandBuffers, std::vector<VkSemaphore> *  waitSemaphores = nullptr, 
 			std::vector<VkSemaphore> * signalSemaphores = nullptr,  VkPipelineStageFlags * waitDstStageMask = nullptr) {
 			VkSubmitInfo submitinfo = {};
 			submitinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -574,14 +574,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkSubmitInfo submitInfo() {
+		inline VULKAN_WRAPPER_API VkSubmitInfo submitInfo() {
 			VkSubmitInfo submitinfo = {};
 			submitinfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			return submitinfo;
 		}
 		
 
-		inline VULKAN_WRAPER_API VkDescriptorPoolSize descriptorPoolSize(VkDescriptorType type, uint32_t descriptorCount) {
+		inline VULKAN_WRAPPER_API VkDescriptorPoolSize descriptorPoolSize(VkDescriptorType type, uint32_t descriptorCount) {
 			VkDescriptorPoolSize poolSize = {};
 			poolSize.type = type;
 			poolSize.descriptorCount = descriptorCount;
@@ -589,7 +589,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkDescriptorPoolCreateInfo descriptorPoolCreateInfo( std::vector<VkDescriptorPoolSize>*  poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags = 0) {
+		inline VULKAN_WRAPPER_API VkDescriptorPoolCreateInfo descriptorPoolCreateInfo( std::vector<VkDescriptorPoolSize>*  poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags = 0) {
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			poolInfo.flags = flags;
@@ -600,14 +600,14 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkDescriptorPoolCreateInfo descriptorPoolCreateInfo() {
+		inline VULKAN_WRAPPER_API VkDescriptorPoolCreateInfo descriptorPoolCreateInfo() {
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			return poolInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkBufferCreateInfo bufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkBufferCreateFlags flags = 0){
+		inline VULKAN_WRAPPER_API VkBufferCreateInfo bufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkBufferCreateFlags flags = 0){
 			VkBufferCreateInfo bufferInfo = {};
 			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			bufferInfo.flags = flags;
@@ -618,28 +618,28 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkBufferCreateInfo bufferCreateInfo(){
+		inline VULKAN_WRAPPER_API VkBufferCreateInfo bufferCreateInfo(){
 			VkBufferCreateInfo bufferInfo = {};
 			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			return bufferInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkSwapchainCreateInfoKHR swapchainCreateInfoKHR() {
+		inline VULKAN_WRAPPER_API VkSwapchainCreateInfoKHR swapchainCreateInfoKHR() {
 			VkSwapchainCreateInfoKHR createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 			return createInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkShaderModuleCreateInfo shaderModuleCreateInfo() {
+		inline VULKAN_WRAPPER_API VkShaderModuleCreateInfo shaderModuleCreateInfo() {
 			VkShaderModuleCreateInfo  createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			return createInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(std::vector<VkDescriptorSetLayout> & setLayouts, VkDescriptorPool pool) {
+		inline VULKAN_WRAPPER_API VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(std::vector<VkDescriptorSetLayout> & setLayouts, VkDescriptorPool pool) {
 			VkDescriptorSetAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfo.descriptorPool = pool;
@@ -649,35 +649,35 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkDescriptorSetAllocateInfo descriptorSetAllocateInfo() {
+		inline VULKAN_WRAPPER_API VkDescriptorSetAllocateInfo descriptorSetAllocateInfo() {
 			VkDescriptorSetAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			return allocInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkWriteDescriptorSet writeDescriptorSet() {
+		inline VULKAN_WRAPPER_API VkWriteDescriptorSet writeDescriptorSet() {
 			VkWriteDescriptorSet descriptorWrite = {};
 			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			return descriptorWrite;
 		}
 
 		
-		inline VULKAN_WRAPER_API VkImageCreateInfo imageCreateInfo() {
+		inline VULKAN_WRAPPER_API VkImageCreateInfo imageCreateInfo() {
 			VkImageCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 			return createInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkImageMemoryBarrier imageMemoryBarrier() {
+		inline VULKAN_WRAPPER_API VkImageMemoryBarrier imageMemoryBarrier() {
 			VkImageMemoryBarrier imageBarrier = {};
 			imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			return imageBarrier;
 		}
 
 
-		inline VULKAN_WRAPER_API VkImageSubresourceLayers imageSubresourceLayers(VkImageAspectFlags flags) {
+		inline VULKAN_WRAPPER_API VkImageSubresourceLayers imageSubresourceLayers(VkImageAspectFlags flags) {
 			VkImageSubresourceLayers subResource = {};
 			subResource.aspectMask = flags;
 			subResource.mipLevel = 0;
@@ -687,7 +687,7 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkBufferImageCopy bufferImageCopy(VkExtent3D imageExtent, VkImageSubresourceLayers imageSubresource, VkOffset3D imageOffset = {0,0,0}, VkDeviceSize bufferOffset = 0) {
+		inline VULKAN_WRAPPER_API VkBufferImageCopy bufferImageCopy(VkExtent3D imageExtent, VkImageSubresourceLayers imageSubresource, VkOffset3D imageOffset = {0,0,0}, VkDeviceSize bufferOffset = 0) {
 			VkBufferImageCopy region = {};
 			region.bufferOffset = bufferOffset;
 			region.bufferImageHeight = 0;
@@ -699,20 +699,20 @@ namespace vkw {
 		}
 
 
-		inline VULKAN_WRAPER_API VkSamplerCreateInfo samplerCreateInfo() {
+		inline VULKAN_WRAPPER_API VkSamplerCreateInfo samplerCreateInfo() {
 			VkSamplerCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 			return createInfo;
 		}
 
 
-		inline VULKAN_WRAPER_API VkPipelineCacheCreateInfo pipelineCacheCreateInfo() {
+		inline VULKAN_WRAPPER_API VkPipelineCacheCreateInfo pipelineCacheCreateInfo() {
 			VkPipelineCacheCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 			return createInfo;
 		}
 
-		inline VULKAN_WRAPER_API VkImageCopy imageCopy(VkExtent3D extent, VkImageSubresourceLayers srcSubresource, VkImageSubresourceLayers dstSubresource, VkOffset3D srcOffset = { 0,0,0 }, VkOffset3D dstOffset = {0,0,0}) {
+		inline VULKAN_WRAPPER_API VkImageCopy imageCopy(VkExtent3D extent, VkImageSubresourceLayers srcSubresource, VkImageSubresourceLayers dstSubresource, VkOffset3D srcOffset = { 0,0,0 }, VkOffset3D dstOffset = {0,0,0}) {
 			VkImageCopy region = {};
 			region.extent = extent;
 			region.srcOffset = srcOffset;

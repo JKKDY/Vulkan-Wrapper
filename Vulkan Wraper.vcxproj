@@ -41,9 +41,6 @@
     <ClCompile Include="src\vkw_Operations.cpp" />
     <ClCompile Include="src\vkw_Resources.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C97CFF6A-1557-4D3D-A7EF-3402D3961BD7}</ProjectGuid>
     <RootNamespace>RenderEngineBaseAPI</RootNamespace>

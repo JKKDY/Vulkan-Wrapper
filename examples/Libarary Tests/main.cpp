@@ -74,7 +74,7 @@ int main() {
 	instanceCreateInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	GlfwWindow::getWindowExtensions(instanceCreateInfo.desiredExtensions);
 
-	vkw::Instance instance{ instanceCreateInfo };
+	vkw::Instance instance { instanceCreateInfo };
 	vkw::PhysicalDevice physicalDevice = instance.physicalDevices[0];
 	vkw::Surface surface ( window, physicalDevice );
 	

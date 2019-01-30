@@ -542,6 +542,14 @@ namespace vkw {
 		offset(offset_m)
 	{}
 
+	SubBuffer::SubBuffer(const SubBuffer & rhs) : SubBuffer()
+	{
+		size_m = rhs.size_m;
+		offset_m = rhs.offset_m;
+
+		buffer = rhs.buffer;
+	}
+
 	SubBuffer::SubBuffer(VkDeviceSize size, VkDeviceSize offset, Buffer * buffer):
 		size(size_m),
 		offset(offset_m),
@@ -772,23 +780,25 @@ namespace vkw {
 	//	}
 	//}
 
-	void Image::copyFromImage(Image & srcImage, std::vector<VkImageCopy> regions, VkCommandPool cmdPool)
+	void Image::copyFromImage(const Image & srcImage, const std::vector<VkImageCopy> & regions, VkCommandPool cmdPool)
 	{
-		if (regions.size() == 0) {
-			VkImageSubresourceLayers subResource = {};
-			subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subResource.mipLevel = 0;
-			subResource.layerCount = 1;
-			subResource.baseArrayLayer = 0;
+		//VkImageCopy region = {}
+		//if (regions.size() == 0) {
+		//	VkImageSubresourceLayers subResource = {};
+		//	subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		//	subResource.mipLevel = 0;
+		//	subResource.layerCount = 1;
+		//	subResource.baseArrayLayer = 0;
+		//
+		//	VkImageCopy region = {};
+		//	region.extent = extent;
+		//	region.srcOffset = { 0,0,0 };
+		//	region.srcSubresource = subResource;
+		//	region.dstOffset = { 0,0,0 };
+		//	region.dstSubresource = subResource;
+		//	regions.push_back(region);
+		//}
 
-			VkImageCopy region = {};
-			region.extent = extent;
-			region.srcOffset = { 0,0,0 };
-			region.srcSubresource = subResource;
-			region.dstOffset = { 0,0,0 };
-			region.dstSubresource = subResource;
-			regions.push_back(region);
-		}
 		vkw::Fence fence(0);
 		VkCommandPool commandPool = (cmdPool == VK_NULL_HANDLE) ? registry.transferCommandPool : cmdPool;
 		vkw::CommandBuffer commandBuffer(commandPool);
@@ -804,25 +814,25 @@ namespace vkw {
 		fence.destroyObject();
 	}
 
-	void Image::copyFromBuffer(Buffer & srcBuffer, std::vector<VkBufferImageCopy> copyRegions, VkCommandPool cmdPool) // TODO: switch param copyRegions with param srcBuffer
+	void Image::copyFromBuffer(const Buffer & srcBuffer, const std::vector<VkBufferImageCopy> & copyRegions, VkCommandPool cmdPool) // TODO: switch param copyRegions with param srcBuffer
 	{
-		if (copyRegions.size() == 0) {
-			VkImageSubresourceLayers subResource = {};
-			subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subResource.mipLevel = 0;
-			subResource.layerCount = 1;
-			subResource.baseArrayLayer = 0;
-
-			VkBufferImageCopy region = {};
-			region.bufferOffset = 0;
-			region.bufferImageHeight = 0;
-			region.bufferRowLength = 0;
-			region.imageSubresource = subResource;
-			region.imageOffset = { 0,0,0 };
-			region.imageExtent = { extent.width, extent.height, 1 };
-
-			copyRegions.push_back(region);
-		}
+		//if (copyRegions.size() == 0) {
+		//	VkImageSubresourceLayers subResource = {};
+		//	subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		//	subResource.mipLevel = 0;
+		//	subResource.layerCount = 1;
+		//	subResource.baseArrayLayer = 0;
+		//
+		//	VkBufferImageCopy region = {};
+		//	region.bufferOffset = 0;
+		//	region.bufferImageHeight = 0;
+		//	region.bufferRowLength = 0;
+		//	region.imageSubresource = subResource;
+		//	region.imageOffset = { 0,0,0 };
+		//	region.imageExtent = { extent.width, extent.height, 1 };
+		//
+		//	copyRegions.push_back(region);
+		//}
 
 		vkw::Fence fence(0);
 		VkCommandPool commandPool = cmdPool == VK_NULL_HANDLE ? registry.transferCommandPool : cmdPool;

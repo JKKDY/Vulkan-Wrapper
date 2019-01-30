@@ -42,10 +42,21 @@ public:
 };
 
 
-std::string dataPath = "../data/";
-std::string modelPath = dataPath + "Models/";
-std::string texturePath = dataPath + "Textures/";
-std::string shaderPath = dataPath + "Shader/" + APP_NAME;
+bool deviceIsSuitable(const vkw::PhysicalDevice & gpu) {
+	bool requiredQueueFamilySupport = gpu.queueFamilyTypes.graphicFamilies.size() * gpu.queueFamilyTypes.transferFamilies.size();
+
+
+	for (auto & x : gpu.queueFamilyProperties) {
+		
+	}
+
+	return true;
+}
+
+const std::string dataPath = "../data/";
+const std::string modelPath = dataPath + "Models/";
+const std::string texturePath = dataPath + "Textures/";
+const std::string shaderPath = dataPath + "Shader/" + APP_NAME;
 
 
 void reCreateSwapchain(vkw::Swapchain & swpachain, vkw::GraphicsPipeline & pipeline, vkw::RenderPass & renderPass, std::vector<vkw::FrameBuffer> frameBuffers, std::vector<vkw::CommandBuffer> commandBuffers) {
@@ -70,10 +81,23 @@ int main() {
 	instanceCreateInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	GlfwWindow::getWindowExtensions(instanceCreateInfo.desiredExtensions);
 
-	instanceCreateInfo.desiredExtensions = vkw::Instance::checkExtensions(instanceCreateInfo.desiredExtensions);
+	std::vector<const char*> missingExtensions;
+	instanceCreateInfo.desiredExtensions = vkw::Instance::checkExtensions(instanceCreateInfo.desiredExtensions, &missingExtensions);
+	VKW_assert(missingExtensions.size(), "Required Extensions missing");
 
 	vkw::Instance instance(instanceCreateInfo);
+
+
+	VKW_assert(instance.physicalDevices.size(), "failed to find GPUs with Vulkan support!");
+
+	std::vector<vkw::PhysicalDevice> candidates;
+	for (auto & x : instance.physicalDevices) {
+		if (deviceIsSuitable(x)) candidates.push_back(x);		
+	}
+
+
 	vkw::PhysicalDevice physicalDevice = instance.physicalDevices[0];
+
 	vkw::Surface surface(window, physicalDevice);
 
 	vkw::Device::CreateInfo deviceCreateInfo = {};
@@ -175,7 +199,7 @@ int main() {
 
 
 	// Shader Modules
-	vkw::ShaderModule vertShaderModule(shaderPath + "/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);   //Shader Module for vertex Shader
+	vkw::ShaderModule vertShaderModule(shaderPath + "/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);    //Shader Module for vertex Shader
 	vkw::ShaderModule fragShaderModule(shaderPath + "/shader.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);	// Shader Module for fragment Shader
 
 	/// Graphics Pipeline

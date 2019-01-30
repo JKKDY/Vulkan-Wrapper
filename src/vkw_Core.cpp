@@ -1,6 +1,6 @@
 #include "vkw_Core.h"
 
-#define DEFAULT_PRIO -1.0f
+#define INVALID_PRIORITY -1.0f
 
 namespace vkw {
 
@@ -131,11 +131,9 @@ namespace vkw {
 
 			physicalDevices_m.emplace_back(x, queueFamilyProperties, prop, features, memProp, queueFamTypes);
 		}
-
-
 	}
 
-	std::vector<const char*> Instance::checkExtensions(const std::vector<const char*> & desiredExtensions, std::vector<const char*>* outMissingExtensions)
+	std::vector<const char*> Instance::checkExtensions(const std::vector<const char*> & desiredExtensions, std::vector<const char*> * outMissingExtensions)
 	{
 		std::vector<const char*> existingDesiredExtensions;
 
@@ -202,12 +200,12 @@ namespace vkw {
 		createSurface(window, gpu);
 	}
 
-	VULKAN_WRAPER_API void Surface::createSurface(const CreateInfo & createInfo)
+	void Surface::createSurface(const CreateInfo & createInfo)
 	{
 		createSurface(createInfo.window, createInfo.gpu);
 	}
 
-	VULKAN_WRAPER_API void Surface::createSurface(const Window & window, const VkPhysicalDevice & gpu)
+	void Surface::createSurface(const Window & window, const VkPhysicalDevice & gpu)
 	{
 		window.createSurface(registry.instance, vkObject);
 
@@ -383,19 +381,20 @@ namespace vkw {
 	{
 		std::vector<VkDeviceQueueCreateInfo> createInfos;
 
+
+
 		auto addUserQueueCreateInfo = [&](QueueInfo & info, const PreSetQueueCreateInfo & userQueue) {
 			info.family = userQueue.family;
 			info.index = userQueue.index == std::numeric_limits<uint32_t>::max() ? 0 : userQueue.index;
 			info.priority = userQueue.priority;
 
 			auto it = std::find_if(createInfos.begin(), createInfos.end(), [&](const VkDeviceQueueCreateInfo & createInfo) {return createInfo.queueFamilyIndex == userQueue.family; });
-
 			if (it != createInfos.end()) { // if CreateInfo with userQueue.family found (i.e. duplicate)
 
 				int sizeDif = (info.index + 1) - it->queueCount;
 
 				if (sizeDif > 0) {	// if index is higher than queueCount (i.e more queues need to be created for index to be valid)
-					for (int i = 0; i < sizeDif - 1; i++) priorities[userQueue.family].push_back(DEFAULT_PRIO);
+					for (int i = 0; i < sizeDif - 1; i++) priorities[userQueue.family].push_back(INVALID_PRIORITY);
 					priorities[userQueue.family].push_back(userQueue.priority);
 				}
 				else {		// index is not higher than queue count (i.e. amount of queues is sufficient)
@@ -407,7 +406,7 @@ namespace vkw {
 			}
 			else { // if CreateInfo with userQueue.family not found (i.e. no duplicate)
 				for (int i = 0; i < info.index; i++) {
-					priorities[userQueue.family].push_back(DEFAULT_PRIO);
+					priorities[userQueue.family].push_back(INVALID_PRIORITY);
 				}
 				priorities[userQueue.family].push_back(userQueue.priority);
 				VkDeviceQueueCreateInfo queueCreateInfo = Init::deviceQueueCreateInfo();
@@ -419,14 +418,16 @@ namespace vkw {
 			}
 		};
 
+
 		auto addQueueCreateInfo = [&](QueueInfo & info, int family) {
 			info.family = family;
 			info.index = 0;
 			info.priority = 1.0f;
 
-			// if CreateInfo with family not found (i.e. no duplicate)
+			// if CreateInfo with this family not found (i.e. no duplicate)
 			auto it = std::find_if(createInfos.begin(), createInfos.end(), [&](const VkDeviceQueueCreateInfo & createInfo) {return createInfo.queueFamilyIndex == family; });
-			if (it == createInfos.end()) {
+			if (it == createInfos.end()) { 
+				// create new createInfo
 				priorities[family].push_back(info.priority);
 				VkDeviceQueueCreateInfo queueCreateInfo = Init::deviceQueueCreateInfo();
 				queueCreateInfo.queueFamilyIndex = info.family;
@@ -436,10 +437,12 @@ namespace vkw {
 				createInfos.push_back(queueCreateInfo);
 			}
 			else { 
+				// NOTE: test this, the [0] could cause a bug
 				priorities[family][0] = info.priority;
 				it->pQueuePriorities = priorities[family].data();
 			}
 		};
+
 
 		auto checkPresentSupport = [&](int ind) {
 			VkBool32 presentSupport = VK_TRUE * !surfaces.empty();
@@ -450,6 +453,7 @@ namespace vkw {
 			}
 			return presentSupport;
 		};
+
 
 		auto findPresentFamily = [&]() {
 			int index = -1;
@@ -466,29 +470,30 @@ namespace vkw {
 		};
 
 
-		// compute Queue
-		if (presetQueues.createCompute) {
-			if (presetQueues.compute.family != std::numeric_limits<uint32_t>::max()) 
-				addUserQueueCreateInfo(computeQueue_m, presetQueues.compute);
-			else {
-				auto onlyCompute = std::find_if(gpu.queueFamilyProperties.begin(), gpu.queueFamilyProperties.end(), [](const VkQueueFamilyProperties & prop) {return prop.queueFlags == VK_QUEUE_COMPUTE_BIT; });
 
-				if (onlyCompute != gpu.queueFamilyProperties.end())
+		// compute Queue
+		if (presetQueues.createCompute) { // if create computeQueue
+			if (presetQueues.compute.family != std::numeric_limits<uint32_t>::max()) // if use user specified Info
+				addUserQueueCreateInfo(computeQueue_m, presetQueues.compute);
+			else {	
+				auto onlyCompute = std::find_if(gpu.queueFamilyProperties.begin(), gpu.queueFamilyProperties.end(), [](const VkQueueFamilyProperties & prop) {return prop.queueFlags == VK_QUEUE_COMPUTE_BIT; }); // look for a compute only queueu
+
+				if (onlyCompute != gpu.queueFamilyProperties.end()) // if compute only queue found
 					addQueueCreateInfo(computeQueue_m, static_cast<uint32_t>(std::distance(gpu.queueFamilyProperties.begin(), onlyCompute)));
-				else if (!gpu.queueFamilyTypes.computeFamilies.empty()) 
-					addQueueCreateInfo(computeQueue_m, gpu.queueFamilyTypes.computeFamilies[0]);
+				else if (!gpu.queueFamilyTypes.computeFamilies.empty())  // if a compute queue exists
+					addQueueCreateInfo(computeQueue_m, gpu.queueFamilyTypes.computeFamilies[0]); // otheriwse no queue will be created
 			}
 		}
 
 		// Transfer Queue
-		if (presetQueues.createTransfer) {
-			if (presetQueues.transfer.family != std::numeric_limits<uint32_t>::max()) 
+		if (presetQueues.createTransfer) {  // if create transferQueue
+			if (presetQueues.transfer.family != std::numeric_limits<uint32_t>::max())  // if use user specified Info
 				addUserQueueCreateInfo(transferQueue_m, presetQueues.transfer);
 			else {
-				auto onlyTransfer = std::find_if(gpu.queueFamilyProperties.begin(), gpu.queueFamilyProperties.end(), [](const VkQueueFamilyProperties & prop) {return prop.queueFlags == VK_QUEUE_TRANSFER_BIT; });
+				auto onlyTransfer = std::find_if(gpu.queueFamilyProperties.begin(), gpu.queueFamilyProperties.end(), [](const VkQueueFamilyProperties & prop) {return prop.queueFlags == VK_QUEUE_TRANSFER_BIT; }); // look for transfer only queue
 				if (onlyTransfer != gpu.queueFamilyProperties.end()) addQueueCreateInfo(transferQueue_m, static_cast<int>(std::distance(gpu.queueFamilyProperties.begin(), onlyTransfer)));
-				else if (!gpu.queueFamilyTypes.transferFamilies.empty()) addQueueCreateInfo(transferQueue_m, gpu.queueFamilyTypes.transferFamilies[0]);
-				else if (!gpu.queueFamilyTypes.graphicFamilies.empty()) addQueueCreateInfo(transferQueue_m, gpu.queueFamilyTypes.graphicFamilies[0]);
+				else if (!gpu.queueFamilyTypes.transferFamilies.empty()) addQueueCreateInfo(transferQueue_m, gpu.queueFamilyTypes.transferFamilies[0]); // look for another tansferQueue 
+				else if (!gpu.queueFamilyTypes.graphicFamilies.empty()) addQueueCreateInfo(transferQueue_m, gpu.queueFamilyTypes.graphicFamilies[0]);	// if non found, no queue will be created
 				else if (!gpu.queueFamilyTypes.computeFamilies.empty()) addQueueCreateInfo(transferQueue_m, gpu.queueFamilyTypes.computeFamilies[0]);
 			}
 		}
@@ -573,7 +578,7 @@ namespace vkw {
 
 	std::vector<VkDeviceQueueCreateInfo> Device::setupQueueCreation(const CreateInfo & info, std::map<int, std::vector<float>> & priorities)
 	{	
-		std::vector<VkDeviceQueueCreateInfo> createInfos= setupPresetQueues(info.physicalDevice, info.preSetQueues, priorities, info.surfaces);
+		std::vector<VkDeviceQueueCreateInfo> createInfos = setupPresetQueues(info.physicalDevice, info.preSetQueues, priorities, info.surfaces);
 
 		for (auto & x : info.additionalQueues) {
 			auto it = std::find_if(createInfos.begin(), createInfos.end(), [&](const VkDeviceQueueCreateInfo & info)->bool { return x.family == info.queueFamilyIndex && x.flags == info.flags; });
@@ -582,16 +587,16 @@ namespace vkw {
 				int sizeDif = (x.index + 1) - it->queueCount;
 
 				if (sizeDif > 0) {	// if index is higher than queueCount (i.e more queues need to be created for index to be valid)
-					for (int i = 0; i < sizeDif - 1; i++) priorities[x.family].push_back(DEFAULT_PRIO);
+					for (int i = 0; i < sizeDif - 1; i++) priorities[x.family].push_back(INVALID_PRIORITY);
 					priorities[x.family].insert(priorities[x.family].end(), x.priorities.begin(), x.priorities.end());
 					it->pQueuePriorities = priorities[x.family].data();
 				}
 				else {
 					if (x.index + 1 + x.priorities.size() > priorities[x.family].size())
-						priorities[x.family].resize(x.index + 1 + x.priorities.size(), DEFAULT_PRIO);
+						priorities[x.family].resize(x.index + 1 + x.priorities.size(), INVALID_PRIORITY);
 
 					for (uint32_t i = 0; i < x.priorities.size(); i++) {
-						if (priorities[x.family][x.index + i] == DEFAULT_PRIO) {
+						if (priorities[x.family][x.index + i] == INVALID_PRIORITY) {
 							priorities[x.family][x.index + i] = x.priorities[i];
 						}
 					}
@@ -611,7 +616,7 @@ namespace vkw {
 			}
 		}
 
-		for (auto & x : priorities) for (float & p : x.second) if (p == DEFAULT_PRIO) p = 0.0; // get rid of DEFAULT_PRIO
+		for (auto & x : priorities) for (float & p : x.second) if (p == INVALID_PRIORITY) p = 0.0; // getting rid of DEFAULT_PRIO
 		return createInfos;
 	}
 	

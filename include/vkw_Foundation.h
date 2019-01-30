@@ -110,17 +110,17 @@ namespace vkw {
 			using Type = typename T::Type;
 		public:
 			Base();
-			VULKAN_WRAPER_API Base(const Base<T, RegType> & rhs);
-			VULKAN_WRAPER_API ~Base();
+			VULKAN_WRAPPER_API Base(const Base<T, RegType> & rhs);
+			VULKAN_WRAPPER_API ~Base();
 
 			DestructionControl destructionControl = VKW_DESTR_CONTRL_LAST_OBJECT_CALLS_DELETER;
 			bool passOnVkObject = true;
 
-			VULKAN_WRAPER_API virtual void destroyObject();
-			VULKAN_WRAPER_API Base<T, RegType> & operator = (const Base<T, RegType> & rhs);
+			VULKAN_WRAPPER_API virtual void destroyObject();
+			VULKAN_WRAPPER_API Base<T, RegType> & operator = (const Base<T, RegType> & rhs);
 			//VULKAN_WRAPER_API Base<T, RegType> & operator = (Base<T, RegType> && rhs);
-			VULKAN_WRAPER_API operator typename T::Type () const;
-			VULKAN_WRAPER_API Type * get() const; // make const
+			VULKAN_WRAPPER_API operator typename T::Type () const;
+			VULKAN_WRAPPER_API Type * get() const; // make const
 		protected:
 			RegType & registry;
 			VkPointer<T, RegType> vkObject;

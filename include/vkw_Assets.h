@@ -21,19 +21,19 @@ namespace vkw {
 			uint32_t desiredImageCount;
 		};
 
-		VULKAN_WRAPER_API Swapchain();
-		VULKAN_WRAPER_API Swapchain(Surface & surface);
-		VULKAN_WRAPER_API Swapchain(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API ~Swapchain();
+		VULKAN_WRAPPER_API Swapchain();
+		VULKAN_WRAPPER_API Swapchain(Surface & surface);
+		VULKAN_WRAPPER_API Swapchain(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API ~Swapchain();
 
-		VULKAN_WRAPER_API void createSwapchain(Surface & surface);
-		VULKAN_WRAPER_API void createSwapchain(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createSwapchain(Surface & surface);
+		VULKAN_WRAPPER_API void createSwapchain(const CreateInfo & createInfo);
 
-		VULKAN_WRAPER_API Swapchain & operator = (const Swapchain & rhs);
+		VULKAN_WRAPPER_API Swapchain & operator = (const Swapchain & rhs);
 
-		VULKAN_WRAPER_API uint32_t getNextImage(VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
-		VULKAN_WRAPER_API void presentImage(uint32_t imageIndex, std::vector<VkSemaphore> semaphores);
-		VULKAN_WRAPER_API VkImageView imageView(uint32_t i);
+		VULKAN_WRAPPER_API uint32_t getNextImage(VkSemaphore semaphore = VK_NULL_HANDLE, VkFence fence = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void presentImage(uint32_t imageIndex, std::vector<VkSemaphore> semaphores);
+		VULKAN_WRAPPER_API VkImageView imageView(uint32_t i);
 
 		const VkSurfaceFormatKHR & surfaceFormat;
 		const VkPresentModeKHR & presentMode;
@@ -62,13 +62,13 @@ namespace vkw {
 			VkSemaphoreCreateFlags flags = 0;
 		};
 
-		VULKAN_WRAPER_API Semaphore() = default;
-		VULKAN_WRAPER_API Semaphore(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API Semaphore(VkSemaphoreCreateFlags flags);
-		VULKAN_WRAPER_API ~Semaphore() = default;
+		VULKAN_WRAPPER_API Semaphore() = default;
+		VULKAN_WRAPPER_API Semaphore(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API Semaphore(VkSemaphoreCreateFlags flags);
+		VULKAN_WRAPPER_API ~Semaphore() = default;
 
-		VULKAN_WRAPER_API void createSemaphore(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createSemaphore(VkSemaphoreCreateFlags flags = 0);
+		VULKAN_WRAPPER_API void createSemaphore(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createSemaphore(VkSemaphoreCreateFlags flags = 0);
 
 		VkSemaphoreCreateFlags flags;
 	};
@@ -82,20 +82,20 @@ namespace vkw {
 			VkSemaphoreCreateFlags flags = 0;
 		};
 
-		VULKAN_WRAPER_API Fence() = default;
-		VULKAN_WRAPER_API Fence(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API Fence(VkFenceCreateFlags flags);
-		VULKAN_WRAPER_API ~Fence() = default;
+		VULKAN_WRAPPER_API Fence() = default;
+		VULKAN_WRAPPER_API Fence(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API Fence(VkFenceCreateFlags flags);
+		VULKAN_WRAPPER_API ~Fence() = default;
 
-		VULKAN_WRAPER_API void createFence(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createFence(VkFenceCreateFlags flags = 0);
+		VULKAN_WRAPPER_API void createFence(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createFence(VkFenceCreateFlags flags = 0);
 
 		VkFenceCreateFlags flags;
 
-		VULKAN_WRAPER_API void wait(bool reset = true, uint64_t timeOut = std::numeric_limits<uint64_t>::max());
-		VULKAN_WRAPER_API void reset();
+		VULKAN_WRAPPER_API void wait(bool reset = true, uint64_t timeOut = std::numeric_limits<uint64_t>::max());
+		VULKAN_WRAPPER_API void reset();
 
-		VULKAN_WRAPER_API static void reset(std::vector<Fence> & fences);
+		VULKAN_WRAPPER_API static void reset(std::vector<Fence> & fences);
 	};
 	
 
@@ -110,11 +110,11 @@ namespace vkw {
 			VkRenderPassCreateFlags flags = 0;
 		};
 
-		VULKAN_WRAPER_API RenderPass() = default;
-		VULKAN_WRAPER_API RenderPass(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API ~RenderPass() = default;
+		VULKAN_WRAPPER_API RenderPass() = default;
+		VULKAN_WRAPPER_API RenderPass(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API ~RenderPass() = default;
 
-		VULKAN_WRAPER_API void createRenderPass(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createRenderPass(const CreateInfo & createInfo);
 		
 		std::vector<VkSubpassDescription> subPassDescriptions;
 		std::vector<VkSubpassDependency> subPassDependencys;
@@ -133,19 +133,19 @@ namespace vkw {
 			VkShaderModuleCreateFlags flags = 0;
 		};
 
-		VULKAN_WRAPER_API ShaderModule() = default;
-		VULKAN_WRAPER_API ShaderModule(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API ShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags = 0);
-		VULKAN_WRAPER_API ~ShaderModule() = default;
+		VULKAN_WRAPPER_API ShaderModule() = default;
+		VULKAN_WRAPPER_API ShaderModule(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API ShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags = 0);
+		VULKAN_WRAPPER_API ~ShaderModule() = default;
 
-		VULKAN_WRAPER_API void createShaderModule(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API void createShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags = 0);
+		VULKAN_WRAPPER_API void createShaderModule(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags = 0);
 
 		const char * filename;
 		VkShaderStageFlagBits stage;
 		VkShaderModuleCreateFlags flags = 0;
 
-		VULKAN_WRAPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo = nullptr, const char * name = "main");
+		VULKAN_WRAPPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo = nullptr, const char * name = "main");
 	};
 
 
@@ -158,10 +158,10 @@ namespace vkw {
 			std::vector<VkPushConstantRange> pushConstants;
 		};
 
-		VULKAN_WRAPER_API PipelineLayout() = default;
-		VULKAN_WRAPER_API PipelineLayout(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API PipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
-		VULKAN_WRAPER_API ~PipelineLayout() = default;
+		VULKAN_WRAPPER_API PipelineLayout() = default;
+		VULKAN_WRAPPER_API PipelineLayout(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API PipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
+		VULKAN_WRAPPER_API ~PipelineLayout() = default;
 
 		void createPipelineLayout(const CreateInfo & createInfo);
 		void createPipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
@@ -182,16 +182,16 @@ namespace vkw {
 			VkPipelineCacheCreateFlags flags = 0;
 		};
 
-		VULKAN_WRAPER_API PipelineCache() = default;
-		VULKAN_WRAPER_API PipelineCache(const CreateInfo & createInfo);
-		VULKAN_WRAPER_API PipelineCache(size_t size, void* data, VkPipelineCacheCreateFlags flags = 0);
-		VULKAN_WRAPER_API ~PipelineCache() = default;
+		VULKAN_WRAPPER_API PipelineCache() = default;
+		VULKAN_WRAPPER_API PipelineCache(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API PipelineCache(size_t size, void* data, VkPipelineCacheCreateFlags flags = 0);
+		VULKAN_WRAPPER_API ~PipelineCache() = default;
 
 		VkPipelineCacheCreateFlags flags = 0;
 		size_t size;
 		void* data;
 
-		VULKAN_WRAPER_API void createPipelineCache();
+		VULKAN_WRAPPER_API void createPipelineCache();
 	};
 
 
@@ -225,8 +225,8 @@ namespace vkw {
 		};
 
 
-		VULKAN_WRAPER_API GraphicsPipeline() = default;
-		VULKAN_WRAPER_API GraphicsPipeline(CreateInfo & createInfo);
+		VULKAN_WRAPPER_API GraphicsPipeline() = default;
+		VULKAN_WRAPPER_API GraphicsPipeline(CreateInfo & createInfo);
 
 		std::vector<VkPipelineShaderStageCreateInfo>	shaderStages;
 		VkPipelineLayout								layout;
@@ -238,7 +238,7 @@ namespace vkw {
 		int32_t											basePipelineIndex = -1;
 		VkPipelineCache									cache = VK_NULL_HANDLE;
 
-		VULKAN_WRAPER_API void createPipeline(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createPipeline(const CreateInfo & createInfo);
 	};
 
 

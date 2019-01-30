@@ -4,8 +4,7 @@
 #if VKW_DEBUG >= 1
 #	define	VKW_PRINT(expr) do {std::cout << (expr) << std::endl;} while(0)
 #	define VKW_LOG(expr) do {std::cout << (expr) << " at line " << __LINE__ << " in file" << __FILE__ << std::endl;} while(0)
-#   define VKW_assert(Expr, Msg) \
-    vkw_Assert__(#Expr, Expr, __FILE__, __LINE__, Msg)
+#   define VKW_assert(Expr, Msg) vkw_Assert__(#Expr, Expr, __FILE__, __LINE__, Msg)
 
 static void vkw_Assert__(const char* expr_str, bool expr, const char* file, int line, const char* msg)
 {
@@ -36,11 +35,11 @@ namespace vkw {
 
 
 
-		VULKAN_WRAPER_API VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback);
+		VULKAN_WRAPPER_API VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback);
 
-		VULKAN_WRAPER_API void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator);
+		VULKAN_WRAPPER_API void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator);
 
-		VULKAN_WRAPER_API inline void errorCodeCheck(VkResult result, const char * msg = "");
+		VULKAN_WRAPPER_API inline void errorCodeCheck(VkResult result, const char * msg = "");
 	}
 
 

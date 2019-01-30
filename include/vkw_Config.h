@@ -21,9 +21,9 @@
 	#define VK_USE_PLATFORM_WIN32_KHR 1
 
 	#ifdef VULKAN_WRAPER_EXPORT  
-		#define VULKAN_WRAPER_API __declspec(dllexport)   
+		#define VULKAN_WRAPPER_API __declspec(dllexport)   
 	#else  
-		#define VULKAN_WRAPER_API __declspec(dllimport)   
+		#define VULKAN_WRAPPER_API __declspec(dllimport)   
 	#endif
 #elif defined( __linux )
 	#define VK_USE_PLATFORM_XCB_KHR 1
