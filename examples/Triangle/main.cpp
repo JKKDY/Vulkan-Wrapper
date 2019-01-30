@@ -83,7 +83,7 @@ int main() {
 
 	std::vector<const char*> missingExtensions;
 	instanceCreateInfo.desiredExtensions = vkw::Instance::checkExtensions(instanceCreateInfo.desiredExtensions, &missingExtensions);
-	VKW_assert(missingExtensions.size(), "Required Extensions missing");
+	VKW_assert(!missingExtensions.size(), "Required Extensions missing");
 
 	vkw::Instance instance(instanceCreateInfo);
 
@@ -98,7 +98,7 @@ int main() {
 
 	vkw::PhysicalDevice physicalDevice = instance.physicalDevices[0];
 
-	vkw::Surface surface(window, physicalDevice);
+	vkw::Surface surface(window);
 
 	vkw::Device::CreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.features.multiViewport = VK_TRUE;

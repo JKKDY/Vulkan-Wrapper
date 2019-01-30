@@ -28,10 +28,14 @@ namespace vkw {
 			instance_m = obj->getPointer();
 			return obj;
 		}
-		template<> VkObject<VkwDevice>* RegistryManager::getNew() { return new VkObject<VkwDevice>(deviceDeleter, []() {}); }
+
+		template<> VkObject<VkwDevice>* RegistryManager::getNew() { 
+			return new VkObject<VkwDevice>(deviceDeleter, [](){}); 
+		}
+
 		template<> VkObject<VkwSurfaceKHR>* RegistryManager::getNew() { 
 			if (!surfaceDeleter) surfaceDeleter = [=](VkSurfaceKHR obj) {vkDestroySurfaceKHR(instance, obj, nullptr); };
-			return new VkObject<VkwSurfaceKHR>(surfaceDeleter, []() {}); 
+			return new VkObject<VkwSurfaceKHR>(surfaceDeleter, [](){}); 
 		}
 
 		Registry & RegistryManager::getRegistry()
@@ -44,10 +48,9 @@ namespace vkw {
 			const DeviceQueue &	transfer,
 			const DeviceQueue &	present,
 			const DeviceQueue &	compute,
-			const PhysicalDevice & gpu,
-			const std::vector<Surface> & surf)
+			const PhysicalDevice & gpu)
 		{
-			Registry * reg = new Registry(*instance_m, dev, graphics, transfer, present, compute, gpu, surf);
+			Registry * reg = new Registry(*instance_m, dev, graphics, transfer, present, compute, gpu);
 
 			registrys.push_back(reg);
 
@@ -81,8 +84,7 @@ namespace vkw {
 			const DeviceQueue & transfer,
 			const DeviceQueue & present,
 			const DeviceQueue & compute,
-			const PhysicalDevice & gpu,
-			const std::vector<Surface> & surf):
+			const PhysicalDevice & gpu):
 			instance(instance),
 			physicalDevice(physicalDevice_m),
 			device(device_m),
@@ -93,14 +95,12 @@ namespace vkw {
 			transferQueue(transferQueue_m),
 			presentQueue(presentQueue_m),
 			computeQueue(computeQueue_m),
-			surfaces(surfaces_m),
 			device_m(dev),
 			physicalDevice_m(gpu),
 			graphicsQueue_m(graphics),
 			transferQueue_m(transfer),
 			presentQueue_m(present),
-			computeQueue_m(compute),
-			surfaces_m(surf)
+			computeQueue_m(compute)
 		{
 			fenceDeleter = setDeleterFunction	<VkFence>(vkDestroyFence);
 			semaphoreDeleter = setDeleterFunction	<VkSemaphore>(vkDestroySemaphore);

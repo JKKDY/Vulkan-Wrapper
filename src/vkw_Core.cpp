@@ -183,68 +183,83 @@ namespace vkw {
 	
 
 	/// Surface
-	Surface::Surface():
-		availableFomats(availableFomats_m),
-		availablePresentModes(availablePresentModes_m),
-		capabilities(capabilities_m),
-		extent(extent_m)
-	{}
-
-	Surface::Surface(const CreateInfo & createInfo) : Surface()
+	Surface::Surface(const CreateInfo & createInfo)
 	{
 		createSurface(createInfo);
 	}
 
-	Surface::Surface(const vkw::Window & window, const VkPhysicalDevice & gpu) : Surface()
+	Surface::Surface(const vkw::Window & window) 
 	{
-		createSurface(window, gpu);
+		createSurface(window);
 	}
 
 	void Surface::createSurface(const CreateInfo & createInfo)
 	{
-		createSurface(createInfo.window, createInfo.gpu);
+		createSurface(createInfo.window);
 	}
 
-	void Surface::createSurface(const Window & window, const VkPhysicalDevice & gpu)
+	void Surface::createSurface(const Window & window)
 	{
+		this->window = &window;
 		window.createSurface(registry.instance, vkObject);
+	}
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *vkObject, &capabilities_m); // get the capabilities of the surface  //T001
+	std::vector<VkSurfaceFormatKHR> Surface::availableFomats(VkPhysicalDevice gpu)const
+	{
+		std::vector<VkSurfaceFormatKHR> formats;
 
-		if (capabilities_m.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-			extent_m = capabilities_m.currentExtent;
+		uint32_t formatCount = 0;			
+		vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, nullptr);
+		formats.resize(formatCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, formats.data());
+
+		return formats;
+	}
+
+	std::vector<VkPresentModeKHR> Surface::availablePresentModes(VkPhysicalDevice gpu)const
+	{
+		std::vector<VkPresentModeKHR> presentModes;
+
+		uint32_t presentModeCount = 0;			
+		vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, nullptr);
+		presentModes.resize(presentModeCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, presentModes.data());
+
+		return presentModes;
+	}
+
+	VkSurfaceCapabilitiesKHR Surface::capabilities(VkPhysicalDevice gpu)const
+	{
+		VkSurfaceCapabilitiesKHR cpabilities;
+
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *vkObject, &cpabilities);
+
+		return cpabilities;
+	}
+
+	VkExtent2D Surface::extent(VkPhysicalDevice gpu) const
+	{
+		VkExtent2D extent;
+		VkSurfaceCapabilitiesKHR cap = capabilities(gpu);
+		
+
+		if (cap.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+			extent = cap.currentExtent;
 		}
 		else {
 			int height, width;
 
-			window.getWindowSize(&height, &width);
+			window->getWindowSize(&height, &width);
 
-			extent_m = { static_cast<uint32_t>(width),  static_cast<uint32_t>(height) };
+			extent = { static_cast<uint32_t>(width),  static_cast<uint32_t>(height) };
 
-			extent_m.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, extent.width));
-			extent_m.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, extent.height));
+			extent.width = std::max(cap.minImageExtent.width, std::min(cap.maxImageExtent.width, extent.width));
+			extent.height = std::max(cap.minImageExtent.height, std::min(cap.maxImageExtent.height, extent.height));
 		}
 
-		uint32_t formatCount = 0;					// enumerate formats
-		vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, nullptr);	//T001
-		availableFomats_m.resize(formatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, availableFomats_m.data());//T001
-
-		uint32_t presentModeCount = 0;				// enumerate present modes
-		vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, nullptr);//T001
-		availablePresentModes_m.resize(presentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, availablePresentModes_m.data());//T001
+		return extent;
 	}
 
-	Surface & Surface::operator=(const Surface & rhs)
-	{
-		availableFomats_m = rhs.availableFomats_m;
-		availablePresentModes_m = rhs.availablePresentModes_m;
-		capabilities_m = rhs.capabilities_m;
-		extent_m = rhs.extent_m;
-
-		return *this;
-	}
 
 
 
@@ -338,19 +353,7 @@ namespace vkw {
 			presentQueue.family
 		};
 
-		std::vector<impl::Surface> surf(createInfo.surfaces.size());
-		for (Surface & x : createInfo.surfaces) {
-			impl::Surface s = {
-				x,
-				x.availableFomats,
-				x.availablePresentModes,
-				x.capabilities,
-				x.extent
-			};
-			surf.push_back(s);
-		}
-
-		deviceRegistry = registry.createNewRegistry(*vkObject, graphics, transfer, present, compute, gpu, surf);
+		deviceRegistry = registry.createNewRegistry(*vkObject, graphics, transfer, present, compute, gpu);
 	}
 
 	std::vector<const char*> Device::setupExtensions(const std::vector<const char*> & extensions)
@@ -377,7 +380,7 @@ namespace vkw {
 		return desiredFeatures;
 	}	
 
-	std::vector<VkDeviceQueueCreateInfo> Device::setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<std::reference_wrapper<Surface>> & surfaces)
+	std::vector<VkDeviceQueueCreateInfo> Device::setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<VkSurfaceKHR> & surfaces)
 	{
 		std::vector<VkDeviceQueueCreateInfo> createInfos;
 
@@ -446,7 +449,7 @@ namespace vkw {
 
 		auto checkPresentSupport = [&](int ind) {
 			VkBool32 presentSupport = VK_TRUE * !surfaces.empty();
-			for (Surface & x : surfaces) {
+			for (auto & x : surfaces) {
 				VkBool32 p = VK_FALSE;
 				vkGetPhysicalDeviceSurfaceSupportKHR(gpu.physicalDevice, ind, x, &p);
 				presentSupport *= p;
@@ -503,7 +506,7 @@ namespace vkw {
 			if (presetQueues.graphics.family == std::numeric_limits<uint32_t>::max() && presetQueues.present.family == std::numeric_limits<uint32_t>::max()) { // and if do not use user input
 				int presentIndex = -1;
 				for (int i : gpu.queueFamilyTypes.graphicFamilies) {	 // look for family with graphics and present support
-					VkBool32 presentSupport = checkPresentSupport(i) && !registry.surfaces.empty();
+					VkBool32 presentSupport = checkPresentSupport(i);
 
 					if (presentSupport) {
 						presentIndex = i;
@@ -515,7 +518,7 @@ namespace vkw {
 					addQueueCreateInfo(graphicsQueue_m, presentIndex);
 					addQueueCreateInfo(presentQueue_m, presentIndex);
 				}
-				else { // if not found use seperate families
+				else { // if not found use seperate families for graphics and present
 					addQueueCreateInfo(graphicsQueue_m, gpu.queueFamilyTypes.graphicFamilies[0]);
 
 					presentIndex = findPresentFamily();
@@ -621,6 +624,4 @@ namespace vkw {
 	}
 	
 }
-
-
 

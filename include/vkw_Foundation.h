@@ -179,8 +179,7 @@ namespace vkw {
 				const DeviceQueue &	transfer,
 				const DeviceQueue &	present,
 				const DeviceQueue &	compute,
-				const PhysicalDevice & gpu, 
-				const std::vector<Surface> & surf);
+				const PhysicalDevice & gpu);
 			~Registry() = default;
 
 			template<typename T> VkObject<T> * getNew();
@@ -194,8 +193,6 @@ namespace vkw {
 			const DeviceQueue	 & presentQueue;
 			const DeviceQueue	 & computeQueue;
 
-			const std::vector<Surface>	& surfaces;
-
 			VkReference<VkCommandPool> transferCommandPool;
 			VkReference<VkCommandPool> graphicsCommandPool;
 			VkReference<VkCommandPool> computeCommandPool;
@@ -208,8 +205,6 @@ namespace vkw {
 			DeviceQueue			transferQueue_m;
 			DeviceQueue			presentQueue_m;
 			DeviceQueue			computeQueue_m;
-
-			std::vector<Surface> surfaces_m;
 
 			VkCommandPool	  * transferCommandPool_m;
 			VkCommandPool	  * graphicsCommandPool_m;
@@ -259,8 +254,7 @@ namespace vkw {
 				const DeviceQueue &	transfer,
 				const DeviceQueue &	present,
 				const DeviceQueue &	compute,
-				const PhysicalDevice & gpu,
-				const std::vector<Surface> & surf);
+				const PhysicalDevice & gpu);
 
 			VkReference<VkInstance>		  instance;
 			const std::vector<Surface>	& surfaces;

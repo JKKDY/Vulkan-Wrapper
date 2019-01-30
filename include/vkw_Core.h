@@ -84,27 +84,21 @@ namespace vkw {
 	public:
 		struct CreateInfo {
 			const Window & window; 
-			const VkPhysicalDevice & gpu;
 		};
 
-		VULKAN_WRAPPER_API Surface();
+		VULKAN_WRAPPER_API Surface() = default;
 		VULKAN_WRAPPER_API Surface(const CreateInfo & createInfo);
-		VULKAN_WRAPPER_API Surface(const Window & window, const VkPhysicalDevice & gpu);
+		VULKAN_WRAPPER_API Surface(const Window & window);
 
 		VULKAN_WRAPPER_API void createSurface(const CreateInfo & createInfo);
-		VULKAN_WRAPPER_API void createSurface(const Window & window, const VkPhysicalDevice & gpu);
+		VULKAN_WRAPPER_API void createSurface(const Window & window);
 
-		VULKAN_WRAPPER_API Surface & operator = (const Surface & rhs);
-
-		const std::vector<VkSurfaceFormatKHR> & availableFomats;
-		const std::vector<VkPresentModeKHR> & availablePresentModes;
-		const VkSurfaceCapabilitiesKHR & capabilities;
-		const VkExtent2D & extent;
+		std::vector<VkSurfaceFormatKHR> availableFomats(VkPhysicalDevice gpu) const;
+		std::vector<VkPresentModeKHR> availablePresentModes(VkPhysicalDevice gpu) const;
+		VkSurfaceCapabilitiesKHR capabilities(VkPhysicalDevice gpu) const;
+		VkExtent2D extent(VkPhysicalDevice gpu) const;
 	private:
-		std::vector<VkSurfaceFormatKHR> availableFomats_m;
-		std::vector<VkPresentModeKHR> availablePresentModes_m;
-		VkSurfaceCapabilitiesKHR capabilities_m;
-		VkExtent2D extent_m;
+		const Window * window;
 	};
 
 
@@ -153,7 +147,7 @@ namespace vkw {
 			std::vector<AdditionalQueueCreateInfo> additionalQueues;
 			VkPhysicalDeviceFeatures features;
 			std::vector<const char*> extensions;
-			std::vector<std::reference_wrapper<Surface>> surfaces;
+			std::vector<VkSurfaceKHR> surfaces;
 		};
 
 		VULKAN_WRAPPER_API Device();
@@ -177,7 +171,7 @@ namespace vkw {
 		void createRegistry(const CreateInfo & createInfo);
 		std::vector<const char*> setupExtensions(const std::vector<const char*> & extensions);
 		VkPhysicalDeviceFeatures setupFeatures(const VkPhysicalDeviceFeatures & deviceFeatures);
-		std::vector<VkDeviceQueueCreateInfo> setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<std::reference_wrapper<Surface>> & surfaces);
+		std::vector<VkDeviceQueueCreateInfo> setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<VkSurfaceKHR> & surfaces);
 		std::vector<VkDeviceQueueCreateInfo> setupQueueCreation(const CreateInfo & info, std::map<int, std::vector<float>> & priorities);
 	};
 }

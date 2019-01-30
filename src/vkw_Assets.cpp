@@ -28,13 +28,15 @@ namespace vkw {
 	};
 
 	void Swapchain::createSwapchain(Surface & surface) {
-		surfaceFormat_m = chooseSwapchainSurfaceFormat(surface.availableFomats);
-		presentMode_m = chooseSwapchainPresentMode(surface.availablePresentModes);
-		extent_m = surface.extent; //chooseSwapExtent(surface.capabilities, surface.window);			// choose size of swapchain images
+		surfaceFormat_m = chooseSwapchainSurfaceFormat(surface.availableFomats(registry.physicalDevice));
+		presentMode_m = chooseSwapchainPresentMode(surface.availablePresentModes(registry.physicalDevice));
+		extent_m = surface.extent(registry.physicalDevice); //chooseSwapExtent(surface.capabilities, surface.window);			// choose size of swapchain images
 
-		imageCount_m = surface.capabilities.minImageCount + 1;		// choose how many images should be used in the swapchain
-		if (surface.capabilities.maxImageCount > 0 && imageCount > surface.capabilities.maxImageCount) {
-			imageCount_m = surface.capabilities.maxImageCount;
+		VkSurfaceCapabilitiesKHR capabilities = surface.capabilities(registry.physicalDevice);
+
+		imageCount_m = capabilities.minImageCount + 1;		// choose how many images should be used in the swapchain
+		if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount) {
+			imageCount_m = capabilities.maxImageCount;
 		}
 
 		VkSwapchainCreateInfoKHR createInfo = Init::swapchainCreateInfoKHR();
@@ -46,7 +48,7 @@ namespace vkw {
 		createInfo.imageExtent = extent_m;
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		createInfo.preTransform = surface.capabilities.currentTransform;
+		createInfo.preTransform = capabilities.currentTransform;
 		createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		createInfo.presentMode = presentMode_m;
 		createInfo.clipped = VK_TRUE;
