@@ -114,6 +114,9 @@
     <PostBuildEvent />
     <PreBuildEvent />
     <PreBuildEvent />
+    <PreBuildEvent>
+      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -131,6 +134,9 @@
     </Link>
     <PostBuildEvent />
     <PostBuildEvent />
+    <PreBuildEvent>
+      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

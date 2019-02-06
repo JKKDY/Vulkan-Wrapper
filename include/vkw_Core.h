@@ -93,11 +93,14 @@ namespace vkw {
 		VULKAN_WRAPPER_API void createSurface(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API void createSurface(const Window & window);
 
-		VULKAN_WRAPPER_API std::vector<VkSurfaceFormatKHR> fromats(VkPhysicalDevice gpu) const;
+		VULKAN_WRAPPER_API std::vector<VkSurfaceFormatKHR> formats(VkPhysicalDevice gpu) const;
 		VULKAN_WRAPPER_API std::vector<VkPresentModeKHR> presentModes(VkPhysicalDevice gpu) const;
 		VULKAN_WRAPPER_API VkSurfaceCapabilitiesKHR capabilities(VkPhysicalDevice gpu) const;
 		VULKAN_WRAPPER_API VkExtent2D extent(VkPhysicalDevice gpu) const;
 	private: 
+		mutable std::map<VkPhysicalDevice, std::vector<VkSurfaceFormatKHR>> queriedFormats;
+		mutable std::map<VkPhysicalDevice, std::vector<VkPresentModeKHR>> queriedPresentModes;
+		mutable std::map<VkPhysicalDevice, VkSurfaceCapabilitiesKHR> queriedCapabilities;
 		const Window * window;
 	};
 
@@ -106,7 +109,7 @@ namespace vkw {
 
 	class Device : public impl::CoreEntity<impl::VkwDevice>{
 	public:
-		// add globalSystemPrority 
+		// TODO: add globalSystemPrority 
 		struct AdditionalQueueCreateInfo {
 			uint32_t family = std::numeric_limits<uint32_t>::max();
 			uint32_t index = std::numeric_limits<uint32_t>::max();

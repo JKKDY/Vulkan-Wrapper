@@ -204,60 +204,73 @@ namespace vkw {
 		window.createSurface(registry.instance, vkObject);
 	}
 
-	std::vector<VkSurfaceFormatKHR> Surface::fromats(VkPhysicalDevice gpu)const
-	{
-		std::vector<VkSurfaceFormatKHR> formats;
+	std::vector<VkSurfaceFormatKHR> Surface::formats(VkPhysicalDevice gpu)const
+	{	
+		if (queriedFormats.count(gpu) != 0) return queriedFormats.at(gpu);
+		else {
+			std::vector<VkSurfaceFormatKHR> availableFormats;
 
-		uint32_t formatCount = 0;			
-		vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, nullptr);
-		formats.resize(formatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, formats.data());
+			uint32_t formatCount = 0;
+			vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, nullptr);
+			availableFormats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, availableFormats.data());
 
-		return formats;
+			queriedFormats[gpu] = availableFormats;
+
+			return availableFormats;
+		}
 	}
 
 	std::vector<VkPresentModeKHR> Surface::presentModes(VkPhysicalDevice gpu)const
 	{
-		std::vector<VkPresentModeKHR> presentModes;
+		if (queriedPresentModes.count(gpu) != 0) return queriedPresentModes.at(gpu);
+		else {
+			std::vector<VkPresentModeKHR> availablePresentModes;
 
-		uint32_t presentModeCount = 0;			
-		vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, nullptr);
-		presentModes.resize(presentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, presentModes.data());
+			uint32_t presentModeCount = 0;
+			vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, nullptr);
+			availablePresentModes.resize(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, availablePresentModes.data());
 
-		return presentModes;
+			queriedPresentModes[gpu] = availablePresentModes;
+
+			return availablePresentModes;
+		}
 	}
 
-	VkSurfaceCapabilitiesKHR Surface::capabilities(VkPhysicalDevice gpu)const
+	VkSurfaceCapabilitiesKHR Surface::capabilities(VkPhysicalDevice gpu) const
 	{
-		VkSurfaceCapabilitiesKHR cpabilities;
+		if (queriedCapabilities.count(gpu) != 0) return queriedCapabilities.at(gpu);
+		else {
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *vkObject, &cpabilities);
+			VkSurfaceCapabilitiesKHR availableCapabilities;
+			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *vkObject, &availableCapabilities);
 
-		return cpabilities;
+			queriedCapabilities[gpu] = availableCapabilities;
+
+			return availableCapabilities;
+		}
 	}
 
 	VkExtent2D Surface::extent(VkPhysicalDevice gpu) const
 	{
-		VkExtent2D extent;
-		VkSurfaceCapabilitiesKHR cap = capabilities(gpu);
-		
+		VkExtent2D currentExtent;
+		VkSurfaceCapabilitiesKHR cap;
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *vkObject, &cap);
 
-		if (cap.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-			extent = cap.currentExtent;
-		}
+		if (cap.currentExtent.width != std::numeric_limits<uint32_t>::max()) currentExtent = cap.currentExtent;
 		else {
 			int height, width;
 
 			window->getWindowSize(&height, &width);
 
-			extent = { static_cast<uint32_t>(width),  static_cast<uint32_t>(height) };
+			currentExtent = { static_cast<uint32_t>(width),  static_cast<uint32_t>(height) };
 
-			extent.width = std::max(cap.minImageExtent.width, std::min(cap.maxImageExtent.width, extent.width));
-			extent.height = std::max(cap.minImageExtent.height, std::min(cap.maxImageExtent.height, extent.height));
+			currentExtent.width = std::max(cap.minImageExtent.width, std::min(cap.maxImageExtent.width, currentExtent.width));
+			currentExtent.height = std::max(cap.minImageExtent.height, std::min(cap.maxImageExtent.height, currentExtent.height));
 		}
 
-		return extent;
+		return currentExtent;
 	}
 
 

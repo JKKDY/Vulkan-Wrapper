@@ -97,7 +97,7 @@ int main() {
 		}
 		familiesFound = x.queueFamilyTypes.graphicFamilies.size() * x.queueFamilyTypes.transferFamilies.size();
 		
-		if (familiesFound * surface.fromats(x).size() * surface.presentModes(x).size()) suitableDevices.push_back(x);
+		if (familiesFound * surface.formats(x).size() * surface.presentModes(x).size()) suitableDevices.push_back(x);
 	}
 
 	//select best device
@@ -109,7 +109,7 @@ int main() {
 		score += x.properties.limits.maxImageDimension2D;  //affects Image Quaity
 
 		for (int index : x.queueFamilyTypes.transferFamilies) {
-			if (x.queueFamilyProperties[index].queueFlags == VK_QUEUE_TRANSFER_BIT) {
+			if (x.queueFamilyProperties.at(index).queueFlags == VK_QUEUE_TRANSFER_BIT) {
 				score += 500;
 				break;
 			}
