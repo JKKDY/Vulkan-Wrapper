@@ -93,11 +93,11 @@ namespace vkw {
 		VULKAN_WRAPPER_API void createSurface(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API void createSurface(const Window & window);
 
-		std::vector<VkSurfaceFormatKHR> availableFomats(VkPhysicalDevice gpu) const;
-		std::vector<VkPresentModeKHR> availablePresentModes(VkPhysicalDevice gpu) const;
-		VkSurfaceCapabilitiesKHR capabilities(VkPhysicalDevice gpu) const;
-		VkExtent2D extent(VkPhysicalDevice gpu) const;
-	private:
+		VULKAN_WRAPPER_API std::vector<VkSurfaceFormatKHR> fromats(VkPhysicalDevice gpu) const;
+		VULKAN_WRAPPER_API std::vector<VkPresentModeKHR> presentModes(VkPhysicalDevice gpu) const;
+		VULKAN_WRAPPER_API VkSurfaceCapabilitiesKHR capabilities(VkPhysicalDevice gpu) const;
+		VULKAN_WRAPPER_API VkExtent2D extent(VkPhysicalDevice gpu) const;
+	private: 
 		const Window * window;
 	};
 

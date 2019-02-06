@@ -20,8 +20,7 @@ namespace vkw {
 			deviceDeleter([=](VkDevice obj) { vkDestroyDevice(obj, nullptr); }),
 			instance(instance_m),
 			surfaces(surfaces_m)
-		{
-		}
+		{}
 
 		template<> VkObject<VkwInstance>* RegistryManager::getNew() { 
 			VkObject<VkwInstance> * obj = new VkObject<VkwInstance>(instanceDeleter, [](){});
@@ -382,7 +381,6 @@ namespace vkw {
 
 	/*	template<typename T, typename RegType> Base<T, RegType>& Base<T, RegType>::operator=(Base<T, RegType>&& rhs)
 		{
-			std::cout << "poop";
 			passOnVkObject = true;
 			DestructionControl destructionControl = VKW_DESTR_CONTRL_LAST_OBJECT_CALLS_DELETER;
 
@@ -438,6 +436,7 @@ namespace vkw {
 		template class VkObject<VkwGraphicsCommandPool>;
 		template class VkObject<VkwTransferCommandPool>;
 		template class VkObject<VkwComputeCommandPool>;
+
 
 		template class VkPointer<VkwInstance, RegistryManager>;
 		template class VkPointer<VkwDevice, RegistryManager>;

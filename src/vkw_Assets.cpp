@@ -28,8 +28,8 @@ namespace vkw {
 	};
 
 	void Swapchain::createSwapchain(Surface & surface) {
-		surfaceFormat_m = chooseSwapchainSurfaceFormat(surface.availableFomats(registry.physicalDevice));
-		presentMode_m = chooseSwapchainPresentMode(surface.availablePresentModes(registry.physicalDevice));
+		surfaceFormat_m = chooseSwapchainSurfaceFormat(surface.fromats(registry.physicalDevice));
+		presentMode_m = chooseSwapchainPresentMode(surface.presentModes(registry.physicalDevice));
 		extent_m = surface.extent(registry.physicalDevice); //chooseSwapExtent(surface.capabilities, surface.window);			// choose size of swapchain images
 
 		VkSurfaceCapabilitiesKHR capabilities = surface.capabilities(registry.physicalDevice);

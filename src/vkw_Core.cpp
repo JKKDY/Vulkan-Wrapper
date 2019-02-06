@@ -204,7 +204,7 @@ namespace vkw {
 		window.createSurface(registry.instance, vkObject);
 	}
 
-	std::vector<VkSurfaceFormatKHR> Surface::availableFomats(VkPhysicalDevice gpu)const
+	std::vector<VkSurfaceFormatKHR> Surface::fromats(VkPhysicalDevice gpu)const
 	{
 		std::vector<VkSurfaceFormatKHR> formats;
 
@@ -216,7 +216,7 @@ namespace vkw {
 		return formats;
 	}
 
-	std::vector<VkPresentModeKHR> Surface::availablePresentModes(VkPhysicalDevice gpu)const
+	std::vector<VkPresentModeKHR> Surface::presentModes(VkPhysicalDevice gpu)const
 	{
 		std::vector<VkPresentModeKHR> presentModes;
 
@@ -383,8 +383,6 @@ namespace vkw {
 	std::vector<VkDeviceQueueCreateInfo> Device::setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<VkSurfaceKHR> & surfaces)
 	{
 		std::vector<VkDeviceQueueCreateInfo> createInfos;
-
-
 
 		auto addUserQueueCreateInfo = [&](QueueInfo & info, const PreSetQueueCreateInfo & userQueue) {
 			info.family = userQueue.family;
