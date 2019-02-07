@@ -52,31 +52,33 @@ namespace vkw {
 	};
 
 
-
-
 	class Instance : public impl::CoreEntity<impl::VkwInstance>{
 	public:
 		struct CreateInfo {
 			std::vector<const char*> desiredExtensions;
 			std::vector<const char*> desiredLayers;
-			const char* applicationName;
-			uint32_t applicationVersion;
+			std::vector<VkDebugUtilsMessengerCreateInfoEXT> debugMessengerInfos;
+			VkApplicationInfo appInfo;
 		};
 
 		VULKAN_WRAPPER_API Instance();
 		VULKAN_WRAPPER_API Instance(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API ~Instance();
 
+		VULKAN_WRAPPER_API void createInstance(const CreateInfo & createInfo);
+
 		const std::vector<PhysicalDevice> & physicalDevices;
 
-		VULKAN_WRAPPER_API void createInstance(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API VkResult createDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT & pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT &pCallback, bool automaticDestruction = true);
+		VULKAN_WRAPPER_API void destroyDebugUtilsMessengerEXT(VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator);
 
 		static VULKAN_WRAPPER_API std::vector<const char*> checkExtensions(const std::vector<const char*> & desiredExtensions, std::vector<const char*> * outMissingExtensions = nullptr);
 		static VULKAN_WRAPPER_API std::vector<const char*> checkLayers(const std::vector<const char*> & desiredLayers, std::vector<const char*> * outMissingLayers = nullptr);
 	private:
 		std::vector<PhysicalDevice> physicalDevices_m;
-	};
+		std::vector<VkDebugUtilsMessengerEXT> debugMessengers;
 
+	};
 
 
 

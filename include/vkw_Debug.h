@@ -25,20 +25,6 @@ static void vkw_Assert__(const char* expr_str, bool expr, const char* file, int 
 
 namespace vkw {
 	namespace Debug {
-		void setupDebugInstanceExtensions(std::vector<const char *> & extensions);
-		
-		void setupDebugInstanceLayers(std::vector<const char *> & extensions);
-
-		void setupDebug(VkInstance instance);
-
-		void destroyDebug(VkInstance instance);
-
-
-
-		VULKAN_WRAPPER_API VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback);
-
-		VULKAN_WRAPPER_API void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator);
-
 		VULKAN_WRAPPER_API inline void errorCodeCheck(VkResult result, const char * msg = "");
 	}
 

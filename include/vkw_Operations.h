@@ -1,6 +1,7 @@
 #pragma once
 #include "vkw_Include.h"
 
+#define VKW_DEFAULT_QUEUE -1
 
 namespace vkw {
 	class CommandBuffer;
@@ -57,8 +58,6 @@ namespace vkw {
 		VULKAN_WRAPPER_API void resetCommandBuffer(VkCommandBufferResetFlags flags = 0);
 		VULKAN_WRAPPER_API void submitCommandBuffer(VkQueue queue, std::vector<VkSemaphore> semaphore = {}, VkFence fence = VK_NULL_HANDLE);
 	};
-
-#define VKW_DEFAULT_QUEUE -1
 
 	class TransferCommandPool : public impl::Entity<impl::VkwTransferCommandPool> {
 	public:

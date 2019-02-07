@@ -66,33 +66,24 @@ namespace vkw {
 
 	Instance::~Instance()
 	{
-		vkw::Debug::destroyDebug(*this);
+		for (auto x : debugMessengers) destroyDebugUtilsMessengerEXT(x, nullptr);
 	}
 
 	void Instance::createInstance(const CreateInfo & createInfo)
 	{
-		VkApplicationInfo appInfo = Init::applicationInfo();		// app Info: just some stuff about the aplication
-		appInfo.pApplicationName = createInfo.applicationName;
-		appInfo.applicationVersion = createInfo.applicationVersion;
-		appInfo.pEngineName = "";
-		appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
-		appInfo.apiVersion = VK_API_VERSION_1_0;
-
-		std::vector<const char *> desiredExtensions = createInfo.desiredExtensions;
-		std::vector<const char *> desiredLayers = createInfo.desiredLayers;
-
-		Debug::setupDebugInstanceExtensions(desiredExtensions);
-		Debug::setupDebugInstanceLayers(desiredLayers);
-
 		VkInstanceCreateInfo instanceCreateInfo = Init::instanceCreateInfo();   // instance create info: app info, extensions and layers required
-		instanceCreateInfo.pApplicationInfo = &appInfo;
-		instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(desiredLayers.size());
-		instanceCreateInfo.ppEnabledLayerNames = desiredLayers.data();
-		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(desiredExtensions.size());
-		instanceCreateInfo.ppEnabledExtensionNames = desiredExtensions.data();
+		instanceCreateInfo.pApplicationInfo = &createInfo.appInfo;
+		instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(createInfo.desiredLayers.size());
+		instanceCreateInfo.ppEnabledLayerNames = createInfo.desiredLayers.data();
+		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(createInfo.desiredExtensions.size());
+		instanceCreateInfo.ppEnabledExtensionNames = createInfo.desiredExtensions.data();
 
 		Debug::errorCodeCheck(vkCreateInstance(&instanceCreateInfo, nullptr, vkObject), "Failed to create Instance");
-		Debug::setupDebug(*vkObject);
+
+		debugMessengers.resize(createInfo.debugMessengerInfos.size());
+		for (int i = 0; i < debugMessengers.size(); i++) {
+			Debug::errorCodeCheck(createDebugUtilsMessengerEXT(createInfo.debugMessengerInfos.at(i), nullptr, debugMessengers.at(i), false), std::string("Failed to create Debug Messenger, index: ",  i).c_str());
+		}
 
 		vkw::DebugInformationPrint::printSystemInformation(registry.instance);
 
@@ -120,16 +111,41 @@ namespace vkw {
 			vkGetPhysicalDeviceMemoryProperties(x, &memProp);
 
 			for (uint32_t i = 0; i < queueFamCount; i++ ) {  // do for all queue families
-				if (queueFamilyProperties[i].queueCount > 0) {
-					if (queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) queueFamTypes.graphicFamilies.push_back(i);
-					if (queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) queueFamTypes.computeFamilies.push_back(i);
-					if (queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT) queueFamTypes.transferFamilies.push_back(i);
-					if (queueFamilyProperties[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) queueFamTypes.sparseBindingFamilies.push_back(i);
-					if (queueFamilyProperties[i].queueFlags & VK_QUEUE_PROTECTED_BIT) queueFamTypes.protectedFamilies.push_back(i);
+				if (queueFamilyProperties.at(i).queueCount > 0) {
+					if (queueFamilyProperties.at(i).queueFlags & VK_QUEUE_GRAPHICS_BIT) queueFamTypes.graphicFamilies.push_back(i);
+					if (queueFamilyProperties.at(i).queueFlags & VK_QUEUE_COMPUTE_BIT) queueFamTypes.computeFamilies.push_back(i);
+					if (queueFamilyProperties.at(i).queueFlags & VK_QUEUE_TRANSFER_BIT) queueFamTypes.transferFamilies.push_back(i);
+					if (queueFamilyProperties.at(i).queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) queueFamTypes.sparseBindingFamilies.push_back(i);
+					if (queueFamilyProperties.at(i).queueFlags & VK_QUEUE_PROTECTED_BIT) queueFamTypes.protectedFamilies.push_back(i);
 				}
 			}
 
 			physicalDevices_m.emplace_back(x, queueFamilyProperties, prop, features, memProp, queueFamTypes);
+		}
+	}
+
+	VkResult Instance::createDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT & pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDebugUtilsMessengerEXT & pCallback, bool automaticDestruction) {
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(*vkObject, "vkCreateDebugUtilsMessengerEXT");
+		if (func != nullptr) {
+			auto ret = func(*vkObject, &pCreateInfo, pAllocator, &pCallback);
+			if (automaticDestruction && ret == VK_SUCCESS) debugMessengers.push_back(pCallback);
+			return ret;
+		}
+		else {
+			VKW_PRINT("failed to fetch vkCreateDebugUtilsMessengerEXT function pointer");
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+		}
+	}
+
+	void Instance::destroyDebugUtilsMessengerEXT(VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator) {
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(*vkObject, "vkDestroyDebugUtilsMessengerEXT");
+		if (func != nullptr) {
+			auto it = std::find(debugMessengers.begin(), debugMessengers.end(), callback);
+			if (it != debugMessengers.end()) debugMessengers.erase(it);
+			func(*vkObject, callback, pAllocator);
+		}
+		else {
+			VKW_PRINT("failed to destory debugUtilsMessengerEXT");
 		}
 	}
 

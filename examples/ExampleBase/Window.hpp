@@ -1,5 +1,5 @@
-#include<vulkan_wraper.h>
-#include<glfw3.h>
+#include<vulkan_wrapper.h>
+#include<glfw/glfw3.h>
 
 
 class GlfwWindow : public vkw::Window {

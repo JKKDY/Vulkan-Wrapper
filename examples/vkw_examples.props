@@ -14,7 +14,7 @@
       <AdditionalDependencies>glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(vkwExternals)tinyobjloader;$(vkwExternals)stb;$(vkwExternals)glm;$(vkwExternals)gli;$(vkwExternals)assimp\include;$(vkwExternals)glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(vkwExternals)tinyobjloader;$(vkwExternals)stb;$(vkwExternals)glm;$(vkwExternals)gli;$(vkwExternals)assimp\include;$(SolutionDir)examples\ExampleBase;$(vkwExternals)glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PostBuildEvent>
       <Command>copy /y /d "$(SolutionDir)bin\$(Platform)\$(Configuration)\Vulkan Wraper.dll" "$(OutDir)"

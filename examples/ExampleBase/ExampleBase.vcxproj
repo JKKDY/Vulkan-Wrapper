@@ -20,9 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{37670dcf-9eb0-40a3-b18b-60fa8fac84f1}</ProjectGuid>
-    <RootNamespace>Triangle</RootNamespace>
+    <ProjectGuid>{86b7ce5c-5138-44b5-bb98-c1b65bf2d6f5}</ProjectGuid>
+    <RootNamespace>ExampleBase</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>ExampleBase</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,9 +79,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)intermediates\(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)intermediates\(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -91,13 +98,10 @@
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
     <PostBuildEvent />
     <PreBuildEvent />
-    <PreBuildEvent />
-    <PreBuildEvent>
-      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -109,14 +113,11 @@
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
     <PostBuildEvent />
     <PostBuildEvent />
     <PreBuildEvent />
-    <PreBuildEvent />
-    <PreBuildEvent>
-      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -134,9 +135,6 @@
     </Link>
     <PostBuildEvent />
     <PostBuildEvent />
-    <PreBuildEvent>
-      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -153,20 +151,19 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent />
-    <PreBuildEvent>
-      <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Triangle.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Vulkan Wraper.vcxproj">
       <Project>{c97cff6a-1557-4d3d-a7ef-3402d3961bd7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="init.h" />
+    <ClCompile Include="ExampleBase.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ExampleBase.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

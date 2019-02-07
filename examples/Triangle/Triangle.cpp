@@ -54,37 +54,46 @@ const std::string texturePath = dataPath + "Textures/";
 const std::string shaderPath = dataPath + "Shader/" + APP_NAME;
 
 
-void reCreateSwapchain(vkw::Swapchain & swpachain, vkw::GraphicsPipeline & pipeline, vkw::RenderPass & renderPass, std::vector<vkw::FrameBuffer> frameBuffers, std::vector<vkw::CommandBuffer> commandBuffers) {
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	VkDebugUtilsMessageTypeFlagsEXT messageType,
+	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	void* pUserData)
+{
+	std::cerr << "validation layer: " << pCallbackData->pMessage << "\n";
 
+	return VK_FALSE;
 }
 
-struct foo {
-	~foo(){
-		int i = 5;
-	}
-};
 
 int main() {
-	foo f;
-
 	GlfwWindow window = GlfwWindow(800, 600);
 
-
 	/// Core
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = vkw::Init::debugUtilsMessengerCreateInfoEXT();
+	debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	debugCreateInfo.pfnUserCallback = debugCallback;
+	debugCreateInfo.pUserData = nullptr;
+
 	vkw::Instance::CreateInfo instanceCreateInfo = {};
-	instanceCreateInfo.applicationName = "Triangle";
-	instanceCreateInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+	instanceCreateInfo.debugMessengerInfos = { debugCreateInfo };
+	instanceCreateInfo.desiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	instanceCreateInfo.desiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 	GlfwWindow::getWindowExtensions(instanceCreateInfo.desiredExtensions);
 
 	std::vector<const char*> missingExtensions;
 	instanceCreateInfo.desiredExtensions = vkw::Instance::checkExtensions(instanceCreateInfo.desiredExtensions, &missingExtensions);
 	VKW_assert(missingExtensions.empty(), "Required Extensions missing");
 
+	std::vector<const char*> missingLayers;
+	instanceCreateInfo.desiredLayers = vkw::Instance::checkLayers(instanceCreateInfo.desiredLayers, &missingLayers);
+	VKW_assert(missingLayers.empty(), "Required Layers missing");
+
 	vkw::Instance instance(instanceCreateInfo);
 	vkw::Surface surface(window);
 
 	VKW_assert(instance.physicalDevices.size(), "failed to find GPUs with Vulkan support!");
-
 	std::vector<vkw::PhysicalDevice> suitableDevices;
 
 	//check for suitability
@@ -127,9 +136,6 @@ int main() {
 	vkw::PhysicalDevice & physicalDevice = *candidates.rbegin()->second;
 
 	vkw::Device::CreateInfo deviceCreateInfo = {};
-	deviceCreateInfo.features.multiViewport = VK_TRUE;
-	deviceCreateInfo.features.samplerAnisotropy = VK_TRUE;
-	deviceCreateInfo.features.fillModeNonSolid = VK_TRUE;
 	deviceCreateInfo.physicalDevice = physicalDevice;
 	deviceCreateInfo.surfaces = { surface };
 	
