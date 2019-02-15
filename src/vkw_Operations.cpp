@@ -23,7 +23,7 @@ namespace vkw {
 		this->queueFamily = queueFamily;
 		this->flags = flags;
 
-		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
+		VkCommandPoolCreateInfo createInfo = init::commandPoolCreateInfo();
 		createInfo.flags = flags;
 		createInfo.queueFamilyIndex = queueFamily;
 
@@ -50,7 +50,7 @@ namespace vkw {
 	{
 		std::vector<VkCommandBuffer> vkCommandBuffers(commandBuffers.size());
 
-		VkCommandBufferAllocateInfo allocInfo = Init::commandBufferAllocateInfo();
+		VkCommandBufferAllocateInfo allocInfo = init::commandBufferAllocateInfo();
 		allocInfo.level = level;
 		allocInfo.commandPool = commandPool;
 		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
@@ -58,7 +58,7 @@ namespace vkw {
 		if (commandBuffers.size()) vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(commandBuffers[0].registry.device, &allocInfo, vkCommandBuffers.data()), "Failed to allocate ommandBuffers");
 
 		for (uint32_t i = 0; i < commandBuffers.size(); i++) {
-			commandBuffers[i].commandPool = commandPool;
+			commandBuffers[i].commandPool_m = commandPool;
 			commandBuffers[i].level = level;
 			commandBuffers[i].vkObject = vkCommandBuffers[i];
 		}
@@ -68,7 +68,7 @@ namespace vkw {
 	{
 		std::vector<VkCommandBuffer> vkCommandBuffers(commandBuffers.size());
 
-		VkCommandBufferAllocateInfo allocInfo = Init::commandBufferAllocateInfo();
+		VkCommandBufferAllocateInfo allocInfo = init::commandBufferAllocateInfo();
 		allocInfo.level = level;
 		allocInfo.commandPool = commandPool;
 		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
@@ -76,13 +76,14 @@ namespace vkw {
 		if (commandBuffers.size()) vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(commandBuffers[0].get().registry.device, &allocInfo, vkCommandBuffers.data()), "Failed to allocate ommandBuffers");
 
 		for (uint32_t i = 0; i < commandBuffers.size(); i++) {
-			commandBuffers[i].get().commandPool = commandPool;
+			commandBuffers[i].get().commandPool_m = commandPool;
 			commandBuffers[i].get().level = level;
 			commandBuffers[i].get().vkObject = vkCommandBuffers[i];
 		}
 	}
 
-	CommandBuffer::CommandBuffer()
+	CommandBuffer::CommandBuffer():
+		commandPool(commandPool_m)
 	{
 		destructionControl = impl::VKW_DESTR_CONTRL_DO_NOTHING;
 	}
@@ -105,7 +106,10 @@ namespace vkw {
 
 	void CommandBuffer::allocateCommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level)
 	{
-		VkCommandBufferAllocateInfo allocInfo = Init::commandBufferAllocateInfo();
+		this->level = level;
+		this->commandPool_m = commandPool;
+
+		VkCommandBufferAllocateInfo allocInfo = init::commandBufferAllocateInfo();
 		allocInfo.level = level;
 		allocInfo.commandPool = commandPool;
 		allocInfo.commandBufferCount = 1;
@@ -115,7 +119,7 @@ namespace vkw {
 
 	void CommandBuffer::destroyObject()
 	{
-		vkObject.destroyObject(destructionControl, [=](VkCommandBuffer obj) {vkFreeCommandBuffers(registry.device, this->commandPool, 1, &obj); });
+		vkObject.destroyObject(destructionControl, [=](VkCommandBuffer obj) {vkFreeCommandBuffers(registry.device, commandPool_m, 1, &obj); });
 	}
 
 	void CommandBuffer::freeCommandBuffer()
@@ -125,7 +129,7 @@ namespace vkw {
 
 	void CommandBuffer::beginCommandBuffer(VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo * inheritanceInfo)
 	{
-		VkCommandBufferBeginInfo beginInfo = Init::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo beginInfo = init::commandBufferBeginInfo();
 		beginInfo.flags = flags;
 		beginInfo.pInheritanceInfo = inheritanceInfo;
 
@@ -143,7 +147,7 @@ namespace vkw {
 
 	void CommandBuffer::submitCommandBuffer(VkQueue queue, std::vector<VkSemaphore> semaphore, VkFence fence)
 	{
-		VkSubmitInfo submitInfo = Init::submitInfo();
+		VkSubmitInfo submitInfo = init::submitInfo();
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = vkObject;
 		submitInfo.signalSemaphoreCount = static_cast<uint32_t>(semaphore.size());
@@ -173,7 +177,7 @@ namespace vkw {
 
 	void TransferCommandPool::create(int queueFamilyIndex)
 	{
-		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
+		VkCommandPoolCreateInfo createInfo = init::commandPoolCreateInfo();
 		createInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 		createInfo.queueFamilyIndex = queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.transferQueue.family : queueFamilyIndex;
 
@@ -199,7 +203,7 @@ namespace vkw {
 
 	void GraphicsCommandPool::create(int queueFamilyIndex)
 	{
-		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
+		VkCommandPoolCreateInfo createInfo = init::commandPoolCreateInfo();
 		createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		createInfo.queueFamilyIndex = queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.graphicsQueue.family : queueFamilyIndex;
 
@@ -225,7 +229,7 @@ namespace vkw {
 
 	void ComputeCommandPool::create(int queueFamilyIndex)
 	{
-		VkCommandPoolCreateInfo createInfo = Init::commandPoolCreateInfo();
+		VkCommandPoolCreateInfo createInfo = init::commandPoolCreateInfo();
 		createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		createInfo.queueFamilyIndex = queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.computeQueue.family : queueFamilyIndex;
 

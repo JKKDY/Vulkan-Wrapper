@@ -153,6 +153,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Pipelines.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +163,9 @@
     <ProjectReference Include="..\ExampleBase\ExampleBase.vcxproj">
       <Project>{86b7ce5c-5138-44b5-bb98-c1b65bf2d6f5}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Pipelines.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

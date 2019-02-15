@@ -142,7 +142,7 @@ namespace vkw {
 			layoutBindings_m[x.binding] = x;
 		}
 
-		VkDescriptorSetLayoutCreateInfo layoutInfo = vkw::Init::descriptorSetLayoutCreateInfo();
+		VkDescriptorSetLayoutCreateInfo layoutInfo = vkw::init::descriptorSetLayoutCreateInfo();
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 		layoutInfo.flags = flags;
@@ -185,7 +185,7 @@ namespace vkw {
 		layout_m = &layout;
 		this->descriptorPool = descriptorPool;
 
-		VkDescriptorSetAllocateInfo allocInfo = Init::descriptorSetAllocateInfo();
+		VkDescriptorSetAllocateInfo allocInfo = init::descriptorSetAllocateInfo();
 		allocInfo.descriptorPool = descriptorPool;
 		allocInfo.pSetLayouts = layout.get();
 		allocInfo.descriptorSetCount = 1;
@@ -206,7 +206,7 @@ namespace vkw {
 		std::vector<VkWriteDescriptorSet> writes;
 		
 		for (auto x : writeInfos) {
-			VkWriteDescriptorSet write = vkw::Init::writeDescriptorSet();
+			VkWriteDescriptorSet write = vkw::init::writeDescriptorSet();
 			write.dstSet = *vkObject;
 			write.dstBinding = x.dstBinding;
 			write.dstArrayElement = x.dstArrayElement;
@@ -221,7 +221,7 @@ namespace vkw {
 		std::vector<VkCopyDescriptorSet> copys;
 
 		for (auto x : copyInfos) {
-			VkCopyDescriptorSet copy = Init::copyDescriptorSet();
+			VkCopyDescriptorSet copy = init::copyDescriptorSet();
 			copy.descriptorCount = x.descriptorCount;
 			copy.dstArrayElement = x.dstArrayElement;
 			copy.dstBinding = x.dstBinding;
@@ -271,7 +271,7 @@ namespace vkw {
 		for (auto & x : buffers) setMemoryTypeBitsBuffer(x);
 		for (auto & x : images) setMemoryTypeBitsImage(x);
 
-		VkMemoryAllocateInfo allocInfo = vkw::Init::memoryAllocateInfo();
+		VkMemoryAllocateInfo allocInfo = vkw::init::memoryAllocateInfo();
 		allocInfo.allocationSize = size + additionalSize;
 		allocInfo.memoryTypeIndex = memoryType == std::numeric_limits<uint32_t>::max() ? findMemoryType() : memoryType;
 		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, vkObject), "Failed to allocate Memory");
@@ -346,6 +346,24 @@ namespace vkw {
 		memoryMap_m.mapped = nullptr;
 		memoryMap_m.offset = 0;
 		memoryMap_m.size = 0;
+	}
+
+	void Memory::flush()
+	{
+		VkMappedMemoryRange mappedRange = init::mappedMemoryRange();
+		mappedRange.memory = *vkObject;
+		mappedRange.offset = memoryMap.offset;
+		mappedRange.size = memoryMap.size;
+		Debug::errorCodeCheck(vkFlushMappedMemoryRanges(registry.device, 1, &mappedRange), "Could not flush mapped memory Ranges");
+	}
+
+	void Memory::invalidate()
+	{
+		VkMappedMemoryRange mappedRange = init::mappedMemoryRange();
+		mappedRange.memory = *vkObject;
+		mappedRange.offset = memoryMap.offset;
+		mappedRange.size = memoryMap.size;
+		Debug::errorCodeCheck(vkInvalidateMappedMemoryRanges(registry.device, 1, &mappedRange), "Could not invalidate mapped memory Ranges");
 	}
 
 	uint32_t Memory::findMemoryType()
@@ -435,7 +453,7 @@ namespace vkw {
 		this->size_m = size;
 		this->offset_m = offset;
 
-		VkBufferCreateInfo bufferInfo = vkw::Init::bufferCreateInfo();
+		VkBufferCreateInfo bufferInfo = vkw::init::bufferCreateInfo();
 		bufferInfo.flags = createflags;
 		bufferInfo.size = size;
 		bufferInfo.sharingMode = sharingMode;
@@ -486,6 +504,12 @@ namespace vkw {
 		if (leaveMapped == false) { memory->unMap(); }	
 	}
 
+	void Buffer::map(VkDeviceSize size, VkDeviceSize offset, VkMemoryMapFlags flags) { memory->map(size == VK_WHOLE_SIZE ? size_m : size, offset_m + offset, flags); }
+
+	void Buffer::flush() { memory->flush(); }
+
+	void Buffer::invalidate() { memory->invalidate(); }
+
 	void Buffer::copyFromBuffer(VkBuffer srcBuffer, VkBufferCopy copyRegion, VkCommandPool cmdPool)
 	{
 		Fence fence(0);
@@ -494,14 +518,11 @@ namespace vkw {
 		CommandBuffer commandBuffer(commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 		commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-		if (copyRegion.size == 0) {
-			copyRegion.size = this->size;
-		}
+		if (copyRegion.size == 0) copyRegion.size = this->size;
 
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, *vkObject, 1, &copyRegion);
 
 		commandBuffer.endCommandBuffer();
-
 		commandBuffer.submitCommandBuffer(registry.transferQueue, {}, fence);
 		fence.wait();
 
@@ -560,7 +581,7 @@ namespace vkw {
 
 	SubBuffer::~SubBuffer()
 	{
-		buffer->memoryRanges.erase(offset);
+		clear();
 	}
 
 	SubBuffer & SubBuffer::operator=(const SubBuffer & rhs)
@@ -585,10 +606,17 @@ namespace vkw {
 		buffer->copyFromBuffer(*srcBuffer.buffer, VkBufferCopy{srcBuffer.offset, this->offset, srcBuffer.size}, commandPool);
 	}
 
+	void SubBuffer::map(VkDeviceSize size, VkDeviceSize offset, VkMemoryMapFlags flags) { buffer->map(size == VK_WHOLE_SIZE ? size_m : size, offset_m + offset, flags); }
+
 	void SubBuffer::clear()
 	{
 		buffer->memoryRanges.erase(offset);
+		buffer = nullptr;
 	}
+
+	void SubBuffer::flush() { buffer->flush(); }
+
+	void SubBuffer::invalidate() { buffer->invalidate(); }
 
 
 
@@ -626,7 +654,7 @@ namespace vkw {
 		usage = createInfo.usage;
 		familyQueueIndicies = createInfo.familyQueueIndicies;
 
-		VkImageCreateInfo info = vkw::Init::imageCreateInfo();
+		VkImageCreateInfo info = vkw::init::imageCreateInfo();
 		info.flags = createInfo.flags;
 		info.imageType = createInfo.imageType;
 		info.format = createInfo.format;
@@ -686,7 +714,7 @@ namespace vkw {
 		VkPipelineStageFlags sourceStage;
 		VkPipelineStageFlags destinationStage;
 
-		VkImageMemoryBarrier barrier = vkw::Init::imageMemoryBarrier();
+		VkImageMemoryBarrier barrier = vkw::init::imageMemoryBarrier();
 		barrier.oldLayout = this->layout;
 		barrier.newLayout = this->layout_m = newLayout;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -871,7 +899,7 @@ namespace vkw {
 
 	void ImageView::createImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType, VkComponentMapping components)
 	{
-		VkImageViewCreateInfo createInfo = vkw::Init::imageViewCreateInfo();
+		VkImageViewCreateInfo createInfo = vkw::init::imageViewCreateInfo();
 		createInfo.image = image;
 		createInfo.format = image.format;
 		createInfo.viewType = viewType;
@@ -908,7 +936,7 @@ namespace vkw {
 		compareEnable = createInfo.compareEnable;
 		compareOp = createInfo.compareOp;
 
-		VkSamplerCreateInfo samplerInfo = vkw::Init::samplerCreateInfo();
+		VkSamplerCreateInfo samplerInfo = vkw::init::samplerCreateInfo();
 		samplerInfo.addressModeU = createInfo.addressMode.U;
 		samplerInfo.addressModeV = createInfo.addressMode.V;
 		samplerInfo.addressModeW = createInfo.addressMode.W;
@@ -955,7 +983,7 @@ namespace vkw {
 		this->extent = extent;
 		this->layers = layers;
 
-		VkFramebufferCreateInfo createInfo = Init::framebufferCreateInfo();
+		VkFramebufferCreateInfo createInfo = init::framebufferCreateInfo();
 		createInfo.flags = flags;
 		createInfo.renderPass = renderPass;
 		createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());

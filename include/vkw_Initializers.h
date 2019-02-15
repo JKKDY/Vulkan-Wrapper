@@ -2,7 +2,7 @@
 #include "vkw_Config.h"
 
 namespace vkw {
-	namespace Init {
+	namespace init {
 		inline VULKAN_WRAPPER_API VkDebugUtilsMessengerCreateInfoEXT  debugUtilsMessengerCreateInfoEXT() {
 			VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -255,6 +255,12 @@ namespace vkw {
 			VkBufferCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			return createInfo;
+		}
+
+		inline VULKAN_WRAPPER_API VkMappedMemoryRange mappedMemoryRange() {
+			VkMappedMemoryRange mappedRange = {};
+			mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+			return mappedRange;
 		}
 		
 

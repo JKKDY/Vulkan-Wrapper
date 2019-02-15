@@ -49,7 +49,7 @@ namespace vkw {
 		VULKAN_WRAPPER_API void allocateCommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 		VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		VkCommandPool commandPool;
+		const VkCommandPool & commandPool;
 
 		VULKAN_WRAPPER_API void destroyObject() override;
 		VULKAN_WRAPPER_API void freeCommandBuffer();
@@ -57,7 +57,13 @@ namespace vkw {
 		VULKAN_WRAPPER_API void endCommandBuffer();
 		VULKAN_WRAPPER_API void resetCommandBuffer(VkCommandBufferResetFlags flags = 0);
 		VULKAN_WRAPPER_API void submitCommandBuffer(VkQueue queue, std::vector<VkSemaphore> semaphore = {}, VkFence fence = VK_NULL_HANDLE);
+	private:
+		VkCommandPool commandPool_m;
 	};
+
+
+
+
 
 	class TransferCommandPool : public impl::Entity<impl::VkwTransferCommandPool> {
 	public:

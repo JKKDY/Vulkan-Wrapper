@@ -192,6 +192,8 @@ namespace vkw {
 		VULKAN_WRAPPER_API void setMemoryTypeBits(VkMemoryRequirements & memoryRequirements);
 		VULKAN_WRAPPER_API void * map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
 		VULKAN_WRAPPER_API void unMap();
+		VULKAN_WRAPPER_API void flush();
+		VULKAN_WRAPPER_API void invalidate();
 	private:
 		VkDeviceSize size_m = 0;
 		Mapped memoryMap_m;
@@ -235,15 +237,17 @@ namespace vkw {
 		VkSharingMode sharingMode; 
 		const VkDeviceSize & size;
 		const VkDeviceSize & offset; // offset in Memory
+		const VkDeviceSize & sizeInMemory; // Size is alligned with allignement e.g. "size" = usable size, "sizeInMemory" = size the buffer takes up in its Vk::Memory
+		const VkDeviceSize & allignement;
 
 		VULKAN_WRAPPER_API SubBuffer createSubBuffer(VkDeviceSize size);
 
 		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData, VkDeviceSize offset = 0, bool leaveMapped = true);
+		VULKAN_WRAPPER_API void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
+		VULKAN_WRAPPER_API void flush();
+		VULKAN_WRAPPER_API void invalidate();
 		VULKAN_WRAPPER_API void copyFromBuffer(VkBuffer srcBuffer, VkBufferCopy copyRegion = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
 		//VULKAN_WRAPER_API void copyFrom(VkImage image, VkBufferCopy copyRegion, VkCommandPool commandPool = VK_NULL_HANDLE);
-
-		const VkDeviceSize & sizeInMemory; // Size is alligned with allignement e.g. "size" = usable size, "sizeInMemory" = size the buffer takes up in its Vk::Memory
-		const VkDeviceSize & allignement;
 	private:
 		VkDeviceSize size_m;
 		VkDeviceSize offset_m;
@@ -271,12 +275,15 @@ namespace vkw {
 
 		VULKAN_WRAPPER_API SubBuffer & operator = (const SubBuffer & rhs);
 
-		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData = 0, bool leaveMapped = false);
+		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData, bool leaveMapped = true);
 		VULKAN_WRAPPER_API void copyFrom(SubBuffer & srcBuffer, VkCommandPool commandPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
+		VULKAN_WRAPPER_API void flush();
+		VULKAN_WRAPPER_API void invalidate();
 		VULKAN_WRAPPER_API void clear();
 
 		const VkDeviceSize & size;
-		const VkDeviceSize & offset;
+		const VkDeviceSize & offset; // offset in buffer
 	private:
 		VkDeviceSize size_m;
 		VkDeviceSize offset_m;

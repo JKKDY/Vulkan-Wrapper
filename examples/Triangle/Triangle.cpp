@@ -42,16 +42,7 @@ public:
 };
 
 
-bool deviceIsSuitable(const vkw::PhysicalDevice & gpu, const vkw::Surface & surface) {
-	
-
-	return true;
-}
-
-const std::string dataPath = "../data/";
-const std::string modelPath = dataPath + "Models/";
-const std::string texturePath = dataPath + "Textures/";
-const std::string shaderPath = dataPath + "Shader/" + APP_NAME;
+const std::string shaderPath = "Shader/";
 
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -70,7 +61,7 @@ int main() {
 	GlfwWindow window = GlfwWindow(800, 600);
 
 	/// Core
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = vkw::Init::debugUtilsMessengerCreateInfoEXT();
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = vkw::init::debugUtilsMessengerCreateInfoEXT();
 	debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	debugCreateInfo.pfnUserCallback = debugCallback;
@@ -106,7 +97,11 @@ int main() {
 		}
 		familiesFound = x.queueFamilyTypes.graphicFamilies.size() * x.queueFamilyTypes.transferFamilies.size();
 		
-		if (familiesFound * surface.formats(x).size() * surface.presentModes(x).size()) suitableDevices.push_back(x);
+		std::vector<const char*> missingLayers;
+		x.checkLayers({ VK_KHR_SWAPCHAIN_EXTENSION_NAME }, &missingLayers);
+		
+		if (familiesFound * surface.formats(x).size() * surface.presentModes(x).size() * missingLayers.empty()) 
+			suitableDevices.push_back(x);
 	}
 
 	//select best device
@@ -138,6 +133,7 @@ int main() {
 	vkw::Device::CreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.physicalDevice = physicalDevice;
 	deviceCreateInfo.surfaces = { surface };
+	deviceCreateInfo.extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	
 	vkw::Device device(deviceCreateInfo);
 	vkw::Swapchain swapChain(surface);
@@ -207,7 +203,7 @@ int main() {
 	vkw::Buffer indexBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, sizeof(uint16_t) * indices.size());
 	indexMemory.allocateMemory({indexBuffer });
 
-	vkw::Memory vertexStagingMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	vkw::Memory vertexStagingMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
 	vkw::Buffer vertexStagingBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, sizeof(Vertex) * vertices.size());
 	vertexStagingMemory.allocateMemory({vertexStagingBuffer });
 
@@ -231,8 +227,8 @@ int main() {
 
 
 	// Shader Modules
-	vkw::ShaderModule vertShaderModule(shaderPath + "/shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);    //Shader Module for vertex Shader
-	vkw::ShaderModule fragShaderModule(shaderPath + "/shader.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);	// Shader Module for fragment Shader
+	vkw::ShaderModule vertShaderModule(shaderPath + "shader.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);    //Shader Module for vertex Shader
+	vkw::ShaderModule fragShaderModule(shaderPath + "shader.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);	// Shader Module for fragment Shader
 
 	/// Graphics Pipeline
 	// pipeline Layout
@@ -263,7 +259,7 @@ int main() {
 	vertexInputAttributs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 	vertexInputAttributs[1].offset = offsetof(Vertex, col);
 
-	pipelineCreateInfo.pipelineStates.vertexInputState = vkw::Init::pipelineVertexInputStateCreateInfo();
+	pipelineCreateInfo.pipelineStates.vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
 	pipelineCreateInfo.pipelineStates.vertexInputState.pVertexAttributeDescriptions = vertexInputAttributs.data();
 	pipelineCreateInfo.pipelineStates.vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributs.size());
 	pipelineCreateInfo.pipelineStates.vertexInputState.pVertexBindingDescriptions = &vertexInputBindingDescription;
@@ -272,7 +268,7 @@ int main() {
 
 	// viewport State
 	VkRect2D scissor = { { 0,0 }, swapChain.extent };
-	VkViewport viewport = vkw::Init::viewport(swapChain.extent);
+	VkViewport viewport = vkw::init::viewport(swapChain.extent);
 
 	pipelineCreateInfo.pipelineStates.viewportState = pipelineViewportSatetCreateInfo(viewport, scissor);
 
@@ -281,18 +277,18 @@ int main() {
 	colorBlendAttachement.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachement.blendEnable = VK_FALSE;
 
-	pipelineCreateInfo.pipelineStates.colorBlendState = vkw::Init::pipelineColorBlendStateCreateInfo();
+	pipelineCreateInfo.pipelineStates.colorBlendState = vkw::init::pipelineColorBlendStateCreateInfo();
 	pipelineCreateInfo.pipelineStates.colorBlendState.attachmentCount = 1;
 	pipelineCreateInfo.pipelineStates.colorBlendState.pAttachments = &colorBlendAttachement;
 
 	// other pipeline States
-	pipelineCreateInfo.pipelineStates.inputAssemblyState = vkw::Init::pipelineInputAssemblyStateCreateInfo();
+	pipelineCreateInfo.pipelineStates.inputAssemblyState = vkw::init::pipelineInputAssemblyStateCreateInfo();
 	pipelineCreateInfo.pipelineStates.inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	pipelineCreateInfo.pipelineStates.inputAssemblyState.primitiveRestartEnable = VK_FALSE;
 
 	pipelineCreateInfo.pipelineStates.rasterizationState = pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, 0, VK_FRONT_FACE_CLOCKWISE);
 
-	pipelineCreateInfo.pipelineStates.multisampleState = vkw::Init::pipelineMultisampleStateCreateInfo();
+	pipelineCreateInfo.pipelineStates.multisampleState = vkw::init::pipelineMultisampleStateCreateInfo();
 	pipelineCreateInfo.pipelineStates.multisampleState.sampleShadingEnable = VK_FALSE;
 	pipelineCreateInfo.pipelineStates.multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -324,7 +320,7 @@ int main() {
 	for (uint32_t i = 0; i < commandBuffers.size(); i++) {
 		VkClearValue clearCol = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-		VkRenderPassBeginInfo beginnInfo = vkw::Init::renderPassBeginInfo();
+		VkRenderPassBeginInfo beginnInfo = vkw::init::renderPassBeginInfo();
 		beginnInfo.renderPass = renderPass;
 		beginnInfo.renderArea = { { 0,0 }, swapChain.extent };
 		beginnInfo.framebuffer = framebuffers[i];

@@ -66,8 +66,8 @@ namespace vkw {
 			~VkObject();
 
 			void add(VkObject<T> *& ref);
-			void remove(VkObject<T> *& ref);
-			void deleteThis(std::function<void(Type)> deleterf = 0);
+			void remove(VkObject<T> *& ref, std::function<void(Type)> deleterf = 0);
+			void deleteThis(std::function<void(Type)> deleterf = 0);  //delterf = overwrite to ::deleterFunc 
 			uint32_t referenceCount();
 
 			Type * getPointer();
@@ -218,14 +218,14 @@ namespace vkw {
 			template<typename T> std::function<void(T)> setDeleterFunction(std::function<void(VkDevice, T, VkAllocationCallbacks*)> deletef);
 
 			std::function<void(VkBuffer)>				bufferDeleter;
-			std::function<void(VkBufferView)>			bufferViewDeleter;
+			std::function<void(VkBufferView)>			bufferViewDeleter; //
 			std::function<void(VkCommandPool)>			commandPoolDeleter;
 			std::function<void(VkDescriptorPool)>		descriptorPoolDeleter;
 			std::function<void(VkDescriptorSetLayout)>	descriptorSetLayoutDeleter;
 			std::function<void(VkDeviceMemory)>			deviceMemoryDeleter;
 			std::function<void(VkFence)>				fenceDeleter;
 			std::function<void(VkFramebuffer)>			frameBufferDeleter;
-			std::function<void(VkEvent)>				eventDeleter;
+			std::function<void(VkEvent)>				eventDeleter; //
 			std::function<void(VkImage)>				imageDeleter;
 			std::function<void(VkImageView)>			imageViewDeleter;
 			std::function<void(VkPipelineCache)>		pipelineCacheDeleter;
@@ -237,7 +237,7 @@ namespace vkw {
 			std::function<void(VkShaderModule)>			shaderModuleDeleter;
 			std::function<void(VkSurfaceKHR)>			surfaceDeleter;
 			std::function<void(VkSwapchainKHR)>			swapchainDeleter;
-			std::function<void(VkQueryPool)>			queryPoolDeleter;
+			std::function<void(VkQueryPool)>			queryPoolDeleter; //
 		};
 
 
@@ -269,9 +269,6 @@ namespace vkw {
 
 			std::vector<Registry*> registrys;
 		};
-		
-	
-
 	}
 }
 

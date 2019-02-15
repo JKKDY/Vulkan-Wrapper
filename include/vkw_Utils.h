@@ -3,47 +3,30 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <chrono>
+#include <vector>
+#include <functional>
 
 namespace vkw {
 	inline namespace utils {
-		class Null final {};
+		template<typename T> std::vector<const char*> check(std::function<VkResult(uint32_t*, T*)> enumerate, std::function<const char*(const T &)> getString, const std::vector<const char*> & desired, std::vector<const char*> * missing = nullptr) {
+			std::vector<const char*> exististingDesired;
 
+			uint32_t count = 0;
+			enumerate(&count, nullptr);
+			std::vector<T> prop(count);
+			enumerate(&count, prop.data());  
 
-		template <typename T, typename U = Null> class ReadOnly {
-		public:
-			ReadOnly() = default;
-			ReadOnly(const T & val) : value(val) {};
-			operator const T & () const { return this->value; }
-			const T * operator -> () const { return &this->value; };
-		protected:
-			T & get() { return value; }
-			T & operator = (const T & v) { return value = v; }
-		private:
-			T value;
-			friend U;
-		};
+			for (const auto & x : desired) {
+				if (std::find_if(prop.begin(), prop.end(), [&](const T & t) { return (strcmp(getString(t), x) == 0); }) != prop.end()) {
+					exististingDesired.push_back(x);
+				}
+				else if (missing) {
+					missing->push_back(x);
+				}
+			}
 
-
-
-		template <typename T, typename U = Null> class ReadOnlyVector {
-		public:
-			ReadOnlyVector() = default;
-			ReadOnlyVector(std::initializer_list<T> init) : vec(init) {}
-			const T & operator [] (int i) const { return vec[i]; }
-			operator const std::vector<T>  & () const { return vec; }
-			typename std::vector<T>::iterator  begin() const { return vec.begin(); }
-			typename std::vector<T>::iterator  end() const { return vec.end(); }
-			typename std::vector<T>::size_type size() const { return vec.size(); }
-			bool empty() const { return vec.empty(); }
-		protected:
-			//void push_back(const T & val) { vec.push_back(val); }
-			std::vector<T> & get() { return vec; }
-			std::vector<T> & operator = (const std::vector<T> & v) { return vec = v; }
-		private:
-			std::vector<T> vec;
-			friend U;
-		};
-
+			return exististingDesired;
+		}
 
 		inline void* alignedAlloc(size_t size, size_t alignment) {
 

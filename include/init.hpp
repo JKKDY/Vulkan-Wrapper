@@ -4,7 +4,7 @@
 
 
 namespace vkw {
-	namespace Init {
+	namespace init {
 		inline VULKAN_WRAPPER_API VkImageSubresourceRange imageSubresourceRange(VkImageAspectFlags ImageAspectFlags) {
 			VkImageSubresourceRange subresourceRange = {};
 			subresourceRange.aspectMask = ImageAspectFlags;  // subrecourse range describes what the image's purpose is

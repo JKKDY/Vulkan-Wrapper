@@ -205,13 +205,14 @@ namespace vkw {
 			references.push_back(&ref);
 		}
 
-		template<typename T> void VkObject<T>::remove(VkObject<T> *& ref) {
+		template<typename T> void VkObject<T>::remove(VkObject<T> *& ref, std::function<void(Type)> deleterf) {
 			references.erase(std::remove(references.begin(), references.end(), &ref), references.end());
 			ref = nullptr;
 
 			if (references.size() == 0) {
-				if (object != VK_NULL_HANDLE && deleterFunc != 0) {
-					deleterFunc(object);
+				if (object != VK_NULL_HANDLE) {
+					if (deleterf) deleterf(object);
+					else if (deleterFunc) deleterFunc(object);
 				}
 
 				delete this;
@@ -305,7 +306,7 @@ namespace vkw {
 					pObject->deleteThis(deleterf); // set to nullptr automatically
 				}
 				else {
-					pObject->remove(pObject); // set to nullptr automatically
+					pObject->remove(pObject, deleterf); // set to nullptr automatically
 				}
 			}
 		}

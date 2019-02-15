@@ -39,7 +39,7 @@ namespace vkw {
 			imageCount_m = capabilities.maxImageCount;
 		}
 
-		VkSwapchainCreateInfoKHR createInfo = Init::swapchainCreateInfoKHR();
+		VkSwapchainCreateInfoKHR createInfo = init::swapchainCreateInfoKHR();
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		createInfo.surface = surface;
 		createInfo.minImageCount = imageCount_m;
@@ -74,8 +74,8 @@ namespace vkw {
 		swapChainImageViews.resize(swapChainImages.size()); // create vector with image views for each of the swapchain Images
 
 		for (uint32_t i = 0; i < swapChainImages.size(); i++) { // create the Image views
-			VkImageViewCreateInfo imageInfo = Init::imageViewCreateInfo();
-			imageInfo.components = Init::componentMappingSwizzleIdentity();
+			VkImageViewCreateInfo imageInfo = init::imageViewCreateInfo();
+			imageInfo.components = init::componentMappingSwizzleIdentity();
 			imageInfo.format = surfaceFormat.format;
 			imageInfo.image = swapChainImages[i];
 			imageInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -111,7 +111,7 @@ namespace vkw {
 
 	void Swapchain::presentImage(uint32_t imageIndex, std::vector<VkSemaphore> semaphores)
 	{
-		VkPresentInfoKHR presentInfo = Init::presentInfoKHR();
+		VkPresentInfoKHR presentInfo = init::presentInfoKHR();
 		presentInfo.waitSemaphoreCount = static_cast<uint32_t>(semaphores.size());
 		presentInfo.pWaitSemaphores = semaphores.data();
 		presentInfo.swapchainCount = 1;
@@ -176,7 +176,7 @@ namespace vkw {
 	void Semaphore::createSemaphore(VkSemaphoreCreateFlags flags) {
 		this->flags = flags;
 
-		VkSemaphoreCreateInfo createInfo = Init::semaphoreCreateInfo();
+		VkSemaphoreCreateInfo createInfo = init::semaphoreCreateInfo();
 		createInfo.flags = flags;
 		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &createInfo, nullptr, vkObject), "Failed to create Semaphore");
 	}
@@ -204,7 +204,7 @@ namespace vkw {
 	{
 		this->flags = flags;
 
-		VkFenceCreateInfo createInfo = Init::fenceCreateInfo();
+		VkFenceCreateInfo createInfo = init::fenceCreateInfo();
 		createInfo.flags = flags;
 		Debug::errorCodeCheck(vkCreateFence(registry.device, &createInfo, nullptr, vkObject), "Failed to create Fence");
 	}
@@ -249,7 +249,7 @@ namespace vkw {
 		attachementsDescriptions = createInfo.attachements;
 		flags = createInfo.flags;
 
-		VkRenderPassCreateInfo renderPassInfo = Init::renderPassCreateInfo();
+		VkRenderPassCreateInfo renderPassInfo = init::renderPassCreateInfo();
 		renderPassInfo.flags = flags;
 		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachementsDescriptions.size());
 		renderPassInfo.pAttachments = attachementsDescriptions.data();
@@ -299,7 +299,7 @@ namespace vkw {
 		file.read(shaderCode.data(), fileSize);
 		file.close();
 
-		VkShaderModuleCreateInfo createInfo = Init::shaderModuleCreateInfo();
+		VkShaderModuleCreateInfo createInfo = init::shaderModuleCreateInfo();
 		createInfo.codeSize = shaderCode.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*> (shaderCode.data());
 
@@ -308,7 +308,7 @@ namespace vkw {
 
 	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo, const char * name)
 	{
-		VkPipelineShaderStageCreateInfo createInfo = Init::pipelineShaderStageCreateInfo();
+		VkPipelineShaderStageCreateInfo createInfo = init::pipelineShaderStageCreateInfo();
 		createInfo.module = *vkObject;
 		createInfo.flags = flags;
 		createInfo.stage = stage;
@@ -342,7 +342,7 @@ namespace vkw {
 		descriptorSetLayouts = setLayouts;
 		pushConstantRanges = pushConstants;
 
-		VkPipelineLayoutCreateInfo createInfo = Init::pipelineLayoutCreateInfo();
+		VkPipelineLayoutCreateInfo createInfo = init::pipelineLayoutCreateInfo();
 		createInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
 		createInfo.pSetLayouts = descriptorSetLayouts.data();
 		createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
@@ -370,7 +370,7 @@ namespace vkw {
 
 	void PipelineCache::createPipelineCache()
 	{
-		VkPipelineCacheCreateInfo createInfo = Init::pipelineCacheCreateInfo();
+		VkPipelineCacheCreateInfo createInfo = init::pipelineCacheCreateInfo();
 		createInfo.flags = flags;
 		createInfo.initialDataSize = size;
 		createInfo.pInitialData = data;

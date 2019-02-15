@@ -44,11 +44,7 @@ namespace vkw {
 
 		VULKAN_WRAPPER_API operator VkPhysicalDevice () const;
 
-		// TODO: these all have to be implemented
-		// DOC: check** returns allo chosen and available options, takes in desiredOptions, outs all desired and missingProperties
-		VULKAN_WRAPPER_API VkPhysicalDeviceProperties checkProperties(const VkPhysicalDeviceProperties & desiredProperties, VkPhysicalDeviceProperties * outMissingProperties = nullptr) const;
-		VULKAN_WRAPPER_API VkPhysicalDeviceFeatures checkFeatures(const VkPhysicalDeviceFeatures & desiredFeatures, VkPhysicalDeviceFeatures * outMissingFeatures = nullptr) const ;
-		VULKAN_WRAPPER_API VkPhysicalDeviceMemoryProperties checkMemoryProperties(const VkPhysicalDeviceMemoryProperties & desiredMemoryProperties, VkPhysicalDeviceMemoryProperties * outMissingMemoryProperties = nullptr) const;
+		VULKAN_WRAPPER_API std::vector<const char*> checkLayers(const std::vector<const char*> & desiredLayers, std::vector<const char*> * outMissingLayers = nullptr) const;
 	};
 
 
@@ -74,6 +70,7 @@ namespace vkw {
 
 		static VULKAN_WRAPPER_API std::vector<const char*> checkExtensions(const std::vector<const char*> & desiredExtensions, std::vector<const char*> * outMissingExtensions = nullptr);
 		static VULKAN_WRAPPER_API std::vector<const char*> checkLayers(const std::vector<const char*> & desiredLayers, std::vector<const char*> * outMissingLayers = nullptr);
+
 	private:
 		std::vector<PhysicalDevice> physicalDevices_m;
 		std::vector<VkDebugUtilsMessengerEXT> debugMessengers;
@@ -174,8 +171,6 @@ namespace vkw {
 		std::vector<QueueInfo> additionalQueues_m;
 
 		void createRegistry(const CreateInfo & createInfo);
-		std::vector<const char*> setupExtensions(const std::vector<const char*> & extensions);
-		VkPhysicalDeviceFeatures setupFeatures(const VkPhysicalDeviceFeatures & deviceFeatures);
 		std::vector<VkDeviceQueueCreateInfo> setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<VkSurfaceKHR> & surfaces);
 		std::vector<VkDeviceQueueCreateInfo> setupQueueCreation(const CreateInfo & info, std::map<int, std::vector<float>> & priorities);
 	};

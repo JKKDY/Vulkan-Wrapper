@@ -32,24 +32,13 @@ namespace vkw {
 		return physicalDevice;
 	}
 
-	VkPhysicalDeviceProperties PhysicalDevice::checkProperties(const VkPhysicalDeviceProperties & desiredProperties, VkPhysicalDeviceProperties * outMissingProperties) const
+	std::vector<const char*> PhysicalDevice::checkLayers(const std::vector<const char*>& desiredLayers, std::vector<const char*>* outMissingLayers) const
 	{
-		VkPhysicalDeviceProperties existingProperties = {};
-		return existingProperties;
+		auto func = [=](uint32_t * count, VkExtensionProperties * prop) { return vkEnumerateDeviceExtensionProperties( physicalDevice, nullptr, count, prop); };
+		return utils::check<VkExtensionProperties>(func, [](const VkExtensionProperties & t) {return t.extensionName; }, desiredLayers, outMissingLayers);
 	}
 
-	VkPhysicalDeviceFeatures PhysicalDevice::checkFeatures(const VkPhysicalDeviceFeatures & desiredFeatures, VkPhysicalDeviceFeatures * outMissingFeatures) const
-	{
-		VkPhysicalDeviceFeatures existingFeatures = {};
-		return existingFeatures;
-	}
-
-	VkPhysicalDeviceMemoryProperties PhysicalDevice::checkMemoryProperties(const VkPhysicalDeviceMemoryProperties & desiredMemoryProperties, VkPhysicalDeviceMemoryProperties * outMissingMemoryProperties) const
-	{
-		VkPhysicalDeviceMemoryProperties existingMemoryProperties = {};
-		return existingMemoryProperties;
-	}
-
+	
 
 
 
@@ -71,7 +60,7 @@ namespace vkw {
 
 	void Instance::createInstance(const CreateInfo & createInfo)
 	{
-		VkInstanceCreateInfo instanceCreateInfo = Init::instanceCreateInfo();   // instance create info: app info, extensions and layers required
+		VkInstanceCreateInfo instanceCreateInfo = init::instanceCreateInfo();   // instance create info: app info, extensions and layers required
 		instanceCreateInfo.pApplicationInfo = &createInfo.appInfo;
 		instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(createInfo.desiredLayers.size());
 		instanceCreateInfo.ppEnabledLayerNames = createInfo.desiredLayers.data();
@@ -151,46 +140,14 @@ namespace vkw {
 
 	std::vector<const char*> Instance::checkExtensions(const std::vector<const char*> & desiredExtensions, std::vector<const char*> * outMissingExtensions)
 	{
-		std::vector<const char*> existingDesiredExtensions;
-
-		uint32_t extensionCount = 0;
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-		std::vector<VkExtensionProperties> extensionProperties(extensionCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensionProperties.data());  // enumerate Extensions
-
-		for (const auto & x : desiredExtensions) {
-			if (std::find_if(extensionProperties.begin(), extensionProperties.end(), [x] (const VkExtensionProperties & p) { return (strcmp(p.extensionName, x) == 0); }) != extensionProperties.end()) {
-				existingDesiredExtensions.push_back(x);
-			}
-
-			else if (outMissingExtensions) {
-				outMissingExtensions->push_back(x);
-			}
-		}
-
-		return existingDesiredExtensions;
+		auto func = [](uint32_t * count, VkExtensionProperties * prop) { return vkEnumerateInstanceExtensionProperties(nullptr, count, prop); };
+		return utils::check<VkExtensionProperties>(func, [](const VkExtensionProperties & t) {return t.extensionName; }, desiredExtensions, outMissingExtensions);
 	}
 
 	std::vector<const char*> Instance::checkLayers(const std::vector<const char*> & desiredLayers, std::vector<const char*>* outMissingLayers)
 	{
-		std::vector<const char*> existingDesiredLayers;
-
-		uint32_t layerCount = 0;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		std::vector<VkLayerProperties> layerProperties(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
-
-		for (const auto & x : desiredLayers) {
-			if (std::find_if(layerProperties.begin(), layerProperties.end(), [x](const VkLayerProperties & p) { return (strcmp(p.layerName, x) == 0); }) != layerProperties.end()) {
-				existingDesiredLayers.push_back(x);
-			}
-
-			else if (outMissingLayers) {
-				outMissingLayers->push_back(x);
-			}
-		}
-
-		return existingDesiredLayers;
+		auto func = [](uint32_t * count, VkLayerProperties * prop) { return vkEnumerateInstanceLayerProperties(count, prop); };
+		return utils::check<VkLayerProperties>(func, [](const VkLayerProperties & t) {return t.layerName; }, desiredLayers, outMissingLayers);
 	}
 
 
@@ -316,27 +273,24 @@ namespace vkw {
 
 	void Device::createDevice(const CreateInfo & createInfo)
 	{	
-		std::vector<const char*> deviceExtensions = setupExtensions(createInfo.extensions);
-		VkPhysicalDeviceFeatures features = setupFeatures(createInfo.features);
-
 		std::map<int, std::vector<float>> priorities;
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos = setupQueueCreation(createInfo, priorities);
 
-		VkDeviceCreateInfo deviceInfo = Init::deviceCreateInfo(); // create info with the queueCreateInfos, enabled device featurs and extenions
+		VkDeviceCreateInfo deviceInfo = init::deviceCreateInfo(); // create info with the queueCreateInfos, enabled device featurs and extenions
 		deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
 		deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-		deviceInfo.pEnabledFeatures = &features;
-		deviceInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-		deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
+		deviceInfo.pEnabledFeatures = &createInfo.features;
+		deviceInfo.enabledExtensionCount = static_cast<uint32_t>(createInfo.extensions.size());
+		deviceInfo.ppEnabledExtensionNames = createInfo.extensions.data();
 		deviceInfo.enabledLayerCount = 0;
 		deviceInfo.ppEnabledLayerNames = nullptr;
 
 		Debug::errorCodeCheck(vkCreateDevice(createInfo.physicalDevice.physicalDevice, &deviceInfo, nullptr, vkObject), "Failed to create Device");
 
-		if (graphicsQueue_m.family> -1) vkGetDeviceQueue(*vkObject, graphicsQueue_m.family, graphicsQueue_m.index, &graphicsQueue_m.queue);
-		if (transferQueue_m.family> -1) vkGetDeviceQueue(*vkObject, transferQueue_m.family, transferQueue_m.index, &transferQueue_m.queue);
-		if (presentQueue_m.family> -1) vkGetDeviceQueue(*vkObject, presentQueue_m.family, presentQueue_m.index,  &presentQueue_m.queue);
-		if (computeQueue_m.family> -1) vkGetDeviceQueue(*vkObject, computeQueue_m.family, computeQueue_m.index, &computeQueue_m.queue);
+		if (graphicsQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, graphicsQueue_m.family, graphicsQueue_m.index, &graphicsQueue_m.queue);
+		if (transferQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, transferQueue_m.family, transferQueue_m.index, &transferQueue_m.queue);
+		if (presentQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, presentQueue_m.family, presentQueue_m.index,  &presentQueue_m.queue);
+		if (computeQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, computeQueue_m.family, computeQueue_m.index, &computeQueue_m.queue);
 
 		for (auto & x : createInfo.additionalQueues) {
 			for (uint32_t i = 0; i < x.priorities.size(); i++) {
@@ -385,30 +339,6 @@ namespace vkw {
 		deviceRegistry = registry.createNewRegistry(*vkObject, graphics, transfer, present, compute, gpu);
 	}
 
-	std::vector<const char*> Device::setupExtensions(const std::vector<const char*> & extensions)
-	{
-		std::vector<const char*> desiredExtensions = extensions;
-		desiredExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-
-		// TODO::create Debug/log funtions to check for validity
-
-		//uint32_t extensionCount;
-			//vkEnumerateDeviceExtensionProperties(registry.physicalDevice, NULL, &extensionCount, nullptr);
-			//std::vector<VkExtensionProperties> extensionProperties;
-			//vkEnumerateDeviceExtensionProperties(registry.physicalDevice, NULL, &extensionCount, extensionProperties.data());
-
-		return desiredExtensions;
-	}
-
-	VkPhysicalDeviceFeatures Device::setupFeatures(const VkPhysicalDeviceFeatures & deviceFeatures) {
-		VkPhysicalDeviceFeatures desiredFeatures = deviceFeatures;
-
-		// TODO::create Debug/log funtions to check for validity
-
-		return desiredFeatures;
-	}	
-
 	std::vector<VkDeviceQueueCreateInfo> Device::setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<VkSurfaceKHR> & surfaces)
 	{
 		std::vector<VkDeviceQueueCreateInfo> createInfos;
@@ -439,7 +369,7 @@ namespace vkw {
 					priorities[userQueue.family].push_back(INVALID_PRIORITY);
 				}
 				priorities[userQueue.family].push_back(userQueue.priority);
-				VkDeviceQueueCreateInfo queueCreateInfo = Init::deviceQueueCreateInfo();
+				VkDeviceQueueCreateInfo queueCreateInfo = init::deviceQueueCreateInfo();
 				queueCreateInfo.queueFamilyIndex = info.family;
 				queueCreateInfo.queueCount = static_cast<uint32_t>(priorities[userQueue.family].size());
 				queueCreateInfo.pQueuePriorities = priorities[userQueue.family].data();
@@ -459,7 +389,7 @@ namespace vkw {
 			if (it == createInfos.end()) { 
 				// create new createInfo
 				priorities[family].push_back(info.priority);
-				VkDeviceQueueCreateInfo queueCreateInfo = Init::deviceQueueCreateInfo();
+				VkDeviceQueueCreateInfo queueCreateInfo = init::deviceQueueCreateInfo();
 				queueCreateInfo.queueFamilyIndex = info.family;
 				queueCreateInfo.queueCount = 1;
 				queueCreateInfo.pQueuePriorities = priorities[family].data();
@@ -637,7 +567,7 @@ namespace vkw {
 			}
 			else {
 				priorities[x.family] = x.priorities;
-				VkDeviceQueueCreateInfo queueCreateInfo = Init::deviceQueueCreateInfo();
+				VkDeviceQueueCreateInfo queueCreateInfo = init::deviceQueueCreateInfo();
 				queueCreateInfo.queueFamilyIndex = x.family;
 				queueCreateInfo.queueCount = static_cast<uint32_t>(priorities[x.family].size());
 				queueCreateInfo.pQueuePriorities = priorities[x.family].data();
