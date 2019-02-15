@@ -296,7 +296,7 @@ namespace vkw {
 			pObject->add(pObject); 
 		}
 
-		template<typename T, typename RegType> void VkPointer<T, RegType>::destroyObject(DestructionControl destrContr, std::function<void(Type)> deleterf) // gets called manualy
+		template<typename T, typename RegType> void VkPointer<T, RegType>::destroyObject(DestructionControl destrContr, std::function<void(Type)> deleterf) // gets called manually
 		{
 			if (pObject) {
 				if (destrContr == VKW_DESTR_CONTRL_FIRST_OBJECT_CALLS_DELETER ||

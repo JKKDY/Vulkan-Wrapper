@@ -51,7 +51,6 @@ namespace vkw {
 		VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		const VkCommandPool & commandPool;
 
-		VULKAN_WRAPPER_API void destroyObject() override;
 		VULKAN_WRAPPER_API void freeCommandBuffer();
 		VULKAN_WRAPPER_API void beginCommandBuffer(VkCommandBufferUsageFlags flags = 0, VkCommandBufferInheritanceInfo * inheritanceInfo = nullptr);
 		VULKAN_WRAPPER_API void endCommandBuffer();

@@ -117,14 +117,9 @@ namespace vkw {
 		vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(registry.device, &allocInfo, vkObject), "Failed to allocate Command Buffer");
 	}
 
-	void CommandBuffer::destroyObject()
-	{
-		vkObject.destroyObject(destructionControl, [=](VkCommandBuffer obj) {vkFreeCommandBuffers(registry.device, commandPool_m, 1, &obj); });
-	}
-
 	void CommandBuffer::freeCommandBuffer()
 	{
-		destroyObject();
+		vkObject.destroyObject(destructionControl, [=](VkCommandBuffer obj) {vkFreeCommandBuffers(registry.device, commandPool_m, 1, &obj); });
 	}
 
 	void CommandBuffer::beginCommandBuffer(VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo * inheritanceInfo)
