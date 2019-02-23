@@ -262,9 +262,9 @@ namespace vkw {
 		transferQueue(transferQueue_m),
 		presentQueue(presentQueue_m),
 		computeQueue(computeQueue_m),
-		additionalQueues(additionalQueues_m)
-	{
-	}
+		additionalQueues(additionalQueues_m),
+		deviceRegistry(registry.createNewRegistry())
+	{}
 
 	Device::Device(const CreateInfo & createInfo) : Device()
 	{		
@@ -336,7 +336,7 @@ namespace vkw {
 			presentQueue.family
 		};
 
-		deviceRegistry = registry.createNewRegistry(*vkObject, graphics, transfer, present, compute, gpu);
+		deviceRegistry->initialize(*vkObject, graphics, transfer, present, compute, gpu);
 	}
 
 	std::vector<VkDeviceQueueCreateInfo> Device::setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<VkSurfaceKHR> & surfaces)

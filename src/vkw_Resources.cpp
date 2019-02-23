@@ -105,6 +105,7 @@ namespace vkw {
 
 	DescriptorPool & DescriptorPool::operator=(const DescriptorPool & p)
 	{
+		impl::Entity <impl::VkwDescriptorPool>::operator=(p);
 		poolSizes_m = p.poolSizes_m;
 		maxSets_m = p.maxSets_m;
 		flags_m = p.flags_m;
@@ -151,6 +152,7 @@ namespace vkw {
 
 	DescriptorSetLayout & DescriptorSetLayout::operator=(const DescriptorSetLayout & rhs)
 	{
+		impl::Entity<impl::VkwDescriptorSetLayout>::operator=(rhs);
 		layoutBindings_m = rhs.layoutBindings;
 		flags = rhs.flags;
 
@@ -166,7 +168,7 @@ namespace vkw {
 		layout(layout_m)
 	{}
 
-	DescriptorSet::DescriptorSet(const CreateInfo & createInfo) :
+	DescriptorSet::DescriptorSet(const AllocInfo & createInfo) :
 		DescriptorSet(createInfo.descriptorPool, createInfo.layout)
 	{}
 
@@ -175,7 +177,7 @@ namespace vkw {
 		allocateDescriptorSet(descriptorPool, layout);
 	}
 
-	void DescriptorSet::allocateDescriptorSet(const CreateInfo & createInfo)
+	void DescriptorSet::allocateDescriptorSet(const AllocInfo & createInfo)
 	{
 		allocateDescriptorSet(createInfo.descriptorPool, createInfo.layout);
 	}
@@ -195,6 +197,7 @@ namespace vkw {
 
 	DescriptorSet & DescriptorSet::operator=(const DescriptorSet & rhs)
 	{
+		impl::Entity <impl::VkwDescriptorSet>::operator=(rhs);
 		descriptorPool = rhs.descriptorPool;
 		layout_m = rhs.layout_m;
 
@@ -260,14 +263,16 @@ namespace vkw {
 	void Memory::allocateMemory(AllocationInfo & allocInfo)
 	{
 		memoryFlags_m = allocInfo.memoryFlags;
-		allocateMemory(allocInfo.buffers, allocInfo.images, allocInfo.memoryType, allocInfo.additionalSize);
+		allocateMemory(allocInfo.buffers, allocInfo.images, 0, allocInfo.memoryType, allocInfo.additionalSize);
 	}
 
-	void Memory::allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers, std::initializer_list< std::reference_wrapper<Image>> images, uint32_t memoryType, VkDeviceSize additionalSize) 
+	void Memory::allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers, std::initializer_list< std::reference_wrapper<Image>> images, VkMemoryPropertyFlags memoryFlags, uint32_t memoryType, VkDeviceSize additionalSize)
 		// this has to be by reference otherwise memory cannot be set 
 		// IDEA: maybe make memory a shared state
 		// IDEA: maybe even go as far as giving every Object a customizable internal shared state
 	{	
+		if (memoryFlags != 0) memoryFlags_m = memoryFlags_m & memoryFlags;
+
 		for (auto & x : buffers) setMemoryTypeBitsBuffer(x);
 		for (auto & x : images) setMemoryTypeBitsImage(x);
 
@@ -282,6 +287,7 @@ namespace vkw {
 
 	Memory & Memory::operator=(const Memory & rhs)
 	{
+		impl::Entity<impl::VkwDeviceMemory>::operator=(rhs);
 		memoryMap_m = rhs.memoryMap_m;
 		memoryFlags_m = rhs.memoryFlags_m;
 		size_m = rhs.size_m;
@@ -467,6 +473,7 @@ namespace vkw {
 
 	Buffer & Buffer::operator=(const Buffer & rhs)
 	{
+		impl::Entity<impl::VkwBuffer>::operator=(rhs);
 		usageFlags = rhs.usageFlags;
 		flags = rhs.flags;
 		sharingMode = rhs.sharingMode;
@@ -529,9 +536,11 @@ namespace vkw {
 		commandBuffer.freeCommandBuffer();
 	}
 
-	SubBuffer Buffer::createSubBuffer(VkDeviceSize subBufferSize)
+	SubBuffer Buffer::createSubBuffer(VkDeviceSize subBufferSize, VkDeviceSize offset)
 	{
-		return SubBuffer(subBufferSize, Memory::getOffset(subBufferSize, size, this->memoryRanges), this);
+		VkDeviceSize realSize = subBufferSize == VK_WHOLE_SIZE ? size : subBufferSize;
+		VkDeviceSize realOffset = offset == std::numeric_limits<VkDeviceSize>::max() ? Memory::getOffset(realSize, size, memoryRanges) : offset;
+		return SubBuffer(realSize, realOffset, this);
 	}
 
 	//void Buffer::copyFrom(VkImage image, VkBufferCopy copyRegion, VkCommandPool cmdPool)
@@ -560,7 +569,8 @@ namespace vkw {
 	/// Sub Buffer
 	SubBuffer::SubBuffer():
 		size(size_m),
-		offset(offset_m)
+		offset(offset_m),
+		buffer(nullptr)
 	{}
 
 	SubBuffer::SubBuffer(const SubBuffer & rhs) : SubBuffer()
@@ -590,10 +600,18 @@ namespace vkw {
 
 		size_m = rhs.size_m;
 		offset_m = rhs.offset_m;
-
 		buffer = rhs.buffer;
 
+		//rhs.buffer = nullptr;
+		//rhs.offset_m = 0;
+		//rhs.size_m = 0;
+
 		return *this;
+	}
+
+	SubBuffer::operator VkBuffer() const
+	{
+		return *buffer;
 	}
 
 	void SubBuffer::write(const void * data, size_t sizeOfData, bool leaveMapped)
@@ -601,16 +619,16 @@ namespace vkw {
 		buffer->write(data, sizeOfData, this->offset, leaveMapped);
 	}
 
-	void SubBuffer::copyFrom(SubBuffer & srcBuffer, VkCommandPool commandPool)
+	void SubBuffer::copyFrom(const SubBuffer & srcBuffer, VkDeviceSize size, VkDeviceSize offset, VkCommandPool commandPool)
 	{
-		buffer->copyFromBuffer(*srcBuffer.buffer, VkBufferCopy{srcBuffer.offset, this->offset, srcBuffer.size}, commandPool);
+		buffer->copyFromBuffer(*srcBuffer.buffer, VkBufferCopy{ srcBuffer.offset + offset, this->offset, size == VK_WHOLE_SIZE ? this->size : size }, commandPool);
 	}
 
 	void SubBuffer::map(VkDeviceSize size, VkDeviceSize offset, VkMemoryMapFlags flags) { buffer->map(size == VK_WHOLE_SIZE ? size_m : size, offset_m + offset, flags); }
 
 	void SubBuffer::clear()
 	{
-		buffer->memoryRanges.erase(offset);
+		if (buffer) buffer->memoryRanges.erase(offset);
 		buffer = nullptr;
 	}
 
@@ -687,6 +705,7 @@ namespace vkw {
 
 	Image & Image::operator=(const Image & rhs)
 	{
+		impl::Entity<impl::VkwImage>::operator=(rhs);
 		layout_m = rhs.layout_m;
 		extent_m = rhs.extent_m;
 		memory = rhs.memory;
@@ -894,7 +913,7 @@ namespace vkw {
 
 	void ImageView::createImageView(const CreateInfo & createInfo)
 	{
-		createImageView(createInfo.image, createInfo.subresource, createInfo.viewType, createInfo.components);
+		createImageView(createInfo.image, createInfo.subresourceRange, createInfo.viewType, createInfo.components);
 	}
 
 	void ImageView::createImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType, VkComponentMapping components)

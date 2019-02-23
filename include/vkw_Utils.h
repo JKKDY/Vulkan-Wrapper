@@ -7,7 +7,47 @@
 #include <functional>
 
 namespace vkw {
-	inline namespace utils {
+	namespace tools {
+		inline void* alignedAlloc(size_t size, size_t alignment) {
+
+			void *data = nullptr;
+#if defined(_MSC_VER) || defined(__MINGW32__)
+			data = _aligned_malloc(size, alignment);
+#else
+			int res = posix_memalign(&data, alignment, size);
+			if (res != 0)
+				data = nullptr;
+#endif
+			return data;
+		}
+
+
+		// gets biggest depth format
+		inline VkFormat getDepthFormat(const VkPhysicalDevice & physicalDevice) {
+			std::vector<VkFormat> depthFormats = {
+				VK_FORMAT_D32_SFLOAT_S8_UINT,
+				VK_FORMAT_D32_SFLOAT,
+				VK_FORMAT_D24_UNORM_S8_UINT,
+				VK_FORMAT_D16_UNORM_S8_UINT,
+				VK_FORMAT_D16_UNORM
+			};
+
+			for (auto & x : depthFormats)
+			{
+				VkFormatProperties formatProps;
+				vkGetPhysicalDeviceFormatProperties(physicalDevice, x, &formatProps);
+				// Format must support depth stencil attachment for optimal tiling
+				if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+					return x;
+				}
+			}
+
+			return VK_FORMAT_UNDEFINED;
+		}
+	}
+
+	namespace utils {
+		// takes in a function to enumerate (e.g. vkEnumerateDeviceExtensionProperties), a function to get the name and desired & missing "names"
 		template<typename T> std::vector<const char*> check(std::function<VkResult(uint32_t*, T*)> enumerate, std::function<const char*(const T &)> getString, const std::vector<const char*> & desired, std::vector<const char*> * missing = nullptr) {
 			std::vector<const char*> exististingDesired;
 
@@ -28,21 +68,7 @@ namespace vkw {
 			return exististingDesired;
 		}
 
-		inline void* alignedAlloc(size_t size, size_t alignment) {
-
-			void *data = nullptr;
-#if defined(_MSC_VER) || defined(__MINGW32__)
-			data = _aligned_malloc(size, alignment);
-#else
-			int res = posix_memalign(&data, alignment, size);
-			if (res != 0)
-				data = nullptr;
-#endif
-			return data;
-		}
-
-
-
+		// makes class nn copyable
 		class NonCopyable
 		{
 		protected:
@@ -54,8 +80,7 @@ namespace vkw {
 		};
 
 
-
-
+		// simple Timer
 		class Timer {
 		public:
 			using h = std::chrono::hours;

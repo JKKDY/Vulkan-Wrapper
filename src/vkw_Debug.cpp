@@ -1,5 +1,5 @@
 #include "vkw_Debug.h"
-#include "vkw_initializers.h"
+#include "vkw_initializers.hpp"
 
 #if VKW_DEBUG >= 1
 

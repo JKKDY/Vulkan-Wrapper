@@ -98,8 +98,8 @@ namespace vkw {
 	public:
 		struct WriteInfo {
 			uint32_t dstBinding;
-			uint32_t dstArrayElement;
 			uint32_t descriptorCount;
+			uint32_t dstArrayElement = 0;
 			const VkDescriptorImageInfo * pImageInfo = nullptr;
 			const VkDescriptorBufferInfo * pBufferInfo = nullptr;
 			const VkBufferView * pTexelBufferView = nullptr;
@@ -114,7 +114,7 @@ namespace vkw {
 			uint32_t           descriptorCount;
 		};
 
-		struct CreateInfo {
+		struct AllocInfo {
 			VkDescriptorPool descriptorPool;
 			DescriptorSetLayout layout;
 		};
@@ -123,11 +123,11 @@ namespace vkw {
 		VULKAN_WRAPPER_API static void allocateDescriptorSets(std::vector<DescriptorSet&> descriptorSets);	//TODO: impelement
 
 		VULKAN_WRAPPER_API DescriptorSet();
-		VULKAN_WRAPPER_API DescriptorSet(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API DescriptorSet(const AllocInfo & createInfo);
 		VULKAN_WRAPPER_API DescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout);
 		VULKAN_WRAPPER_API ~DescriptorSet() = default;
 
-		VULKAN_WRAPPER_API void allocateDescriptorSet(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void allocateDescriptorSet(const AllocInfo & createInfo);
 		VULKAN_WRAPPER_API void allocateDescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout);
 
 		VULKAN_WRAPPER_API DescriptorSet & operator = (const DescriptorSet & rhs);
@@ -173,7 +173,7 @@ namespace vkw {
 		VULKAN_WRAPPER_API ~Memory() = default;
 
 		VULKAN_WRAPPER_API void allocateMemory(AllocationInfo & allocInfo);
-		VULKAN_WRAPPER_API void allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers = {}, std::initializer_list<std::reference_wrapper<Image>> images = {}, uint32_t memoryType = std::numeric_limits<uint32_t>::max(), VkDeviceSize additionalSize = 0);
+		VULKAN_WRAPPER_API void allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers = {}, std::initializer_list<std::reference_wrapper<Image>> images = {}, VkMemoryPropertyFlags memoryFlags = 0, uint32_t memoryType = std::numeric_limits<uint32_t>::max(), VkDeviceSize additionalSize = 0);
 
 		VULKAN_WRAPPER_API Memory & operator = (const Memory & rhs);
 
@@ -240,12 +240,12 @@ namespace vkw {
 		const VkDeviceSize & sizeInMemory; // Size is alligned with allignement e.g. "size" = usable size, "sizeInMemory" = size the buffer takes up in its Vk::Memory
 		const VkDeviceSize & allignement;
 
-		VULKAN_WRAPPER_API SubBuffer createSubBuffer(VkDeviceSize size);
+		VULKAN_WRAPPER_API SubBuffer createSubBuffer(VkDeviceSize size, VkDeviceSize offset = std::numeric_limits<VkDeviceSize>::max());
 
 		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData, VkDeviceSize offset = 0, bool leaveMapped = true);
-		VULKAN_WRAPPER_API void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
-		VULKAN_WRAPPER_API void flush();
-		VULKAN_WRAPPER_API void invalidate();
+		VULKAN_WRAPPER_API inline void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
+		VULKAN_WRAPPER_API inline void flush();
+		VULKAN_WRAPPER_API inline void invalidate();
 		VULKAN_WRAPPER_API void copyFromBuffer(VkBuffer srcBuffer, VkBufferCopy copyRegion = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
 		//VULKAN_WRAPER_API void copyFrom(VkImage image, VkBufferCopy copyRegion, VkCommandPool commandPool = VK_NULL_HANDLE);
 	private:
@@ -268,18 +268,18 @@ namespace vkw {
 		friend SubBuffer;
 		friend Buffer;
 	public:
-		// TODO: make default constr so that it can be declared in a header file
 		VULKAN_WRAPPER_API SubBuffer();
 		VULKAN_WRAPPER_API SubBuffer(const SubBuffer & rhs);
 		VULKAN_WRAPPER_API ~SubBuffer();
 
 		VULKAN_WRAPPER_API SubBuffer & operator = (const SubBuffer & rhs);
+		VULKAN_WRAPPER_API operator VkBuffer () const;
 
 		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData, bool leaveMapped = true);
-		VULKAN_WRAPPER_API void copyFrom(SubBuffer & srcBuffer, VkCommandPool commandPool = VK_NULL_HANDLE);
-		VULKAN_WRAPPER_API void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
-		VULKAN_WRAPPER_API void flush();
-		VULKAN_WRAPPER_API void invalidate();
+		VULKAN_WRAPPER_API inline void copyFrom(const SubBuffer & srcBuffer, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkCommandPool commandPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API inline void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
+		VULKAN_WRAPPER_API inline void flush();
+		VULKAN_WRAPPER_API inline void invalidate();
 		VULKAN_WRAPPER_API void clear();
 
 		const VkDeviceSize & size;
@@ -304,7 +304,7 @@ namespace vkw {
 			VkFormat                 format;
 			VkExtent3D               extent;
 			VkImageUsageFlags        usage;
-			VkImageType              imageType;
+			VkImageType              imageType = VK_IMAGE_TYPE_2D;
 			VkImageCreateFlags       flags = 0;
 			VkImageLayout            layout = VK_IMAGE_LAYOUT_UNDEFINED;
 			VkSharingMode            sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -361,7 +361,7 @@ namespace vkw {
 		struct CreateInfo {
 			Image image;
 			VkImageViewType viewType;
-			VkImageSubresourceRange subresource;
+			VkImageSubresourceRange subresourceRange;
 			VkComponentMapping components = {};
 		};
 
