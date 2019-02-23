@@ -144,6 +144,8 @@ int main() {
 
 
 
+
+
 	/// Render Pass
 	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -203,11 +205,11 @@ int main() {
 	vkw::Buffer indexBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, sizeof(uint16_t) * indices.size());
 	indexMemory.allocateMemory({indexBuffer });
 
-	vkw::Memory vertexStagingMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT);
+	vkw::Memory vertexStagingMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	vkw::Buffer vertexStagingBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, sizeof(Vertex) * vertices.size());
 	vertexStagingMemory.allocateMemory({vertexStagingBuffer });
 
-	vkw::Memory indexStagingMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	vkw::Memory indexStagingMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	vkw::Buffer indexStagingBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, sizeof(uint16_t) * indices.size());
 	indexStagingMemory.allocateMemory({indexStagingBuffer });
 
@@ -234,13 +236,6 @@ int main() {
 	// pipeline Layout
 	vkw::PipelineLayout layout({}, {});
 
-	// Pipeline Sates
-	vkw::GraphicsPipeline::CreateInfo pipelineCreateInfo = {};
-	pipelineCreateInfo.subPass = 0;
-	pipelineCreateInfo.shaderStages = { vertShaderModule.pipelineShaderStageCreateInfo(), fragShaderModule.pipelineShaderStageCreateInfo() };
-	pipelineCreateInfo.renderPass = renderPass;
-	pipelineCreateInfo.layout = layout;
-
 	// vertex input state
 	VkVertexInputBindingDescription vertexInputBindingDescription = {};
 	vertexInputBindingDescription.binding = 0;
@@ -259,38 +254,50 @@ int main() {
 	vertexInputAttributs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 	vertexInputAttributs[1].offset = offsetof(Vertex, col);
 
-	pipelineCreateInfo.pipelineStates.vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
-	pipelineCreateInfo.pipelineStates.vertexInputState.pVertexAttributeDescriptions = vertexInputAttributs.data();
-	pipelineCreateInfo.pipelineStates.vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributs.size());
-	pipelineCreateInfo.pipelineStates.vertexInputState.pVertexBindingDescriptions = &vertexInputBindingDescription;
-	pipelineCreateInfo.pipelineStates.vertexInputState.vertexBindingDescriptionCount = 1;
-
+	auto vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
+	vertexInputState.pVertexAttributeDescriptions = vertexInputAttributs.data();
+	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributs.size());
+	vertexInputState.pVertexBindingDescriptions = &vertexInputBindingDescription;
+	vertexInputState.vertexBindingDescriptionCount = 1;
 
 	// viewport State
 	VkRect2D scissor = { { 0,0 }, swapChain.extent };
 	VkViewport viewport = vkw::init::viewport(swapChain.extent);
 
-	pipelineCreateInfo.pipelineStates.viewportState = pipelineViewportSatetCreateInfo(viewport, scissor);
+	auto viewportState = pipelineViewportSatetCreateInfo(viewport, scissor);
 
 	// collor blend State
 	VkPipelineColorBlendAttachmentState colorBlendAttachement = {};
 	colorBlendAttachement.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachement.blendEnable = VK_FALSE;
 
-	pipelineCreateInfo.pipelineStates.colorBlendState = vkw::init::pipelineColorBlendStateCreateInfo();
-	pipelineCreateInfo.pipelineStates.colorBlendState.attachmentCount = 1;
-	pipelineCreateInfo.pipelineStates.colorBlendState.pAttachments = &colorBlendAttachement;
+	auto colorBlendState = vkw::init::pipelineColorBlendStateCreateInfo();
+	colorBlendState.attachmentCount = 1;
+	colorBlendState.pAttachments = &colorBlendAttachement;
 
 	// other pipeline States
-	pipelineCreateInfo.pipelineStates.inputAssemblyState = vkw::init::pipelineInputAssemblyStateCreateInfo();
-	pipelineCreateInfo.pipelineStates.inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	pipelineCreateInfo.pipelineStates.inputAssemblyState.primitiveRestartEnable = VK_FALSE;
+	auto inputAssemblyState = vkw::init::pipelineInputAssemblyStateCreateInfo();
+	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	inputAssemblyState.primitiveRestartEnable = VK_FALSE;
 
-	pipelineCreateInfo.pipelineStates.rasterizationState = pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, 0, VK_FRONT_FACE_CLOCKWISE);
+	auto rasterizationState = pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, 0, VK_FRONT_FACE_CLOCKWISE);
 
-	pipelineCreateInfo.pipelineStates.multisampleState = vkw::init::pipelineMultisampleStateCreateInfo();
-	pipelineCreateInfo.pipelineStates.multisampleState.sampleShadingEnable = VK_FALSE;
-	pipelineCreateInfo.pipelineStates.multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	auto multisampleState = vkw::init::pipelineMultisampleStateCreateInfo();
+	multisampleState.sampleShadingEnable = VK_FALSE;
+	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+	// Pipeline Sates
+	vkw::GraphicsPipeline::CreateInfo pipelineCreateInfo;
+	pipelineCreateInfo.subPass = 0;
+	pipelineCreateInfo.shaderStages = { vertShaderModule.pipelineShaderStageInfo(), fragShaderModule.pipelineShaderStageInfo() };
+	pipelineCreateInfo.renderPass = renderPass;
+	pipelineCreateInfo.layout = layout;
+	pipelineCreateInfo.vertexInputState = &vertexInputState;
+	pipelineCreateInfo.viewportState = &viewportState;
+	pipelineCreateInfo.colorBlendState = &colorBlendState;
+	pipelineCreateInfo.inputAssemblyState = &inputAssemblyState;
+	pipelineCreateInfo.rasterizationState = &rasterizationState;
+	pipelineCreateInfo.multisampleState = &multisampleState;
 
 	// Graphics Pipeline creation
 	vkw::GraphicsPipeline pipeline(pipelineCreateInfo);

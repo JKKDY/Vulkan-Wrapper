@@ -145,7 +145,7 @@ namespace vkw {
 		VkShaderStageFlagBits stage;
 		VkShaderModuleCreateFlags flags = 0;
 
-		VULKAN_WRAPPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo = nullptr, const char * name = "main");
+		VULKAN_WRAPPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageInfo(const VkSpecializationInfo* specializationInfo = nullptr, const char * name = "main");
 	};
 
 
@@ -163,8 +163,8 @@ namespace vkw {
 		VULKAN_WRAPPER_API PipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
 		VULKAN_WRAPPER_API ~PipelineLayout() = default;
 
-		void createPipelineLayout(const CreateInfo & createInfo);
-		void createPipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
+		VULKAN_WRAPPER_API void createPipelineLayout(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createPipelineLayout(const std::vector<VkDescriptorSetLayout> & setLayouts, const std::vector<VkPushConstantRange> & pushConstants);
 
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 		std::vector<VkPushConstantRange> pushConstantRanges;
@@ -199,29 +199,24 @@ namespace vkw {
 
 	class GraphicsPipeline : public impl::Entity<impl::VkwPipeline>{
 	public:
-		struct GraphicsPipelineStates {
-			VkPipelineVertexInputStateCreateInfo	  vertexInputState	= { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineInputAssemblyStateCreateInfo    inputAssemblyState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineTessellationStateCreateInfo     tessellationState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineViewportStateCreateInfo         viewportState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineRasterizationStateCreateInfo    rasterizationState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineMultisampleStateCreateInfo      multisampleState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineDepthStencilStateCreateInfo     depthStencilState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineColorBlendStateCreateInfo       colorBlendState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-			VkPipelineDynamicStateCreateInfo          dynamicState = { VK_STRUCTURE_TYPE_MAX_ENUM };
-		};
-
-
 		struct CreateInfo {
-			GraphicsPipelineStates pipelineStates;
-			std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-			VkPipelineLayout layout;
-			VkRenderPass renderPass;
-			uint32_t subPass;
-			VkPipelineCreateFlags flags = 0;
-			VkPipelineCache cache = VK_NULL_HANDLE;
-			VkPipeline basePipelineHandle = VK_NULL_HANDLE;
-			int32_t basePipelineIndex = -1;
+			std::vector<VkPipelineShaderStageCreateInfo>	shaderStages;
+			VkPipelineLayout								layout;
+			VkRenderPass									renderPass;
+			uint32_t										subPass;
+			VkPipelineVertexInputStateCreateInfo		  *	vertexInputState = nullptr;
+			VkPipelineInputAssemblyStateCreateInfo		  *	inputAssemblyState = nullptr;
+			VkPipelineTessellationStateCreateInfo		  *	tessellationState = nullptr;
+			VkPipelineViewportStateCreateInfo			  *	viewportState = nullptr;
+			VkPipelineRasterizationStateCreateInfo		  *	rasterizationState = nullptr;
+			VkPipelineMultisampleStateCreateInfo		  *	multisampleState = nullptr;
+			VkPipelineDepthStencilStateCreateInfo		  *	depthStencilState = nullptr;
+			VkPipelineColorBlendStateCreateInfo			  *	colorBlendState = nullptr;
+			VkPipelineDynamicStateCreateInfo			  *	dynamicState = nullptr;
+			VkPipelineCreateFlags							flags = 0;
+			VkPipelineCache									cache = VK_NULL_HANDLE;
+			VkPipeline										basePipelineHandle = VK_NULL_HANDLE;
+			int32_t											basePipelineIndex = -1;
 		};
 
 
@@ -232,7 +227,6 @@ namespace vkw {
 		VkPipelineLayout								layout;
 		VkRenderPass									renderPass;
 		uint32_t										subPass;
-		GraphicsPipelineStates							pipelineStates = {};
 		VkPipelineCreateFlags							flags = 0;
 		VkPipeline										basePipelineHandle = VK_NULL_HANDLE;
 		int32_t											basePipelineIndex = -1;

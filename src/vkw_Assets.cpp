@@ -306,7 +306,7 @@ namespace vkw {
 		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &createInfo, nullptr, vkObject), "Failed to create ShaderModule!");
 	}
 
-	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageCreateInfo(const VkSpecializationInfo* specializationInfo, const char * name)
+	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageInfo(const VkSpecializationInfo* specializationInfo, const char * name)
 	{
 		VkPipelineShaderStageCreateInfo createInfo = init::pipelineShaderStageCreateInfo();
 		createInfo.module = *vkObject;
@@ -398,43 +398,20 @@ namespace vkw {
 		cache = createInfo.cache;
 		basePipelineHandle = createInfo.basePipelineHandle;
 		basePipelineIndex = createInfo.basePipelineIndex;
-		pipelineStates = createInfo.pipelineStates;
 
-		VkGraphicsPipelineCreateInfo pipelineInfo = {};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-
+		VkGraphicsPipelineCreateInfo pipelineInfo = vkw::init::graphicsPipelineCreateInfo();
 		pipelineInfo.flags = flags;
 		pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineInfo.pStages = shaderStages.data();
-
-		if (pipelineStates.vertexInputState.sType == VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO) {
-			pipelineInfo.pVertexInputState = &pipelineStates.vertexInputState;
-		}
-		if (pipelineStates.inputAssemblyState.sType == VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO) {
-			pipelineInfo.pInputAssemblyState = &pipelineStates.inputAssemblyState;
-		}
-		if (pipelineStates.tessellationState.sType == VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO) {
-			pipelineInfo.pTessellationState = &pipelineStates.tessellationState;
-		}
-		if (pipelineStates.viewportState.sType == VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO) {
-			pipelineInfo.pViewportState = &pipelineStates.viewportState;
-		}
-		if (pipelineStates.rasterizationState.sType == VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO) {
-			pipelineInfo.pRasterizationState = &pipelineStates.rasterizationState;
-		}
-		if (pipelineStates.multisampleState.sType == VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO) {
-			pipelineInfo.pMultisampleState = &pipelineStates.multisampleState;
-		}
-		if (pipelineStates.depthStencilState.sType == VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO) {
-			pipelineInfo.pDepthStencilState = &pipelineStates.depthStencilState;
-		}
-		if (pipelineStates.colorBlendState.sType == VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO) {
-			pipelineInfo.pColorBlendState = &pipelineStates.colorBlendState;
-		}
-		if (pipelineStates.dynamicState.sType == VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO) {
-			pipelineInfo.pDynamicState = &pipelineStates.dynamicState;
-		}
-
+		pipelineInfo.pVertexInputState = createInfo.vertexInputState;
+		pipelineInfo.pInputAssemblyState = createInfo.inputAssemblyState;
+		pipelineInfo.pTessellationState = createInfo.tessellationState;
+		pipelineInfo.pViewportState = createInfo.viewportState;
+		pipelineInfo.pRasterizationState = createInfo.rasterizationState;
+		pipelineInfo.pMultisampleState = createInfo.multisampleState;
+		pipelineInfo.pDepthStencilState = createInfo.depthStencilState;
+		pipelineInfo.pColorBlendState = createInfo.colorBlendState;
+		pipelineInfo.pDynamicState = createInfo.dynamicState;
 		pipelineInfo.layout = layout;
 		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = subPass;
