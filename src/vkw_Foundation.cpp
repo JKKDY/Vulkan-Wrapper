@@ -20,7 +20,8 @@ namespace vkw {
 			deviceDeleter([=](VkDevice obj) { vkDestroyDevice(obj, nullptr); }),
 			instance(instance_m),
 			surfaces(surfaces_m)
-		{}
+		{
+		}
 
 		template<> VkObject<VkwInstance>* RegistryManager::getNew() { 
 			VkObject<VkwInstance> * obj = new VkObject<VkwInstance>(instanceDeleter, [](){});
@@ -42,20 +43,12 @@ namespace vkw {
 			return *registrys[0];
 		}
 
-		Registry * RegistryManager::createNewRegistry(VkDevice dev,
-			const DeviceQueue & graphics,
-			const DeviceQueue &	transfer,
-			const DeviceQueue &	present,
-			const DeviceQueue &	compute,
-			const PhysicalDevice & gpu)
+		Registry * RegistryManager::createNewRegistry()
 		{
-			Registry * reg = new Registry(*instance_m, dev, graphics, transfer, present, compute, gpu);
-
+			Registry * reg = new Registry(*instance_m);
 			registrys.push_back(reg);
-
 			return reg;
 		}
-
 
 
 
@@ -77,13 +70,7 @@ namespace vkw {
 
 
 	
-		Registry::Registry(const VkInstance & instance,
-			VkDevice dev,
-			const DeviceQueue & graphics,
-			const DeviceQueue & transfer,
-			const DeviceQueue & present,
-			const DeviceQueue & compute,
-			const PhysicalDevice & gpu):
+		Registry::Registry(const VkInstance & instance):
 			instance(instance),
 			physicalDevice(physicalDevice_m),
 			device(device_m),
@@ -93,14 +80,18 @@ namespace vkw {
 			graphicsQueue(graphicsQueue_m),
 			transferQueue(transferQueue_m),
 			presentQueue(presentQueue_m),
-			computeQueue(computeQueue_m),
-			device_m(dev),
-			physicalDevice_m(gpu),
-			graphicsQueue_m(graphics),
-			transferQueue_m(transfer),
-			presentQueue_m(present),
-			computeQueue_m(compute)
+			computeQueue(computeQueue_m)
+		{}
+
+		void Registry::initialize(VkDevice dev, const DeviceQueue & graphics, const DeviceQueue & transfer, const DeviceQueue & present, const DeviceQueue & compute, const PhysicalDevice & gpu)
 		{
+			device_m = dev;
+			physicalDevice_m = gpu;
+			graphicsQueue_m = graphics;
+			transferQueue_m = transfer;
+			presentQueue_m = present;
+			computeQueue_m = compute;
+
 			fenceDeleter = setDeleterFunction	<VkFence>(vkDestroyFence);
 			semaphoreDeleter = setDeleterFunction	<VkSemaphore>(vkDestroySemaphore);
 			eventDeleter = setDeleterFunction	<VkEvent>(vkDestroyEvent);
@@ -122,6 +113,7 @@ namespace vkw {
 			commandPoolDeleter = setDeleterFunction	<VkCommandPool>(vkDestroyCommandPool);
 			swapchainDeleter = setDeleterFunction	<VkSwapchainKHR>(vkDestroySwapchainKHR);
 		}
+
 
 		template<typename T> std::function<void(T)> Registry::setDeleterFunction(std::function<void(T, VkAllocationCallbacks*)> deletef)
 		{
@@ -289,11 +281,11 @@ namespace vkw {
 
 		template<typename T, typename RegType> void VkPointer<T, RegType>::copy(const VkPointer<T, RegType> & obj, DestructionControl destrContr)
 		{
-			pObject->remove(pObject);
+			if(pObject) pObject->remove(pObject);
 			
 			pObject = obj.pObject;
 
-			pObject->add(pObject); 
+			if(pObject) pObject->add(pObject); 
 		}
 
 		template<typename T, typename RegType> void VkPointer<T, RegType>::destroyObject(DestructionControl destrContr, std::function<void(Type)> deleterf) // gets called manually

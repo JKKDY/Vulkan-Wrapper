@@ -23,7 +23,7 @@
     <ClInclude Include="include\vkw_Config.h" />
     <ClInclude Include="include\vkw_Include.h" />
     <ClInclude Include="include\init.hpp" />
-    <ClInclude Include="include\vkw_Initializers.h" />
+    <ClInclude Include="include\vkw_Initializers.hpp" />
     <ClInclude Include="include\vkw_Utils.h" />
     <ClInclude Include="include\vkw_Assets.h" />
     <ClInclude Include="include\vkw_Core.h" />

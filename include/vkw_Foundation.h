@@ -173,14 +173,15 @@ namespace vkw {
 
 		class Registry : utils::NonCopyable{
 		public:
-			Registry(const VkInstance & instance, 
-				VkDevice dev,
+			Registry(const VkInstance & instance);
+			~Registry() = default;
+
+			void initialize(VkDevice dev,
 				const DeviceQueue & graphics,
 				const DeviceQueue &	transfer,
 				const DeviceQueue &	present,
 				const DeviceQueue &	compute,
 				const PhysicalDevice & gpu);
-			~Registry() = default;
 
 			template<typename T> VkObject<T> * getNew();
 
@@ -248,13 +249,8 @@ namespace vkw {
 			template<typename T> VkObject<T> * getNew();
 
 			Registry & getRegistry();
-
-			Registry * createNewRegistry( VkDevice dev,
-				const DeviceQueue & graphics,
-				const DeviceQueue &	transfer,
-				const DeviceQueue &	present,
-				const DeviceQueue &	compute,
-				const PhysicalDevice & gpu);
+			
+			Registry * createNewRegistry();
 
 			VkReference<VkInstance>		  instance;
 			const std::vector<Surface>	& surfaces;
