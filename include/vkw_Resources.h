@@ -2,6 +2,7 @@
 #include "vkw_Include.h"
 
 
+
 namespace vkw {
 	class Buffer;
 	class Image;
@@ -33,7 +34,7 @@ namespace vkw {
 			uint32_t inlineUniformBlockEXTCount = 0;
 			uint32_t accelerationStructureNVCount = 0;
 			uint32_t maxSets;
-			VkDescriptorPoolCreateFlags flags;
+			VkDescriptorPoolCreateFlags flags = 0;
 
 			uint32_t operator ()(int descr) const;
 		};
@@ -147,11 +148,22 @@ namespace vkw {
 
 
 	/// Memory
+	struct MemoryRanges {
+		void addSize(VkDeviceSize size);
+		VkDeviceSize add(VkDeviceSize size);	// returns a offset
+		void add(VkDeviceSize offset, VkDeviceSize size);
+		void remove(VkDeviceSize offset, VkDeviceSize size);
+		void reset();
+	private:
+		std::map<VkDeviceSize, std::multiset<VkDeviceSize>> memoryRanges; // first: offset, second: sizes
+		std::map<VkDeviceSize, VkDeviceSize> freeRanges; // first: offset, second: sizes
+	};
+
 	class Memory : public impl::Entity<impl::VkwDeviceMemory> {
 		struct Mapped {
 			VkDeviceSize size = 0;
 			VkDeviceSize offset = 0;
-			void * mapped = nullptr;
+			void * mapped = nullptr; 
 		};
 	public:
 		struct CreateInfo {
@@ -194,13 +206,17 @@ namespace vkw {
 		VULKAN_WRAPPER_API void unMap();
 		VULKAN_WRAPPER_API void flush();
 		VULKAN_WRAPPER_API void invalidate();
+		MemoryRanges memoryRanges;
+		std::vector<int> i = { 34,3,5,6,2,1 };
+		struct Thing {
+			std::set<int> s = { 1,2,4,5,67,8, };
+		}thing;
 	private:
 		VkDeviceSize size_m = 0;
 		Mapped memoryMap_m;
 		VkMemoryPropertyFlags memoryFlags_m;
 		uint32_t memoryTypeBits_m = std::numeric_limits<uint32_t>::max();
 		uint32_t memoryType_m;
-		std::map<VkDeviceSize, VkDeviceSize> memoryRanges;
 
 		uint32_t findMemoryType();
 		static VkDeviceSize getOffset(VkDeviceSize dataSize, VkDeviceSize maxSize, std::map<VkDeviceSize, VkDeviceSize> & memoryRanges, VkDeviceSize allignement = 1);
@@ -225,12 +241,14 @@ namespace vkw {
 		VULKAN_WRAPPER_API Buffer();
 		VULKAN_WRAPPER_API Buffer(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API Buffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkDeviceSize offset = 0, VkBufferCreateFlags createflags = 0);
-		VULKAN_WRAPPER_API ~Buffer();
+		VULKAN_WRAPPER_API ~Buffer() = default;
 
 		VULKAN_WRAPPER_API void createBuffer(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API void createBuffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE, VkDeviceSize offset = 0, VkBufferCreateFlags createflags = 0);
 
 		VULKAN_WRAPPER_API Buffer & operator = (const Buffer & rhs);
+
+		VULKAN_WRAPPER_API void destroyObject() override;
 
 		VkBufferUsageFlags usageFlags;
 		VkBufferCreateFlags flags;
@@ -239,6 +257,7 @@ namespace vkw {
 		const VkDeviceSize & offset; // offset in Memory
 		const VkDeviceSize & sizeInMemory; // Size is alligned with allignement e.g. "size" = usable size, "sizeInMemory" = size the buffer takes up in its Vk::Memory
 		const VkDeviceSize & allignement;
+		const uint32_t & memoryTypeBits;
 
 		VULKAN_WRAPPER_API SubBuffer createSubBuffer(VkDeviceSize size, VkDeviceSize offset = std::numeric_limits<VkDeviceSize>::max());
 
@@ -253,12 +272,12 @@ namespace vkw {
 		VkDeviceSize offset_m;
 		VkDeviceSize sizeInMemory_m;
 		VkDeviceSize allignement_m;
+		uint32_t memoryBits_m;
 
-		std::map<VkDeviceSize, VkDeviceSize> memoryRanges;
+		MemoryRanges memoryRanges;
 		Memory * memory = nullptr;
 
 		friend void Memory::bindBufferToMemory(Buffer & buffer);
-		friend void Memory::setMemoryTypeBitsBuffer(Buffer & buffer);
 		friend SubBuffer;
 	};
 
@@ -327,6 +346,9 @@ namespace vkw {
 
 		const VkImageLayout & layout;
 		const VkExtent3D & extent;
+		const VkDeviceSize & sizeInMemory;
+		const uint32_t & memoryTypeBits;
+
 		VkImageCreateFlags flags = 0;
 		VkImageType imageType = VK_IMAGE_TYPE_2D;
 		VkSharingMode sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -345,7 +367,10 @@ namespace vkw {
 	private:
 		VkImageLayout layout_m = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkExtent3D extent_m;
+		VkDeviceSize size_m;
+		uint32_t memoryTypeBits_m;
 
+		friend void Memory::setMemoryTypeBitsImage(Image & image);
 		friend void Memory::bindImageToMemory(Image & image);
 		Memory * memory = nullptr; 
 	};

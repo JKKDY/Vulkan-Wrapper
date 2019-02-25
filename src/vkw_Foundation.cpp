@@ -344,12 +344,12 @@ namespace vkw {
 		/// Vk Object
 		template<typename T, typename RegType> Base<T, RegType>::Base() :
 			registry(getRegistry<RegType>()),
-			vkObject(registry)
+			pVkObject(registry)
 		{}
 
 		template<typename T, typename RegType> Base<T, RegType>::Base(const Base<T, RegType> & rhs):
 			registry(rhs.registry),
-			vkObject(rhs.vkObject),
+			pVkObject(rhs.pVkObject),
 			passOnVkObject(rhs.passOnVkObject),
 			destructionControl((rhs.destructionControl == VKW_DESTR_CONTRL_EXCLUSIVE_DELETER_CALL && passOnVkObject) ? VKW_DESTR_CONTRL_DO_NOTHING : rhs.destructionControl)
 		{}
@@ -364,7 +364,7 @@ namespace vkw {
 			passOnVkObject = rhs.passOnVkObject;
 
 			if (passOnVkObject) {
-				vkObject.copy(rhs.vkObject, destructionControl);
+				pVkObject.copy(rhs.pVkObject, destructionControl);
 
 				destructionControl = (rhs.destructionControl == VKW_DESTR_CONTRL_EXCLUSIVE_DELETER_CALL && passOnVkObject) ? VKW_DESTR_CONTRL_DO_NOTHING : rhs.destructionControl;
 			} 
@@ -384,17 +384,17 @@ namespace vkw {
 
 		template<typename T, typename RegType> void Base<T, RegType>::destroyObject()
 		{
-			vkObject.destroyObject(destructionControl);
+			pVkObject.destroyObject(destructionControl);
 		}
 
 		template<typename T, typename RegType>  Base<T, RegType>::operator typename T::Type () const
 		{
-			return *vkObject;
+			return *pVkObject;
 		}
 
 		template<typename T, typename RegType> typename T::Type * Base<T, RegType>::get() const
 		{
-			return vkObject;
+			return pVkObject;
 		}
 
 

@@ -67,10 +67,10 @@ namespace vkw {
 		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(createInfo.desiredExtensions.size());
 		instanceCreateInfo.ppEnabledExtensionNames = createInfo.desiredExtensions.data();
 
-		Debug::errorCodeCheck(vkCreateInstance(&instanceCreateInfo, nullptr, vkObject), "Failed to create Instance");
+		Debug::errorCodeCheck(vkCreateInstance(&instanceCreateInfo, nullptr, pVkObject), "Failed to create Instance");
 
 		debugMessengers.resize(createInfo.debugMessengerInfos.size());
-		for (int i = 0; i < debugMessengers.size(); i++) {
+		for (size_t i = 0; i < debugMessengers.size(); i++) {
 			Debug::errorCodeCheck(createDebugUtilsMessengerEXT(createInfo.debugMessengerInfos.at(i), nullptr, debugMessengers.at(i), false), std::string("Failed to create Debug Messenger, index: ",  i).c_str());
 		}
 
@@ -114,9 +114,9 @@ namespace vkw {
 	}
 
 	VkResult Instance::createDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT & pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDebugUtilsMessengerEXT & pCallback, bool automaticDestruction) {
-		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(*vkObject, "vkCreateDebugUtilsMessengerEXT");
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(*pVkObject, "vkCreateDebugUtilsMessengerEXT");
 		if (func != nullptr) {
-			auto ret = func(*vkObject, &pCreateInfo, pAllocator, &pCallback);
+			auto ret = func(*pVkObject, &pCreateInfo, pAllocator, &pCallback);
 			if (automaticDestruction && ret == VK_SUCCESS) debugMessengers.push_back(pCallback);
 			return ret;
 		}
@@ -127,11 +127,11 @@ namespace vkw {
 	}
 
 	void Instance::destroyDebugUtilsMessengerEXT(VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator) {
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(*vkObject, "vkDestroyDebugUtilsMessengerEXT");
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(*pVkObject, "vkDestroyDebugUtilsMessengerEXT");
 		if (func != nullptr) {
 			auto it = std::find(debugMessengers.begin(), debugMessengers.end(), callback);
 			if (it != debugMessengers.end()) debugMessengers.erase(it);
-			func(*vkObject, callback, pAllocator);
+			func(*pVkObject, callback, pAllocator);
 		}
 		else {
 			VKW_PRINT("failed to destory debugUtilsMessengerEXT");
@@ -174,7 +174,7 @@ namespace vkw {
 	void Surface::createSurface(const Window & window)
 	{
 		this->window = &window;
-		window.createSurface(registry.instance, vkObject);
+		window.createSurface(registry.instance, pVkObject);
 	}
 
 	std::vector<VkSurfaceFormatKHR> Surface::formats(VkPhysicalDevice gpu)const
@@ -184,9 +184,9 @@ namespace vkw {
 			std::vector<VkSurfaceFormatKHR> availableFormats;
 
 			uint32_t formatCount = 0;
-			vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, nullptr);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *pVkObject, &formatCount, nullptr);
 			availableFormats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *vkObject, &formatCount, availableFormats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, *pVkObject, &formatCount, availableFormats.data());
 
 			queriedFormats[gpu] = availableFormats;
 
@@ -201,9 +201,9 @@ namespace vkw {
 			std::vector<VkPresentModeKHR> availablePresentModes;
 
 			uint32_t presentModeCount = 0;
-			vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, nullptr);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *pVkObject, &presentModeCount, nullptr);
 			availablePresentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *vkObject, &presentModeCount, availablePresentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, *pVkObject, &presentModeCount, availablePresentModes.data());
 
 			queriedPresentModes[gpu] = availablePresentModes;
 
@@ -217,7 +217,7 @@ namespace vkw {
 		else {
 
 			VkSurfaceCapabilitiesKHR availableCapabilities;
-			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *vkObject, &availableCapabilities);
+			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *pVkObject, &availableCapabilities);
 
 			queriedCapabilities[gpu] = availableCapabilities;
 
@@ -229,7 +229,7 @@ namespace vkw {
 	{
 		VkExtent2D currentExtent;
 		VkSurfaceCapabilitiesKHR cap;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *vkObject, &cap);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, *pVkObject, &cap);
 
 		if (cap.currentExtent.width != std::numeric_limits<uint32_t>::max()) currentExtent = cap.currentExtent;
 		else {
@@ -285,12 +285,12 @@ namespace vkw {
 		deviceInfo.enabledLayerCount = 0;
 		deviceInfo.ppEnabledLayerNames = nullptr;
 
-		Debug::errorCodeCheck(vkCreateDevice(createInfo.physicalDevice.physicalDevice, &deviceInfo, nullptr, vkObject), "Failed to create Device");
+		Debug::errorCodeCheck(vkCreateDevice(createInfo.physicalDevice.physicalDevice, &deviceInfo, nullptr, pVkObject), "Failed to create Device");
 
-		if (graphicsQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, graphicsQueue_m.family, graphicsQueue_m.index, &graphicsQueue_m.queue);
-		if (transferQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, transferQueue_m.family, transferQueue_m.index, &transferQueue_m.queue);
-		if (presentQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, presentQueue_m.family, presentQueue_m.index,  &presentQueue_m.queue);
-		if (computeQueue_m.family >= 0) vkGetDeviceQueue(*vkObject, computeQueue_m.family, computeQueue_m.index, &computeQueue_m.queue);
+		if (graphicsQueue_m.family >= 0) vkGetDeviceQueue(*pVkObject, graphicsQueue_m.family, graphicsQueue_m.index, &graphicsQueue_m.queue);
+		if (transferQueue_m.family >= 0) vkGetDeviceQueue(*pVkObject, transferQueue_m.family, transferQueue_m.index, &transferQueue_m.queue);
+		if (presentQueue_m.family >= 0) vkGetDeviceQueue(*pVkObject, presentQueue_m.family, presentQueue_m.index,  &presentQueue_m.queue);
+		if (computeQueue_m.family >= 0) vkGetDeviceQueue(*pVkObject, computeQueue_m.family, computeQueue_m.index, &computeQueue_m.queue);
 
 		for (auto & x : createInfo.additionalQueues) {
 			for (uint32_t i = 0; i < x.priorities.size(); i++) {
@@ -298,7 +298,7 @@ namespace vkw {
 				queueInfo.family = x.family;
 				queueInfo.index = x.index + i;
 				queueInfo.priority = priorities[x.family][x.index + i];
-				vkGetDeviceQueue(*vkObject, x.family, queueInfo.index, &queueInfo.queue);
+				vkGetDeviceQueue(*pVkObject, x.family, queueInfo.index, &queueInfo.queue);
 				additionalQueues_m.push_back(queueInfo);
 			}
 		}
@@ -336,7 +336,7 @@ namespace vkw {
 			presentQueue.family
 		};
 
-		deviceRegistry->initialize(*vkObject, graphics, transfer, present, compute, gpu);
+		deviceRegistry->initialize(*pVkObject, graphics, transfer, present, compute, gpu);
 	}
 
 	std::vector<VkDeviceQueueCreateInfo> Device::setupPresetQueues(const PhysicalDevice & gpu, const PreSetQueuesCreateInfo & presetQueues, std::map<int, std::vector<float>> & priorities, const std::vector<VkSurfaceKHR> & surfaces)

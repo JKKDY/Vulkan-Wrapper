@@ -65,11 +65,11 @@ namespace vkw {
 			createInfo.pQueueFamilyIndices = nullptr; // Optional
 		}
 
-		vkw::Debug::errorCodeCheck(vkCreateSwapchainKHR(registry.device, &createInfo, nullptr, vkObject), "Failed to create Swapchain");
+		vkw::Debug::errorCodeCheck(vkCreateSwapchainKHR(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Swapchain");
 
-		vkGetSwapchainImagesKHR(registry.device, *vkObject, &imageCount_m, nullptr); // get the swapchainImages
+		vkGetSwapchainImagesKHR(registry.device, *pVkObject, &imageCount_m, nullptr); // get the swapchainImages
 		swapChainImages.resize(imageCount);
-		vkGetSwapchainImagesKHR(registry.device, *vkObject, &imageCount_m, swapChainImages.data());
+		vkGetSwapchainImagesKHR(registry.device, *pVkObject, &imageCount_m, swapChainImages.data());
 
 		swapChainImageViews.resize(swapChainImages.size()); // create vector with image views for each of the swapchain Images
 
@@ -105,7 +105,7 @@ namespace vkw {
 	uint32_t Swapchain::getNextImage(VkSemaphore semaphore, VkFence fence)
 	{
 		uint32_t imageIndex = 0;
-		vkAcquireNextImageKHR(registry.device, *vkObject, std::numeric_limits<uint64_t>::max(), semaphore, fence, &imageIndex);
+		vkAcquireNextImageKHR(registry.device, *pVkObject, std::numeric_limits<uint64_t>::max(), semaphore, fence, &imageIndex);
 		return imageIndex;
 	}
 
@@ -115,7 +115,7 @@ namespace vkw {
 		presentInfo.waitSemaphoreCount = static_cast<uint32_t>(semaphores.size());
 		presentInfo.pWaitSemaphores = semaphores.data();
 		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = vkObject;
+		presentInfo.pSwapchains = pVkObject;
 		presentInfo.pImageIndices = &imageIndex;
 
 		vkQueuePresentKHR(registry.presentQueue, &presentInfo);
@@ -178,7 +178,7 @@ namespace vkw {
 
 		VkSemaphoreCreateInfo createInfo = init::semaphoreCreateInfo();
 		createInfo.flags = flags;
-		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &createInfo, nullptr, vkObject), "Failed to create Semaphore");
+		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Semaphore");
 	}
 
 
@@ -206,18 +206,18 @@ namespace vkw {
 
 		VkFenceCreateInfo createInfo = init::fenceCreateInfo();
 		createInfo.flags = flags;
-		Debug::errorCodeCheck(vkCreateFence(registry.device, &createInfo, nullptr, vkObject), "Failed to create Fence");
+		Debug::errorCodeCheck(vkCreateFence(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Fence");
 	}
 
 	void Fence::wait(bool reset, uint64_t timeOut)
 	{
-		Debug::errorCodeCheck(vkWaitForFences(registry.device, 1, vkObject, VK_TRUE, timeOut), "Failed to wait for Fence");
+		Debug::errorCodeCheck(vkWaitForFences(registry.device, 1, pVkObject, VK_TRUE, timeOut), "Failed to wait for Fence");
 		if (reset) this->reset();
 	}
 
 	void Fence::reset()
 	{
-		vkResetFences(registry.device, 1, vkObject);
+		vkResetFences(registry.device, 1, pVkObject);
 	}
 
 	void Fence::reset(std::vector<Fence> & fences)
@@ -258,7 +258,7 @@ namespace vkw {
 		renderPassInfo.subpassCount = static_cast<uint32_t>(subPassDescriptions.size());
 		renderPassInfo.pSubpasses = subPassDescriptions.data();
 
-		Debug::errorCodeCheck(vkCreateRenderPass(registry.device, &renderPassInfo, nullptr, vkObject), "Failed to create Render Pass");
+		Debug::errorCodeCheck(vkCreateRenderPass(registry.device, &renderPassInfo, nullptr, pVkObject), "Failed to create Render Pass");
 	}
 
 
@@ -303,13 +303,13 @@ namespace vkw {
 		createInfo.codeSize = shaderCode.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*> (shaderCode.data());
 
-		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &createInfo, nullptr, vkObject), "Failed to create ShaderModule!");
+		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &createInfo, nullptr, pVkObject), "Failed to create ShaderModule!");
 	}
 
 	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageInfo(const VkSpecializationInfo* specializationInfo, const char * name)
 	{
 		VkPipelineShaderStageCreateInfo createInfo = init::pipelineShaderStageCreateInfo();
-		createInfo.module = *vkObject;
+		createInfo.module = *pVkObject;
 		createInfo.flags = flags;
 		createInfo.stage = stage;
 		createInfo.pName = name;
@@ -348,7 +348,7 @@ namespace vkw {
 		createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
 		createInfo.pPushConstantRanges = pushConstantRanges.data();
 
-		Debug::errorCodeCheck(vkCreatePipelineLayout(registry.device, &createInfo, nullptr, vkObject), "failed to create pipeline layout!");
+		Debug::errorCodeCheck(vkCreatePipelineLayout(registry.device, &createInfo, nullptr, pVkObject), "failed to create pipeline layout!");
 	}
 
 
@@ -374,7 +374,7 @@ namespace vkw {
 		createInfo.flags = flags;
 		createInfo.initialDataSize = size;
 		createInfo.pInitialData = data;
-		Debug::errorCodeCheck(vkCreatePipelineCache(registry.device, &createInfo, nullptr, vkObject));
+		Debug::errorCodeCheck(vkCreatePipelineCache(registry.device, &createInfo, nullptr, pVkObject));
 	}
 
 
@@ -418,6 +418,6 @@ namespace vkw {
 		pipelineInfo.basePipelineHandle = basePipelineHandle;
 		pipelineInfo.basePipelineIndex = basePipelineIndex;
 
-		Debug::errorCodeCheck(vkCreateGraphicsPipelines(registry.device, cache, 1, &pipelineInfo, nullptr, vkObject), "Failed to create Pipeline");
+		Debug::errorCodeCheck(vkCreateGraphicsPipelines(registry.device, cache, 1, &pipelineInfo, nullptr, pVkObject), "Failed to create Pipeline");
 	};
 }

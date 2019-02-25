@@ -95,12 +95,12 @@ namespace vkw {
 		createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		createInfo.pPoolSizes = poolSizes.data();
 
-		vkw::Debug::errorCodeCheck(vkCreateDescriptorPool(registry.device, &createInfo, nullptr, vkObject), "Failed to create Descriptor Pool");
+		vkw::Debug::errorCodeCheck(vkCreateDescriptorPool(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Descriptor Pool");
 	}
 
 	void DescriptorPool::resetDescriptorPool(VkDescriptorPoolResetFlags flags)
 	{
-		vkw::Debug::errorCodeCheck(vkResetDescriptorPool(registry.device, *vkObject, flags), "Failed to reset the command Pool");
+		vkw::Debug::errorCodeCheck(vkResetDescriptorPool(registry.device, *pVkObject, flags), "Failed to reset the command Pool");
 	}
 
 	DescriptorPool & DescriptorPool::operator=(const DescriptorPool & p)
@@ -147,7 +147,7 @@ namespace vkw {
 		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 		layoutInfo.flags = flags;
-		vkw::Debug::errorCodeCheck(vkCreateDescriptorSetLayout(registry.device, &layoutInfo, nullptr, vkObject), "Failed to create DescriptorSetLayout");
+		vkw::Debug::errorCodeCheck(vkCreateDescriptorSetLayout(registry.device, &layoutInfo, nullptr, pVkObject), "Failed to create DescriptorSetLayout");
 	}
 
 	DescriptorSetLayout & DescriptorSetLayout::operator=(const DescriptorSetLayout & rhs)
@@ -192,7 +192,7 @@ namespace vkw {
 		allocInfo.pSetLayouts = layout.get();
 		allocInfo.descriptorSetCount = 1;
 
-		Debug::errorCodeCheck(vkAllocateDescriptorSets(registry.device, &allocInfo, vkObject), "Failed to create Descriptor Set");
+		Debug::errorCodeCheck(vkAllocateDescriptorSets(registry.device, &allocInfo, pVkObject), "Failed to create Descriptor Set");
 	}
 
 	DescriptorSet & DescriptorSet::operator=(const DescriptorSet & rhs)
@@ -210,7 +210,7 @@ namespace vkw {
 		
 		for (auto x : writeInfos) {
 			VkWriteDescriptorSet write = vkw::init::writeDescriptorSet();
-			write.dstSet = *vkObject;
+			write.dstSet = *pVkObject;
 			write.dstBinding = x.dstBinding;
 			write.dstArrayElement = x.dstArrayElement;
 			write.descriptorCount = x.descriptorCount;
@@ -233,6 +233,82 @@ namespace vkw {
 		}
 
 		vkUpdateDescriptorSets(registry.device, static_cast<uint32_t>(writes.size()), writes.data(), static_cast<uint32_t>(copys.size()), copys.data());
+	}
+
+
+
+
+
+	/// Memory Ranges
+	void MemoryRanges::addSize(VkDeviceSize size)
+	{	
+		if (freeRanges.empty()) {
+			if (memoryRanges.empty()) freeRanges[0] = size;
+			else freeRanges[*(memoryRanges.rbegin()->second.rbegin())] = size;
+		}
+		else freeRanges.rbegin()->second += size;
+	}
+
+	VkDeviceSize MemoryRanges::add(VkDeviceSize size)
+	{
+		for (auto & x : freeRanges) {
+			if (x.second >= size) {
+				VkDeviceSize sizeBefore = x.second;
+				VkDeviceSize offsetBefore = x.first;
+				freeRanges.erase(x.first);
+				if (sizeBefore - size > 0) freeRanges[offsetBefore + size] = sizeBefore - size;
+
+				memoryRanges[offsetBefore]; // create std::multiset if not created already
+				memoryRanges.at(offsetBefore).insert(size);
+
+				return offsetBefore;
+			}
+		}
+		return std::numeric_limits<VkDeviceSize>::max();
+	}
+
+	void MemoryRanges::add(VkDeviceSize offset, VkDeviceSize size)
+	{
+		memoryRanges[offset].insert(size);
+	}
+
+	void MemoryRanges::remove(VkDeviceSize offset, VkDeviceSize size)
+	{
+		// remove from memoryRanges
+		std::set<VkDeviceSize>::iterator it = memoryRanges.at(offset).find(size);
+		std::set<VkDeviceSize>::reverse_iterator s = memoryRanges.at(offset).rbegin();
+
+		if (*it < *memoryRanges.at(offset).rbegin() || memoryRanges.at(offset).count(size) > 1) { // *it is not the biggest size at this offset or its a duplicate
+			memoryRanges.at(offset).erase(it);
+		}
+		else {
+			memoryRanges.at(offset).erase(it);
+			if (memoryRanges.at(offset).empty()) memoryRanges.erase(offset);
+
+			// add to freeRanges
+			auto lower = freeRanges.lower_bound(offset);
+
+			if (freeRanges.count(offset + size)) {		// a free range begins at size + offset
+				freeRanges[offset] = size + freeRanges.at(offset + size);
+				freeRanges.erase(offset + size);
+			}
+			else if (lower != freeRanges.begin()) {
+				auto beg = freeRanges.begin();
+				auto previous = std::prev(lower);
+				if (previous->first + previous->second == offset)  // a free Range ends at offset
+					previous->second += size;
+				else freeRanges[offset] = size;
+			}
+			else {
+				freeRanges[offset] = size;
+			}
+		}
+	}
+
+	void MemoryRanges::reset()
+	{
+		memoryRanges.clear();
+		freeRanges.clear();
 	}
 
 
@@ -271,6 +347,9 @@ namespace vkw {
 		// IDEA: maybe make memory a shared state
 		// IDEA: maybe even go as far as giving every Object a customizable internal shared state
 	{	
+		i = { 34,3,5,6,2,1 };
+		thing.s = { 1,2,4,5,67,8, };
+
 		if (memoryFlags != 0) memoryFlags_m = memoryFlags_m & memoryFlags;
 
 		for (auto & x : buffers) setMemoryTypeBitsBuffer(x);
@@ -279,7 +358,9 @@ namespace vkw {
 		VkMemoryAllocateInfo allocInfo = vkw::init::memoryAllocateInfo();
 		allocInfo.allocationSize = size + additionalSize;
 		allocInfo.memoryTypeIndex = memoryType == std::numeric_limits<uint32_t>::max() ? findMemoryType() : memoryType;
-		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, vkObject), "Failed to allocate Memory");
+		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, pVkObject), "Failed to allocate Memory");
+
+		memoryRanges.addSize(size + additionalSize);
 
 		for (auto & x : buffers) bindBufferToMemory(x);
 		for (auto & x : images) bindImageToMemory(x);
@@ -300,20 +381,14 @@ namespace vkw {
 
 	void Memory::setMemoryTypeBitsBuffer(Buffer & buffer)
 	{
-		VkMemoryRequirements memoryRequirements;
-
-		vkGetBufferMemoryRequirements(registry.device, buffer, &memoryRequirements);
-		setMemoryTypeBits(memoryRequirements);
-
-		buffer.sizeInMemory_m = memoryRequirements.size;
-		buffer.allignement_m = memoryRequirements.alignment;
+		memoryTypeBits_m = memoryTypeBits_m & buffer.memoryTypeBits;
+		size_m += buffer.sizeInMemory;
 	}
 
 	void Memory::setMemoryTypeBitsImage(Image & image)
 	{
-		VkMemoryRequirements memoryRequirements;
-		vkGetImageMemoryRequirements(registry.device, image, &memoryRequirements);
-		setMemoryTypeBits(memoryRequirements);
+		memoryTypeBits_m = memoryTypeBits_m & image.memoryTypeBits;
+		size_m += image.sizeInMemory;
 	}
 
 	void Memory::bindBufferToMemory(Buffer & buffer)
@@ -321,11 +396,9 @@ namespace vkw {
 		VKW_assert(buffer.memory == nullptr, "Buffer is already bound to memory");
 
 		buffer.memory = this;
-		buffer.offset_m = getOffset(buffer.sizeInMemory, size, memoryRanges);
+		buffer.offset_m = memoryRanges.add(buffer.sizeInMemory);
 
-		memoryRanges[buffer.offset] = buffer.sizeInMemory;
-
-		Debug::errorCodeCheck(vkBindBufferMemory(registry.device, buffer, *vkObject, buffer.offset), "Failed to bind Memory to Buffer");
+		Debug::errorCodeCheck(vkBindBufferMemory(registry.device, buffer, *pVkObject, buffer.offset), "Failed to bind Memory to Buffer");
 	}
 
 	void Memory::bindImageToMemory(Image & image)
@@ -333,14 +406,14 @@ namespace vkw {
 		VKW_assert(image.memory == nullptr, "image is already bound to memory");
 
 		image.memory = this;
-		Debug::errorCodeCheck(vkBindImageMemory(registry.device, image, *vkObject, 0), "Failed to bind Memory to Image");
+		Debug::errorCodeCheck(vkBindImageMemory(registry.device, image, *pVkObject, memoryRanges.add(image.sizeInMemory)), "Failed to bind Memory to Image");
 	}
 
 	void * Memory::map(VkDeviceSize size, VkDeviceSize offset, VkMemoryMapFlags flags)
 	{
 		memoryMap_m.offset = offset;
 		memoryMap_m.size = size;
-		vkw::Debug::errorCodeCheck(vkMapMemory(registry.device, *vkObject, offset, size, flags, &memoryMap_m.mapped), "Failed to map memory");
+		vkw::Debug::errorCodeCheck(vkMapMemory(registry.device, *pVkObject, offset, size, flags, &memoryMap_m.mapped), "Failed to map memory");
 		return memoryMap.mapped;
 	}
 
@@ -348,7 +421,7 @@ namespace vkw {
 	{
 		VKW_assert(memoryMap.mapped != nullptr, "Memory is not mapped");
 
-		vkUnmapMemory(registry.device, *vkObject);
+		vkUnmapMemory(registry.device, *pVkObject);
 		memoryMap_m.mapped = nullptr;
 		memoryMap_m.offset = 0;
 		memoryMap_m.size = 0;
@@ -357,7 +430,7 @@ namespace vkw {
 	void Memory::flush()
 	{
 		VkMappedMemoryRange mappedRange = init::mappedMemoryRange();
-		mappedRange.memory = *vkObject;
+		mappedRange.memory = *pVkObject;
 		mappedRange.offset = memoryMap.offset;
 		mappedRange.size = memoryMap.size;
 		Debug::errorCodeCheck(vkFlushMappedMemoryRanges(registry.device, 1, &mappedRange), "Could not flush mapped memory Ranges");
@@ -366,7 +439,7 @@ namespace vkw {
 	void Memory::invalidate()
 	{
 		VkMappedMemoryRange mappedRange = init::mappedMemoryRange();
-		mappedRange.memory = *vkObject;
+		mappedRange.memory = *pVkObject;
 		mappedRange.offset = memoryMap.offset;
 		mappedRange.size = memoryMap.size;
 		Debug::errorCodeCheck(vkInvalidateMappedMemoryRanges(registry.device, 1, &mappedRange), "Could not invalidate mapped memory Ranges");
@@ -418,13 +491,13 @@ namespace vkw {
 
 
 
-
 	/// Buffer
 	Buffer::Buffer():
 		sizeInMemory(sizeInMemory_m),
 		allignement(allignement_m),
 		offset(offset_m),
-		size(size_m)
+		size(size_m),
+		memoryTypeBits(memoryBits_m)
 	{}
 
 	Buffer::Buffer(const CreateInfo & createInfo) : Buffer()
@@ -435,15 +508,6 @@ namespace vkw {
 	Buffer::Buffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode, VkDeviceSize offset, VkBufferCreateFlags createflags) : Buffer()
 	{
 		createBuffer(usageFlags, size, sharingMode, offset, createflags);
-	}
-
-	Buffer::~Buffer()
-	{
-		if (memory) {
-			if (memory->memoryRanges.size() > 0) { // if size > 0 memory has been most likely destroid
-				memory->memoryRanges.erase(offset); // NOTE: review if this is avtually the case
-			}
-		}
 	}
 
 	void Buffer::createBuffer(const CreateInfo & createInfo)
@@ -468,7 +532,15 @@ namespace vkw {
 		// bufferInfo.pQueueFamilyIndices = 
 		// bufferInfo.queueFamilyIndexCount = 
 
-		vkw::Debug::errorCodeCheck(vkCreateBuffer(registry.device, &bufferInfo, nullptr, vkObject), "Failed to create buffer");
+		vkw::Debug::errorCodeCheck(vkCreateBuffer(registry.device, &bufferInfo, nullptr, pVkObject), "Failed to create buffer");
+	
+		VkMemoryRequirements memoryRequirements;
+		vkGetBufferMemoryRequirements(registry.device, *pVkObject, &memoryRequirements);
+
+		sizeInMemory_m = memoryRequirements.size;
+		allignement_m = memoryRequirements.alignment;
+		memoryBits_m = memoryRequirements.memoryTypeBits;
+		memoryRanges.addSize(memoryRequirements.size);
 	}
 
 	Buffer & Buffer::operator=(const Buffer & rhs)
@@ -483,9 +555,26 @@ namespace vkw {
 		sizeInMemory_m = rhs.sizeInMemory_m;
 		allignement_m = rhs.allignement_m;
 		memoryRanges = rhs.memoryRanges;
-		memory = memory;
+		memory = rhs.memory;
 
 		return *this;
+	}
+
+	void Buffer::destroyObject()
+	{
+		if (memory) { 
+			memory->memoryRanges.remove(offset, sizeInMemory);
+			memory = nullptr;
+		}
+
+		size_m = 0;
+		offset_m = 0;
+		sizeInMemory_m = 0;
+		allignement_m = 0;
+
+		memoryRanges.reset();
+
+		pVkObject.destroyObject(destructionControl);
 	}
 
 	void Buffer::write(const void * data, size_t sizeOfData, VkDeviceSize offset, bool leaveMapped) // offset is not relative to the bound memory block but to the start of the buffer 
@@ -527,7 +616,7 @@ namespace vkw {
 
 		if (copyRegion.size == 0) copyRegion.size = this->size;
 
-		vkCmdCopyBuffer(commandBuffer, srcBuffer, *vkObject, 1, &copyRegion);
+		vkCmdCopyBuffer(commandBuffer, srcBuffer, *pVkObject, 1, &copyRegion);
 
 		commandBuffer.endCommandBuffer();
 		commandBuffer.submitCommandBuffer(registry.transferQueue, {}, fence);
@@ -539,7 +628,7 @@ namespace vkw {
 	SubBuffer Buffer::createSubBuffer(VkDeviceSize subBufferSize, VkDeviceSize offset)
 	{
 		VkDeviceSize realSize = subBufferSize == VK_WHOLE_SIZE ? size : subBufferSize;
-		VkDeviceSize realOffset = offset == std::numeric_limits<VkDeviceSize>::max() ? Memory::getOffset(realSize, size, memoryRanges) : offset;
+		VkDeviceSize realOffset = offset == std::numeric_limits<VkDeviceSize>::max() ? memoryRanges.add(subBufferSize) : offset;
 		return SubBuffer(realSize, realOffset, this);
 	}
 
@@ -602,10 +691,8 @@ namespace vkw {
 		offset_m = rhs.offset_m;
 		buffer = rhs.buffer;
 
-		//rhs.buffer = nullptr;
-		//rhs.offset_m = 0;
-		//rhs.size_m = 0;
-
+		buffer->memoryRanges.add(offset, size);
+	
 		return *this;
 	}
 
@@ -628,8 +715,10 @@ namespace vkw {
 
 	void SubBuffer::clear()
 	{
-		if (buffer) buffer->memoryRanges.erase(offset);
-		buffer = nullptr;
+		if (buffer) {
+			buffer->memoryRanges.remove(offset, size);
+			buffer = nullptr;
+		}
 	}
 
 	void SubBuffer::flush() { buffer->flush(); }
@@ -644,7 +733,9 @@ namespace vkw {
 	/// Image
 	Image::Image():
 		layout(layout_m),
-		extent(extent_m)
+		extent(extent_m),
+		sizeInMemory(size_m),
+		memoryTypeBits(memoryTypeBits_m)
 	{}
 
 	Image::Image(const CreateInfo & createInfo): Image()
@@ -687,8 +778,13 @@ namespace vkw {
 		info.pQueueFamilyIndices = createInfo.familyQueueIndicies.data();
 		info.initialLayout = createInfo.layout;
 
-		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &info, nullptr, vkObject), "Failed to create Image");
+		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &info, nullptr, pVkObject), "Failed to create Image");
 
+		VkMemoryRequirements memoryRequirements;
+		vkGetImageMemoryRequirements(registry.device, *pVkObject, &memoryRequirements);
+
+		size_m = memoryRequirements.size;
+		memoryTypeBits_m = memoryRequirements.memoryTypeBits;
 	}
 
 	void Image::createImage(VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageType imageType, VkImageCreateFlags flags)
@@ -738,7 +834,7 @@ namespace vkw {
 		barrier.newLayout = this->layout_m = newLayout;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = *vkObject;
+		barrier.image = *pVkObject;
 
 		if (range.aspectMask & VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) {
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;  // subrecourse range describes what the image's purpose is
@@ -851,7 +947,7 @@ namespace vkw {
 		vkw::CommandBuffer commandBuffer(commandPool);
 		commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-		vkCmdCopyImage(commandBuffer, srcImage, srcImage.layout, *vkObject, layout, static_cast<uint32_t>(regions.size()), regions.data());
+		vkCmdCopyImage(commandBuffer, srcImage, srcImage.layout, *pVkObject, layout, static_cast<uint32_t>(regions.size()), regions.data());
 
 		commandBuffer.endCommandBuffer();
 		commandBuffer.submitCommandBuffer(registry.transferQueue, {}, fence);
@@ -886,7 +982,7 @@ namespace vkw {
 		vkw::CommandBuffer commandBuffer(commandPool);
 		commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-		vkCmdCopyBufferToImage(commandBuffer, srcBuffer, *vkObject, layout, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
+		vkCmdCopyBufferToImage(commandBuffer, srcBuffer, *pVkObject, layout, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
 
 		commandBuffer.endCommandBuffer();
 		commandBuffer.submitCommandBuffer(registry.transferQueue, {}, fence);
@@ -925,7 +1021,7 @@ namespace vkw {
 		createInfo.subresourceRange = subresource;
 		createInfo.components = components;
 
-		vkw::Debug::errorCodeCheck(vkCreateImageView(registry.device, &createInfo, nullptr, vkObject), "Failed to create Image");
+		vkw::Debug::errorCodeCheck(vkCreateImageView(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Image");
 	}
 
 
@@ -972,7 +1068,7 @@ namespace vkw {
 		samplerInfo.minLod = createInfo.mipMap.minLod;
 		samplerInfo.maxLod = createInfo.mipMap.maxLod;
 
-		vkw::Debug::errorCodeCheck(vkCreateSampler(registry.device, &samplerInfo, nullptr, vkObject), "Failed to create Sampler");
+		vkw::Debug::errorCodeCheck(vkCreateSampler(registry.device, &samplerInfo, nullptr, pVkObject), "Failed to create Sampler");
 	}
 
 
@@ -1011,7 +1107,7 @@ namespace vkw {
 		createInfo.height = extent.height;
 		createInfo.layers = layers;
 
-		vkw::Debug::errorCodeCheck(vkCreateFramebuffer(registry.device, &createInfo, nullptr, vkObject), "Failed to create FrameBuffer");
+		vkw::Debug::errorCodeCheck(vkCreateFramebuffer(registry.device, &createInfo, nullptr, pVkObject), "Failed to create FrameBuffer");
 	}
 
 }

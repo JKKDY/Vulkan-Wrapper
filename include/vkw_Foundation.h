@@ -123,7 +123,7 @@ namespace vkw {
 			VULKAN_WRAPPER_API Type * get() const; // make const
 		protected:
 			RegType & registry;
-			VkPointer<T, RegType> vkObject;
+			VkPointer<T, RegType> pVkObject;
 		};
 
 		template <typename T> using Entity = Base<T, Registry>;

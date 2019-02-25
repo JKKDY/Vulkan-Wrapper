@@ -92,18 +92,39 @@ int main() {
 	vkw::Swapchain swapChain(surface);
 
 
-	vkw::Buffer buffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 1000);
+	vkw::Buffer buffer1(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 1000);
+	vkw::Buffer buffer2(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 2000);
 	vkw::Memory memory(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	memory.allocateMemory({ buffer }, {});
+	memory.setMemoryTypeBitsBuffer(buffer1);
+	memory.setMemoryTypeBitsBuffer(buffer2);
+	memory.allocateMemory();
+	memory.bindBufferToMemory(buffer1);
+	memory.bindBufferToMemory(buffer2);
 
-	struct thing {
-		vkw::SubBuffer subBuffer = {};
-	};
-	vkw::SubBuffer subBuffer1 = buffer.createSubBuffer(1000);
+	auto m = &memory;
+	auto r = &memory.memoryRanges;
 
-	thing t;
-	thing t1 = {};
+	buffer1.destroyObject();
 
-	vkw::SubBuffer subBuffer2;
-	subBuffer2 = buffer.createSubBuffer(1000); 
+	buffer1.createBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 500);
+	memory.bindBufferToMemory(buffer1);
+
+	vkw::Buffer buffer3(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 1);
+	memory.bindBufferToMemory(buffer3);
+
+	vkw::Buffer buffer4(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 1);
+	memory.bindBufferToMemory(buffer4);
+
+
+	vkw::SubBuffer sub1 = buffer2.createSubBuffer(50);
+	vkw::SubBuffer sub2 = buffer2.createSubBuffer(40);
+	vkw::SubBuffer sub3;
+	sub3 = buffer2.createSubBuffer(30);
+	
+	sub1.clear();
+	
+	vkw::SubBuffer sub4 = buffer2.createSubBuffer(10);
+
+	
+	int i = 0;
 }
