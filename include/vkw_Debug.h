@@ -17,9 +17,9 @@ static void vkw_Assert__(const char* expr_str, bool expr, const char* file, int 
 	}
 }
 #else
-#	define	VKW_PRINT(expr)
+#	define VKW_PRINT(expr)
 #	define VKW_LOG(expr)
-#	define VKW_Assert(Expr, Msg);
+#	define VKW_assert(Expr, Msg)
 #endif
 
 

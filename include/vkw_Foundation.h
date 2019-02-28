@@ -9,6 +9,13 @@
 namespace vkw {
 	struct PhysicalDevice;
 
+	enum DestructionControl : uint32_t {
+		VKW_DESTR_CONTRL_DO_NOTHING = 1,
+		VKW_DESTR_CONTRL_FIRST_OBJECT_CALLS_DELETER = 2,	// first object to be deleted destroys the Vulkan object
+		VKW_DESTR_CONTRL_LAST_OBJECT_CALLS_DELETER = 3,		// last object to be deleted destroy the vulkan object
+		VKW_DESTR_CONTRL_EXCLUSIVE_DELETER_CALL = 4			// this object when deleted destroys the vulkan object	
+	};
+
 	namespace impl {
 		class Registry;
 		class RegistryManager;
@@ -46,16 +53,6 @@ namespace vkw {
 		struct VkwShaderModule			{using Type = VkShaderModule		;};
 		struct VkwSwapchainKHR			{using Type = VkSwapchainKHR		;};
 		struct VkwQueryPool				{using Type = VkQueryPool			;};
-
-		
-
-
-		enum DestructionControl : uint32_t {
-			VKW_DESTR_CONTRL_DO_NOTHING = 1,
-			VKW_DESTR_CONTRL_FIRST_OBJECT_CALLS_DELETER = 2,	// first object to be deleted destroys the Vulkan object
-			VKW_DESTR_CONTRL_LAST_OBJECT_CALLS_DELETER = 3,		// last object to be deleted destroy the vulkan object
-			VKW_DESTR_CONTRL_EXCLUSIVE_DELETER_CALL = 4			// this object when deleted destroys the vulkan object	
-		};
 
 
 

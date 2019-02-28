@@ -12,8 +12,8 @@
 
 #if VKW_DEBUG > 0
 	#include <iostream>
-	#include <sstream>
-	#include <cstdlib>
+	//#include <sstream>
+	//#include <cstdlib>
 #endif
 
 

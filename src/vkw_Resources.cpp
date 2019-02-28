@@ -20,7 +20,7 @@ namespace vkw {
 		case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
 			return storageImageCount;
 		case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-			return uniformBufferCount;
+			return uniformTexelBufferCount;
 		case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
 			return storageTexelBufferCount;
 		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
@@ -28,7 +28,7 @@ namespace vkw {
 		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
 			return storageBufferCount;
 		case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
-			return uniformBufferCount;
+			return uniformBufferDynamicCount;
 		case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
 			return storageBufferCount;
 		case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
@@ -65,15 +65,19 @@ namespace vkw {
 
 	void DescriptorPool::createDescriptorPool(const CreateInfo2 & createInfo)
 	{
-		poolSizes_m.reserve(12);
+		auto push_backMaybe = [&](int type) {
+			uint32_t count = createInfo(type);
+			if (count > 0)
+				poolSizes_m.push_back({ static_cast<VkDescriptorType>(type), createInfo(type) });
+		};
 
 		for (int descrSizeType = VK_DESCRIPTOR_TYPE_BEGIN_RANGE; descrSizeType != VK_DESCRIPTOR_TYPE_END_RANGE; descrSizeType++) {
-			poolSizes_m.emplace_back(VkDescriptorPoolSize { static_cast<VkDescriptorType>(descrSizeType), createInfo(descrSizeType) });
+			push_backMaybe(descrSizeType);
 		}
 		
-		poolSizes_m.emplace_back(VkDescriptorPoolSize{ static_cast<VkDescriptorType>(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT), createInfo(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT) });
-		poolSizes_m.emplace_back(VkDescriptorPoolSize{ static_cast<VkDescriptorType>(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV), createInfo(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV) });
-
+		push_backMaybe(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT);
+		push_backMaybe(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV);
+		
 		createDescriptorPool(poolSizes_m, createInfo.maxSets, createInfo.flags);
 	}
 
@@ -323,7 +327,8 @@ namespace vkw {
 		memoryTypeBits(memoryTypeBits_m),
 		memoryType(memoryType_m),
 		memoryType_m(std::numeric_limits<uint32_t>::max()),
-		memoryTypeBits_m(std::numeric_limits<uint32_t>::max())
+		memoryTypeBits_m(std::numeric_limits<uint32_t>::max()),
+		memoryFlags_m(0)
 	{}
 
 	Memory::Memory(const CreateInfo & createInfo) : Memory(createInfo.memoryFlags, createInfo.size)
@@ -342,15 +347,12 @@ namespace vkw {
 		allocateMemory(allocInfo.buffers, allocInfo.images, 0, allocInfo.memoryType, allocInfo.additionalSize);
 	}
 
-	void Memory::allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers, std::initializer_list< std::reference_wrapper<Image>> images, VkMemoryPropertyFlags memoryFlags, uint32_t memoryType, VkDeviceSize additionalSize)
+	void Memory::allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers, std::vector<std::reference_wrapper<Image>> images, VkMemoryPropertyFlags memoryFlags, uint32_t memoryType, VkDeviceSize additionalSize)
 		// this has to be by reference otherwise memory cannot be set 
 		// IDEA: maybe make memory a shared state
 		// IDEA: maybe even go as far as giving every Object a customizable internal shared state
 	{	
-		i = { 34,3,5,6,2,1 };
-		thing.s = { 1,2,4,5,67,8, };
-
-		if (memoryFlags != 0) memoryFlags_m = memoryFlags_m & memoryFlags;
+		if (memoryFlags != 0) memoryFlags_m = memoryFlags;
 
 		for (auto & x : buffers) setMemoryTypeBitsBuffer(x);
 		for (auto & x : images) setMemoryTypeBitsImage(x);
@@ -497,7 +499,8 @@ namespace vkw {
 		allignement(allignement_m),
 		offset(offset_m),
 		size(size_m),
-		memoryTypeBits(memoryBits_m)
+		memoryTypeBits(memoryBits_m),
+		memory(nullptr)
 	{}
 
 	Buffer::Buffer(const CreateInfo & createInfo) : Buffer()
@@ -666,8 +669,9 @@ namespace vkw {
 	{
 		size_m = rhs.size_m;
 		offset_m = rhs.offset_m;
-
 		buffer = rhs.buffer;
+
+		if (buffer) buffer->memoryRanges.add(offset, size);
 	}
 
 	SubBuffer::SubBuffer(VkDeviceSize size, VkDeviceSize offset, Buffer * buffer):
@@ -821,7 +825,7 @@ namespace vkw {
 
 	void Image::transitionImageLayout(VkImageLayout newLayout, VkCommandPool cmdPool, VkImageSubresourceRange range, VkAccessFlags srcAccess, VkAccessFlags dstAccess)
 	{
-		Fence fence;
+		Fence fence(0);
 		VkCommandPool commandPool = cmdPool == VK_NULL_HANDLE ? registry.transferCommandPool : cmdPool;
 		CommandBuffer commandBuffer(commandPool);
 		commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);

@@ -2,9 +2,13 @@
 #include <vulkan_wrapper.h>
 #include <functional>
 #include <Model.h>
+#include <chrono>
+#include <thread>
 #include "Window.hpp"
 
 namespace example {
+	void sleep(uint32_t ms);
+
 	bool defaultDeviceSuitable(const vkw::PhysicalDevice & gpu, const vkw::Surface surface);
 	int defaultRateDevice(const vkw::PhysicalDevice & gpu, const vkw::Surface surface);
 
@@ -29,6 +33,7 @@ namespace example {
 	class ExampleBase {
 	public:
 		ExampleBase(Window & window);
+		~ExampleBase();
 		void initVulkan(const InitInfo & info = InitInfo());
 
 		virtual void setup() = 0;
@@ -73,5 +78,7 @@ namespace example {
 		virtual void createPipelineCache();
 		virtual void createFrameBuffers();
 		virtual void allocateCommandBuffers();
+
+		virtual void renderFrame();
 	};
 }

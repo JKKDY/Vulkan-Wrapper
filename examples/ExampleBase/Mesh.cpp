@@ -64,8 +64,8 @@ namespace example {
 				inputDescr.at(i).format = VK_FORMAT_R32G32B32_SFLOAT;
 			}
 
-			offset += VertexLayout::sizeOfComponent(layout.components.at(i));
 			inputDescr.at(i).offset = offset;
+			offset += VertexLayout::sizeOfComponent(layout.components.at(i));
 		}
 
 		return inputDescr;
@@ -87,7 +87,7 @@ namespace example {
 		defaultIndexSize = info.defaultIndexBufferSize;
 
 		vertexBuffers.createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, defaultVertexSize);
-		indexBuffers.createBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, defaultVertexSize);
+		indexBuffers.createBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, defaultIndexSize);
 
 		allocations.allocateMemory({ vertexBuffers, indexBuffers }, {}, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
@@ -96,6 +96,7 @@ namespace example {
 		allocInfo.buffers = { stagingBuffer };
 		allocInfo.memoryFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 		stagingMemory.allocateMemory(allocInfo);
+		//stagingMemory.allocateMemory({ stagingBuffer }, {}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	}
 
 	void MeshLoader::changeDefaultVertexBufferSize(VkDeviceSize defaultVertexBufferSize) { defaultVertexSize = defaultVertexBufferSize; }
@@ -152,6 +153,9 @@ namespace example {
 						vertexBuffer.push_back(pPos->x * loadInfo.scale.x + loadInfo.center.x);
 						vertexBuffer.push_back(-pPos->y * loadInfo.scale.y + loadInfo.center.y);
 						vertexBuffer.push_back(pPos->z * loadInfo.scale.z + loadInfo.center.z);
+						//vertexBuffer.push_back(pPos->x);
+						//vertexBuffer.push_back(pPos->y);
+						//vertexBuffer.push_back(pPos->z);
 						break;
 					case VERTEX_COMPONENT_NORMAL:
 						vertexBuffer.push_back(pNormal->x);

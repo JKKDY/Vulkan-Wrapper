@@ -173,8 +173,8 @@ namespace vkw {
 
 		struct AllocationInfo {
 			VkMemoryPropertyFlags memoryFlags;
-			std::initializer_list<std::reference_wrapper<Buffer>> buffers;
-			std::initializer_list<std::reference_wrapper<Image>> images;
+			std::vector<std::reference_wrapper<Buffer>> buffers;
+			std::vector<std::reference_wrapper<Image>> images;
 			VkDeviceSize additionalSize = 0;
 			uint32_t memoryType = std::numeric_limits<uint32_t>::max();
 		};
@@ -185,7 +185,7 @@ namespace vkw {
 		VULKAN_WRAPPER_API ~Memory() = default;
 
 		VULKAN_WRAPPER_API void allocateMemory(AllocationInfo & allocInfo);
-		VULKAN_WRAPPER_API void allocateMemory(std::initializer_list<std::reference_wrapper<Buffer>> buffers = {}, std::initializer_list<std::reference_wrapper<Image>> images = {}, VkMemoryPropertyFlags memoryFlags = 0, uint32_t memoryType = std::numeric_limits<uint32_t>::max(), VkDeviceSize additionalSize = 0);
+		VULKAN_WRAPPER_API void allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers = {}, std::vector<std::reference_wrapper<Image>> images = {}, VkMemoryPropertyFlags memoryFlags = 0, uint32_t memoryType = std::numeric_limits<uint32_t>::max(), VkDeviceSize additionalSize = 0);
 
 		VULKAN_WRAPPER_API Memory & operator = (const Memory & rhs);
 
@@ -206,17 +206,13 @@ namespace vkw {
 		VULKAN_WRAPPER_API void unMap();
 		VULKAN_WRAPPER_API void flush();
 		VULKAN_WRAPPER_API void invalidate();
-		MemoryRanges memoryRanges;
-		std::vector<int> i = { 34,3,5,6,2,1 };
-		struct Thing {
-			std::set<int> s = { 1,2,4,5,67,8, };
-		}thing;
 	private:
 		VkDeviceSize size_m = 0;
 		Mapped memoryMap_m;
 		VkMemoryPropertyFlags memoryFlags_m;
 		uint32_t memoryTypeBits_m = std::numeric_limits<uint32_t>::max();
 		uint32_t memoryType_m;
+		MemoryRanges memoryRanges;
 
 		uint32_t findMemoryType();
 		static VkDeviceSize getOffset(VkDeviceSize dataSize, VkDeviceSize maxSize, std::map<VkDeviceSize, VkDeviceSize> & memoryRanges, VkDeviceSize allignement = 1);

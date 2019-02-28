@@ -13,6 +13,12 @@ namespace example {
 		return VK_FALSE;
 	}
 
+	void sleep(uint32_t ms)
+	{
+		std::chrono::milliseconds timespan(ms);
+		std::this_thread::sleep_for(timespan);
+	}
+
 	bool defaultDeviceSuitable(const vkw::PhysicalDevice & gpu, const vkw::Surface surface)
 	{
 		bool familiesFound = false;
@@ -56,9 +62,16 @@ namespace example {
 	}
 
 
+
+
 	ExampleBase::ExampleBase(Window & window):
 		window(window)
 	{
+	}
+
+	ExampleBase::~ExampleBase()
+	{
+		vkDeviceWaitIdle(device);
 	}
 
 	void ExampleBase::initVulkan(const InitInfo & info)
@@ -71,9 +84,6 @@ namespace example {
 		createDevice(info.preSetDeviceQueues, info.additionalDeviceQueues, info.deviceFeatures, info.deviceExtensions);
 		createSwapchain();
 		createDefaultCmdPools();
-	
-		Mesh mesh;
-		Mesh mesh1 = {};
 
 		createRenderPrimitives();
 		createDepthStencil();
@@ -84,6 +94,11 @@ namespace example {
 	}
 
 	void ExampleBase::nextFrame()
+	{
+		renderFrame();
+	}
+
+	void ExampleBase::renderFrame()
 	{
 		uint32_t index = swapChain.getNextImage(VK_NULL_HANDLE, renderFence);
 		renderFence.wait();
@@ -273,10 +288,9 @@ namespace example {
 		vkw::FrameBuffer::CreateInfo createInfo = {};
 		createInfo.extent = swapChain.extent;
 		createInfo.renderPass = renderPass;
-		createInfo.attachments = { VK_NULL_HANDLE, depthImageView };
 
 		for (uint32_t i = 0; i < renderFrameBuffers.size(); i++) {
-			createInfo.attachments.at(0) = swapChain.imageView(i) ;
+			createInfo.attachments = { swapChain.imageView(i), depthImageView };
 			renderFrameBuffers[i].createFrameBuffer(createInfo);
 		}
 	}

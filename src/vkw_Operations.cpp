@@ -85,7 +85,7 @@ namespace vkw {
 	CommandBuffer::CommandBuffer():
 		commandPool(commandPool_m)
 	{
-		destructionControl = impl::VKW_DESTR_CONTRL_DO_NOTHING;
+		//destructionControl = VKW_DESTR_CONTRL_DO_NOTHING;
 	}
 
 	CommandBuffer::CommandBuffer(const AllocationInfo & allocInfo):

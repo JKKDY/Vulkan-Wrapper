@@ -20,6 +20,7 @@ namespace example {
 
 		~GlfwWindow() override {
 			glfwDestroyWindow(static_cast<GLFWwindow*>(window));
+			glfwTerminate();
 		};
 
 		void createSurface(VkInstance instance, VkSurfaceKHR * surface) const override {
