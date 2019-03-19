@@ -45,6 +45,7 @@
     <ProjectGuid>{C97CFF6A-1557-4D3D-A7EF-3402D3961BD7}</ProjectGuid>
     <RootNamespace>RenderEngineBaseAPI</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>Vulkan Wrapper</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

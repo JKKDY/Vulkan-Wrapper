@@ -56,7 +56,7 @@ namespace vkw {
 
 
 
-		template<typename T> class VkObject : utils::NonCopyable{
+		template<typename T> class VkObject : tools::NonCopyable{
 			using Type = typename T::Type;
 		public:
 			VkObject(std::function<void(Type)> & delf, std::function<void(void)> callback);
@@ -168,7 +168,7 @@ namespace vkw {
 
 
 
-		class Registry : utils::NonCopyable{
+		class Registry : tools::NonCopyable{
 		public:
 			Registry(const VkInstance & instance);
 			~Registry() = default;
@@ -239,7 +239,7 @@ namespace vkw {
 		};
 
 
-		class RegistryManager : utils::NonCopyable {
+		class RegistryManager : tools::NonCopyable {
 		public:
 			RegistryManager();
 

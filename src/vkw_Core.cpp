@@ -35,7 +35,7 @@ namespace vkw {
 	std::vector<const char*> PhysicalDevice::checkLayers(const std::vector<const char*>& desiredLayers, std::vector<const char*>* outMissingLayers) const
 	{
 		auto func = [=](uint32_t * count, VkExtensionProperties * prop) { return vkEnumerateDeviceExtensionProperties( physicalDevice, nullptr, count, prop); };
-		return utils::check<VkExtensionProperties>(func, [](const VkExtensionProperties & t) {return t.extensionName; }, desiredLayers, outMissingLayers);
+		return tools::check<VkExtensionProperties>(func, [](const VkExtensionProperties & t) {return t.extensionName; }, desiredLayers, outMissingLayers);
 	}
 
 	
@@ -141,13 +141,13 @@ namespace vkw {
 	std::vector<const char*> Instance::checkExtensions(const std::vector<const char*> & desiredExtensions, std::vector<const char*> * outMissingExtensions)
 	{
 		auto func = [](uint32_t * count, VkExtensionProperties * prop) { return vkEnumerateInstanceExtensionProperties(nullptr, count, prop); };
-		return utils::check<VkExtensionProperties>(func, [](const VkExtensionProperties & t) {return t.extensionName; }, desiredExtensions, outMissingExtensions);
+		return tools::check<VkExtensionProperties>(func, [](const VkExtensionProperties & t) {return t.extensionName; }, desiredExtensions, outMissingExtensions);
 	}
 
 	std::vector<const char*> Instance::checkLayers(const std::vector<const char*> & desiredLayers, std::vector<const char*>* outMissingLayers)
 	{
 		auto func = [](uint32_t * count, VkLayerProperties * prop) { return vkEnumerateInstanceLayerProperties(count, prop); };
-		return utils::check<VkLayerProperties>(func, [](const VkLayerProperties & t) {return t.layerName; }, desiredLayers, outMissingLayers);
+		return tools::check<VkLayerProperties>(func, [](const VkLayerProperties & t) {return t.layerName; }, desiredLayers, outMissingLayers);
 	}
 
 

@@ -5,9 +5,9 @@ VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{B206ADEE-424A-498F-A5F3-35A107683534}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vulkan Wraper", "Vulkan Wraper.vcxproj", "{C97CFF6A-1557-4D3D-A7EF-3402D3961BD7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vulkan Wrapper", "Vulkan Wraper.vcxproj", "{C97CFF6A-1557-4D3D-A7EF-3402D3961BD7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vulkan Wraper Test", "test\Vulkan Wraper Test\Vulkan Wraper Test.vcxproj", "{B5217D68-836E-48E8-8026-EE9B7A6BD3CF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vulkan Wrapper Test", "test\Vulkan Wraper Test\Vulkan Wraper Test.vcxproj", "{B5217D68-836E-48E8-8026-EE9B7A6BD3CF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Triangle", "examples\Triangle\Triangle.vcxproj", "{37670DCF-9EB0-40A3-B18B-60FA8FAC84F1}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pipelines", "examples\Pipelines\Pipelines.vcxproj", "{BDEF43CA-05B2-44DA-A9CA-C40E66D01B5A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExampleBase", "examples\ExampleBase\ExampleBase.vcxproj", "{86B7CE5C-5138-44B5-BB98-C1B65BF2D6F5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DescriptorSets", "examples\DescriptorSets\DescriptorSets.vcxproj", "{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,14 @@ Global
 		{86B7CE5C-5138-44B5-BB98-C1B65BF2D6F5}.Release|x64.Build.0 = Release|x64
 		{86B7CE5C-5138-44B5-BB98-C1B65BF2D6F5}.Release|x86.ActiveCfg = Release|Win32
 		{86B7CE5C-5138-44B5-BB98-C1B65BF2D6F5}.Release|x86.Build.0 = Release|Win32
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Debug|x64.ActiveCfg = Debug|x64
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Debug|x64.Build.0 = Debug|x64
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Debug|x86.ActiveCfg = Debug|Win32
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Debug|x86.Build.0 = Debug|Win32
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Release|x64.ActiveCfg = Release|x64
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Release|x64.Build.0 = Release|x64
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Release|x86.ActiveCfg = Release|Win32
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,6 +99,7 @@ Global
 		{DAAACE6B-ADDA-47A5-B849-A4F3749EA747} = {B206ADEE-424A-498F-A5F3-35A107683534}
 		{BDEF43CA-05B2-44DA-A9CA-C40E66D01B5A} = {3FF7C071-1C59-4D6F-9278-B9796FF2EDA7}
 		{86B7CE5C-5138-44B5-BB98-C1B65BF2D6F5} = {B206ADEE-424A-498F-A5F3-35A107683534}
+		{D7530B02-A9B0-4383-9C55-9C1F2F2BF8AE} = {3FF7C071-1C59-4D6F-9278-B9796FF2EDA7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC8521A8-46D6-4400-AA99-3FAA21105DF3}

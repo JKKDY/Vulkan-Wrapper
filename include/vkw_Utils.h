@@ -22,6 +22,19 @@ namespace vkw {
 		}
 
 
+		inline int findMemoryType(const VkPhysicalDeviceMemoryProperties & memoryProperties, uint32_t memoryTypeBits, VkMemoryPropertyFlags requiredProperties, VkMemoryPropertyFlags optimalProperties = 0) {
+			if (optimalProperties != 0) {
+				int index = findMemoryType(memoryProperties, memoryTypeBits, optimalProperties);
+				if (index != -1) return index;
+			}
+			for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+				if ((memoryTypeBits & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & requiredProperties) == requiredProperties) {
+					return i;
+				}
+			}
+			return -1;
+		}
+
 		// gets biggest depth format
 		inline VkFormat getDepthFormat(const VkPhysicalDevice & physicalDevice) {
 			std::vector<VkFormat> depthFormats = {
@@ -46,7 +59,7 @@ namespace vkw {
 		}
 	}
 
-	namespace utils {
+	namespace tools {
 		// takes in a function to enumerate (e.g. vkEnumerateDeviceExtensionProperties), a function to get the name and desired & missing "names"
 		template<typename T> std::vector<const char*> check(std::function<VkResult(uint32_t*, T*)> enumerate, std::function<const char*(const T &)> getString, const std::vector<const char*> & desired, std::vector<const char*> * missing = nullptr) {
 			std::vector<const char*> exististingDesired;

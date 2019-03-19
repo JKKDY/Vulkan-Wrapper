@@ -102,7 +102,7 @@ int main() {
 	memory.bindBufferToMemory(buffer2);
 
 	auto m = &memory;
-	auto r = &memory.memoryRanges;
+	auto r = &memory.memoryRanges_m;
 
 	buffer1.destroyObject();
 

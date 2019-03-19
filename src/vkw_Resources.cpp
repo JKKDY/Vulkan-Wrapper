@@ -244,7 +244,15 @@ namespace vkw {
 
 
 	/// Memory Ranges
-	void MemoryRanges::addSize(VkDeviceSize size)
+	bool MemoryRanges::query(VkDeviceSize size) const
+	{
+		for (auto & x : freeRanges) {
+			if (x.second >= size) return true;
+		}
+		return false;
+	}
+
+	void MemoryRanges::addMoreSize(VkDeviceSize size)
 	{	
 		if (freeRanges.empty()) {
 			if (memoryRanges.empty()) freeRanges[0] = size;
@@ -326,6 +334,7 @@ namespace vkw {
 		size(size_m),
 		memoryTypeBits(memoryTypeBits_m),
 		memoryType(memoryType_m),
+		memoryRanges(memoryRanges_m),
 		memoryType_m(std::numeric_limits<uint32_t>::max()),
 		memoryTypeBits_m(std::numeric_limits<uint32_t>::max()),
 		memoryFlags_m(0)
@@ -334,6 +343,11 @@ namespace vkw {
 	Memory::Memory(const CreateInfo & createInfo) : Memory(createInfo.memoryFlags, createInfo.size)
 	{}
 
+	Memory::Memory(AllocInfo & allocInfo): Memory()
+	{
+		allocateMemory(allocInfo);
+	}
+
 	Memory::Memory(VkMemoryPropertyFlags memoryFlags, VkDeviceSize size) :
 		Memory()
 	{
@@ -341,7 +355,7 @@ namespace vkw {
 		size_m = size;
 	}
 
-	void Memory::allocateMemory(AllocationInfo & allocInfo)
+	void Memory::allocateMemory(AllocInfo & allocInfo)
 	{
 		memoryFlags_m = allocInfo.memoryFlags;
 		allocateMemory(allocInfo.buffers, allocInfo.images, 0, allocInfo.memoryType, allocInfo.additionalSize);
@@ -359,10 +373,10 @@ namespace vkw {
 
 		VkMemoryAllocateInfo allocInfo = vkw::init::memoryAllocateInfo();
 		allocInfo.allocationSize = size + additionalSize;
-		allocInfo.memoryTypeIndex = memoryType == std::numeric_limits<uint32_t>::max() ? findMemoryType() : memoryType;
+		allocInfo.memoryTypeIndex = memoryType == std::numeric_limits<uint32_t>::max() ? tools::findMemoryType(registry.physicalDevice.memoryProperties, memoryTypeBits, memoryFlags_m) : memoryType;
 		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, pVkObject), "Failed to allocate Memory");
 
-		memoryRanges.addSize(size + additionalSize);
+		memoryRanges_m.addMoreSize(size + additionalSize);
 
 		for (auto & x : buffers) bindBufferToMemory(x);
 		for (auto & x : images) bindImageToMemory(x);
@@ -376,7 +390,7 @@ namespace vkw {
 		size_m = rhs.size_m;
 		memoryTypeBits_m = rhs.memoryTypeBits_m;
 		memoryType_m = rhs.memoryType_m;
-		memoryRanges = memoryRanges;
+		memoryRanges_m = memoryRanges_m;
 
 		return *this;
 	}
@@ -398,7 +412,7 @@ namespace vkw {
 		VKW_assert(buffer.memory == nullptr, "Buffer is already bound to memory");
 
 		buffer.memory = this;
-		buffer.offset_m = memoryRanges.add(buffer.sizeInMemory);
+		buffer.offset_m = memoryRanges_m.add(buffer.sizeInMemory);
 
 		Debug::errorCodeCheck(vkBindBufferMemory(registry.device, buffer, *pVkObject, buffer.offset), "Failed to bind Memory to Buffer");
 	}
@@ -408,7 +422,7 @@ namespace vkw {
 		VKW_assert(image.memory == nullptr, "image is already bound to memory");
 
 		image.memory = this;
-		Debug::errorCodeCheck(vkBindImageMemory(registry.device, image, *pVkObject, memoryRanges.add(image.sizeInMemory)), "Failed to bind Memory to Image");
+		Debug::errorCodeCheck(vkBindImageMemory(registry.device, image, *pVkObject, memoryRanges_m.add(image.sizeInMemory)), "Failed to bind Memory to Image");
 	}
 
 	void * Memory::map(VkDeviceSize size, VkDeviceSize offset, VkMemoryMapFlags flags)
@@ -447,41 +461,9 @@ namespace vkw {
 		Debug::errorCodeCheck(vkInvalidateMappedMemoryRanges(registry.device, 1, &mappedRange), "Could not invalidate mapped memory Ranges");
 	}
 
-	uint32_t Memory::findMemoryType()
+	void Memory::setFlags(VkMemoryPropertyFlags memoryFlags)
 	{
-		VkPhysicalDeviceMemoryProperties memProperties = registry.physicalDevice.memoryProperties;
-
-		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-			if ((memoryTypeBits & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & memoryFlags) == memoryFlags) {
-				memoryType_m = i;
-				return i;
-			}
-		}
-
-		throw std::runtime_error("failed to find suitable memory type!");
-	}
-
-	VkDeviceSize Memory::getOffset(VkDeviceSize dataSize, VkDeviceSize maxSize, std::map<VkDeviceSize, VkDeviceSize> & memoryRanges, VkDeviceSize allignement)
-	{
-		VkDeviceSize offset = 0;
-		dataSize = static_cast<VkDeviceSize>(std::ceil(dataSize / allignement) * allignement);
-
-		for (auto x : memoryRanges) {  //x.first = offset, x.second = size
-			if (x.first < offset + dataSize) {
-				offset = x.first + x.second;
-			}
-			else {
-				break;
-			}
-		}
-
-		if (offset + dataSize > maxSize) {
-			VKW_PRINT("not enough memory Alocated");
-			return std::numeric_limits<uint64_t>::max();
-		}
-
-		memoryRanges[offset] = dataSize;
-		return offset;
+		memoryFlags_m = memoryFlags;
 	}
 
 	void Memory::setMemoryTypeBits(VkMemoryRequirements & memoryRequirements)
@@ -513,6 +495,8 @@ namespace vkw {
 		createBuffer(usageFlags, size, sharingMode, offset, createflags);
 	}
 
+	Buffer::~Buffer(){}
+
 	void Buffer::createBuffer(const CreateInfo & createInfo)
 	{
 		createBuffer(createInfo.usageFlags, createInfo.size, createInfo.sharingMode, createInfo.offset, createInfo.createflags);
@@ -543,7 +527,7 @@ namespace vkw {
 		sizeInMemory_m = memoryRequirements.size;
 		allignement_m = memoryRequirements.alignment;
 		memoryBits_m = memoryRequirements.memoryTypeBits;
-		memoryRanges.addSize(memoryRequirements.size);
+		memoryRanges.addMoreSize(memoryRequirements.size);
 	}
 
 	Buffer & Buffer::operator=(const Buffer & rhs)
@@ -566,7 +550,7 @@ namespace vkw {
 	void Buffer::destroyObject()
 	{
 		if (memory) { 
-			memory->memoryRanges.remove(offset, sizeInMemory);
+			memory->memoryRanges_m.remove(offset, sizeInMemory);
 			memory = nullptr;
 		}
 
@@ -705,6 +689,11 @@ namespace vkw {
 		return *buffer;
 	}
 
+	/*Buffer & SubBuffer::parent() const
+	{
+		return *buffer;
+	}*/
+
 	void SubBuffer::write(const void * data, size_t sizeOfData, bool leaveMapped)
 	{
 		buffer->write(data, sizeOfData, this->offset, leaveMapped);
@@ -754,7 +743,7 @@ namespace vkw {
 
 	void Image::createImage(const CreateInfo & createInfo)
 	{
-		layout_m = createInfo.layout;
+		layout_m = createInfo.initialLayout;
 		extent_m = createInfo.extent;
 
 		imageType = createInfo.imageType;
@@ -780,7 +769,7 @@ namespace vkw {
 		info.sharingMode = createInfo.sharingMode;
 		info.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.familyQueueIndicies.size());
 		info.pQueueFamilyIndices = createInfo.familyQueueIndicies.data();
-		info.initialLayout = createInfo.layout;
+		info.initialLayout = createInfo.initialLayout;
 
 		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &info, nullptr, pVkObject), "Failed to create Image");
 
@@ -961,7 +950,7 @@ namespace vkw {
 		fence.destroyObject();
 	}
 
-	void Image::copyFromBuffer(const Buffer & srcBuffer, const std::vector<VkBufferImageCopy> & copyRegions, VkCommandPool cmdPool) // TODO: switch param copyRegions with param srcBuffer
+	void Image::copyFromBuffer(const VkBuffer & srcBuffer, const std::vector<VkBufferImageCopy> & copyRegions, VkCommandPool cmdPool, VkQueue queue)
 	{
 		//if (copyRegions.size() == 0) {
 		//	VkImageSubresourceLayers subResource = {};
@@ -989,7 +978,7 @@ namespace vkw {
 		vkCmdCopyBufferToImage(commandBuffer, srcBuffer, *pVkObject, layout, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
 
 		commandBuffer.endCommandBuffer();
-		commandBuffer.submitCommandBuffer(registry.transferQueue, {}, fence);
+		commandBuffer.submitCommandBuffer(queue == VK_NULL_HANDLE? registry.transferQueue : queue, {}, fence);
 		fence.wait();
 
 		commandBuffer.freeCommandBuffer();
