@@ -288,7 +288,7 @@ int main() {
 	// Pipeline Sates
 	vkw::GraphicsPipeline::CreateInfo pipelineCreateInfo;
 	pipelineCreateInfo.subPass = 0;
-	pipelineCreateInfo.shaderStages = { vertShaderModule.pipelineShaderStageInfo(), fragShaderModule.pipelineShaderStageInfo() };
+	pipelineCreateInfo.shaderStages = { vertShaderModule.shaderStageInfo(), fragShaderModule.shaderStageInfo() };
 	pipelineCreateInfo.renderPass = renderPass;
 	pipelineCreateInfo.layout = layout;
 	pipelineCreateInfo.vertexInputState = &vertexInputState;

@@ -8,6 +8,8 @@ namespace example {
 		using vkw::Window::Window;
 		virtual void getWindowExtensions(std::vector<const char*> & ext) = 0;
 	};
+
+
 	class GlfwWindow : public Window {
 	public:
 		GlfwWindow(int x, int y) : Window(*this)

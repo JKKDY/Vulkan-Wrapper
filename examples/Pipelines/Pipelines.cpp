@@ -8,10 +8,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-std::string dataPath = "../data/";
-std::string modelPath = dataPath + "Models/";
-std::string shaderPath = "shader/";
-
 using namespace example;
 
 class PipelineExample : public ExampleBase {
@@ -40,7 +36,8 @@ private:
 		vkw::ShaderModule fragmentShader;
 	};
 
-	Mesh dragon;
+	Mesh teapot;
+	Mesh teapot2;
 	vkw::Memory uniformMemory;
 	vkw::Buffer uniformBuffer;
 	vkw::DescriptorPool descriptorPool;
@@ -55,10 +52,7 @@ private:
 	
 PipelineExample::PipelineExample(Window & window) : ExampleBase(window) {
 	auto func = [](const vkw::PhysicalDevice& phys, const vkw::Surface& surf) {
-		if (phys.features.fillModeNonSolid == VK_TRUE && phys.features.wideLines == VK_TRUE)
-			return true;
-		else
-			return false;
+		return phys.features.fillModeNonSolid && phys.features.wideLines;
 	};
 
 	InitInfo initInfo = InitInfo();
@@ -72,7 +66,7 @@ PipelineExample::PipelineExample(Window & window) : ExampleBase(window) {
 PipelineExample::~PipelineExample()
 {
 	vkDeviceWaitIdle(device);
-	for (auto & x : renderCommandBuffers) x.destroyObject();
+	for (auto & x : drawCommandBuffers) x.destroyObject();
 
 }
 
@@ -85,21 +79,22 @@ void PipelineExample::setup() {
 }
 
 void  PipelineExample::loadModels() {
-	MeshLoader::CreateInfo meshLInfo = {};
-	meshLInfo.defaultVertexBufferSize = 20000000; //20mb
-	meshLInfo.defaultIndexBufferSize = 3000000; //3mb
-	meshLInfo.stagingBufferSize = 40000000; //40mb
-	meshloader.create(meshLInfo);
-
-	MeshLoadInfo meshInfo;
+	Mesh::LoadInfo meshInfo;
+	meshInfo.pMesh = &teapot;
 	meshInfo.layout = { VERTEX_COMPONENT_POSITION, VERTEX_COMPONENT_COLOR, VERTEX_COMPONENT_NORMAL };
-	dragon = meshloader.loadFromFile(modelPath + "Teapot.obj", meshInfo);
+	meshInfo.filePath = modelPath() + "Teapot.obj";
+
+	Mesh::LoadInfo meshInfo2 = meshInfo;
+	meshInfo2.pMesh = &teapot2;
+	meshInfo2.layout = { VERTEX_COMPONENT_POSITION, VERTEX_COMPONENT_COLOR };
+	meshInfo2.center = glm::vec3(1, 1, 1);
+	meshloader.loadFromFile({ meshInfo, meshInfo2 });
 }
 
 void  PipelineExample::createUBO() {
 	uniformBuffer.createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(UBO));
 
-	vkw::Memory::AllocationInfo allocInfo = {};
+	vkw::Memory::AllocInfo allocInfo = {};
 	allocInfo.buffers = { uniformBuffer };
 	allocInfo.memoryFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
@@ -132,7 +127,6 @@ void  PipelineExample::createDescriptorSets() {
 }
 
 void  PipelineExample::createPipelines() {
-
 	vkw::GraphicsPipeline::CreateInfo createInfo = {};
 
 
@@ -173,8 +167,8 @@ void  PipelineExample::createPipelines() {
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
 	dynamicState.pDynamicStates = dynamicStateEnables.data();
 
-	VkVertexInputBindingDescription bindingDescription = dragon.getBindingDescription(0);
-	std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = dragon.getInputDescriptions(0);
+	VkVertexInputBindingDescription bindingDescription = teapot.vertexBinding(0);
+	std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = teapot.vertexAttributes(0);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
 	vertexInputState.pVertexAttributeDescriptions = vertexInputAttributes.data();
@@ -198,32 +192,44 @@ void  PipelineExample::createPipelines() {
 	createInfo.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
 
 
-	phong.vertexShader.createShaderModule(shaderPath + "phong.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-	phong.fragmentShader.createShaderModule(shaderPath + "phong.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-	createInfo.shaderStages = { phong.vertexShader.pipelineShaderStageInfo(),  phong.fragmentShader.pipelineShaderStageInfo() };
+	phong.vertexShader.createShaderModule(shaderPath() + "phong.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	phong.fragmentShader.createShaderModule(shaderPath() + "phong.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+	createInfo.shaderStages = { phong.vertexShader.shaderStageInfo(),  phong.fragmentShader.shaderStageInfo() };
 	phong.pipeline.createPipeline(createInfo);
 
 	createInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
 	createInfo.basePipelineHandle = phong.pipeline;
 
-	toon.vertexShader.createShaderModule(shaderPath + "toon.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-	toon.fragmentShader.createShaderModule(shaderPath + "toon.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-	createInfo.shaderStages = { toon.vertexShader.pipelineShaderStageInfo(),  toon.fragmentShader.pipelineShaderStageInfo() };
+	toon.vertexShader.createShaderModule(shaderPath() + "toon.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	toon.fragmentShader.createShaderModule(shaderPath() + "toon.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+	createInfo.shaderStages = { toon.vertexShader.shaderStageInfo(),  toon.fragmentShader.shaderStageInfo() };
 	toon.pipeline.createPipeline(createInfo);
 
-	rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
 
-	wire.vertexShader.createShaderModule(shaderPath + "wire.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-	wire.fragmentShader.createShaderModule(shaderPath + "wire.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-	createInfo.shaderStages = { wire.vertexShader.pipelineShaderStageInfo(),  wire.fragmentShader.pipelineShaderStageInfo() };
+	rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
+	rasterizationState.cullMode = VK_CULL_MODE_NONE;
+
+	bindingDescription = teapot2.vertexBinding(0);
+	vertexInputAttributes = teapot2.vertexAttributes(0);
+	
+	vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
+	vertexInputState.pVertexAttributeDescriptions = vertexInputAttributes.data();
+	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
+	vertexInputState.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputState.vertexBindingDescriptionCount = 1;
+
+
+	wire.vertexShader.createShaderModule(shaderPath() + "wire.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	wire.fragmentShader.createShaderModule(shaderPath() + "wire.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+	createInfo.shaderStages = { wire.vertexShader.shaderStageInfo(),  wire.fragmentShader.shaderStageInfo() };
 	wire.pipeline.createPipeline(createInfo);
 }
 
 void  PipelineExample::setupRenderCommanBuffers() {
-	renderCommandBuffers.resize(swapChain.imageCount);
-	vkw::CommandBuffer::allocateCommandBuffers(renderCommandBuffers, graphicsCommandPool);
+	drawCommandBuffers.resize(swapChain.imageCount);
+	vkw::CommandBuffer::allocateCommandBuffers(drawCommandBuffers, graphicsCommandPool);
 
-	for (uint32_t i = 0; i < renderCommandBuffers.size(); i++) {
+	for (uint32_t i = 0; i < drawCommandBuffers.size(); i++) {
 		VkClearValue clearValues[2];
 		clearValues[0] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		clearValues[1].depthStencil = { 1.0f , 0 };
@@ -235,46 +241,49 @@ void  PipelineExample::setupRenderCommanBuffers() {
 		beginnInfo.clearValueCount = 2;
 		beginnInfo.pClearValues = clearValues;
 
-		renderCommandBuffers[i].beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+		drawCommandBuffers[i].beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-			vkCmdBeginRenderPass(renderCommandBuffers[i], &beginnInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(drawCommandBuffers[i], &beginnInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			vkCmdBindIndexBuffer(renderCommandBuffers[i], dragon.indexSubBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(drawCommandBuffers[i], teapot.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			VkBuffer vertexBuffers[] = { dragon.vertexSubBuffer };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(renderCommandBuffers[i], 0, 1, vertexBuffers, offsets);
+			VkBuffer vertexBuffers[] = { teapot.vertexBuffer, teapot2.vertexBuffer };
+			VkDeviceSize offsets[] = { teapot.vertexBuffer.offset, teapot2.vertexBuffer.offset };
+			vkCmdBindVertexBuffers(drawCommandBuffers[i], 0, 1, vertexBuffers, offsets);
 
 				VkRect2D scissor = { { 0,0 }, swapChain.extent };
-				vkCmdSetScissor(renderCommandBuffers[i], 0, 1, &scissor);
+				vkCmdSetScissor(drawCommandBuffers[i], 0, 1, &scissor);
 
 				VkViewport viewport = vkw::init::viewport(swapChain.extent);
 				viewport.width = static_cast<float>(viewport.width) / 3;
 
-				vkCmdBindDescriptorSets(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.get(), 0, nullptr);
+				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.get(), 0, nullptr);
 
 				// phong
 				viewport.x = 0;
-				vkCmdSetViewport(renderCommandBuffers[i], 0, 1, &viewport);
-				vkCmdBindPipeline(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, phong.pipeline);
-				vkCmdDrawIndexed(renderCommandBuffers[i], static_cast<uint32_t>(dragon.indexCount), 1, 0, 0, 0);
+				vkCmdSetViewport(drawCommandBuffers[i], 0, 1, &viewport);
+				vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, phong.pipeline);
+				vkCmdDrawIndexed(drawCommandBuffers[i], static_cast<uint32_t>(teapot.indexCount), 1, 0, 0, 0);
 				
 				// toon
 				viewport.x = viewport.width;
-				vkCmdSetViewport(renderCommandBuffers[i], 0, 1, &viewport);
-				vkCmdBindPipeline(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, toon.pipeline);
-				vkCmdDrawIndexed(renderCommandBuffers[i], static_cast<uint32_t>(dragon.indexCount), 1, 0, 0, 0);
+				vkCmdSetViewport(drawCommandBuffers[i], 0, 1, &viewport);
+				vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, toon.pipeline);
+				vkCmdDrawIndexed(drawCommandBuffers[i], static_cast<uint32_t>(teapot.indexCount), 1, 0, 0, 0);
 
 				// wire
+				VkBuffer vertexBuffers2[] = { teapot2.vertexBuffer };
+				VkDeviceSize offsets2[] = { teapot2.vertexBuffer.offset };
+				vkCmdBindVertexBuffers(drawCommandBuffers[i], 0, 1, vertexBuffers2, offsets2);
 				viewport.x = 2 * viewport.width;
-				vkCmdSetLineWidth(renderCommandBuffers[i], 2.0f);
-				vkCmdSetViewport(renderCommandBuffers[i], 0, 1, &viewport);
-				vkCmdBindPipeline(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, wire.pipeline);
-				vkCmdDrawIndexed(renderCommandBuffers[i], static_cast<uint32_t>(dragon.indexCount), 1, 0, 0, 0);
+				vkCmdSetLineWidth(drawCommandBuffers[i], 2.0f);
+				vkCmdSetViewport(drawCommandBuffers[i], 0, 1, &viewport);
+				vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, wire.pipeline);
+				vkCmdDrawIndexed(drawCommandBuffers[i], static_cast<uint32_t>(teapot2.indexCount), 1, 0, 0, 0);
 
-			vkCmdEndRenderPass(renderCommandBuffers[i]);
+			vkCmdEndRenderPass(drawCommandBuffers[i]);
 
-		renderCommandBuffers[i].endCommandBuffer();
+		drawCommandBuffers[i].endCommandBuffer();
 	}
 }
 
@@ -284,10 +293,12 @@ void PipelineExample::nextFrame() {
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	std::cout << time << std::endl;
 	
 	UBO ubo = {};
 	ubo.model = glm::mat4(1.0);
-	ubo.model = glm::scale(ubo.model, glm::vec3(0.3));
+	ubo.model = glm::scale(ubo.model, glm::vec3(0.3f));
 	ubo.model = glm::translate(ubo.model, glm::vec3(0.0f, 0.0f, -0.4f));
 	ubo.model = glm::rotate(ubo.model, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.model = glm::rotate(ubo.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -299,8 +310,6 @@ void PipelineExample::nextFrame() {
 	uniformBuffer.write(&ubo, sizeof(ubo));
 
 	renderFrame();
-
-	sleep(10);
 }
 
 

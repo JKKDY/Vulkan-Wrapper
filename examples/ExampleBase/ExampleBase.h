@@ -1,12 +1,18 @@
 #pragma once
 #include <vulkan_wrapper.h>
 #include <functional>
-#include <Model.h>
 #include <chrono>
 #include <thread>
+#include "Model.h"
+#include "Texture.h"
 #include "Window.hpp"
 
 namespace example {
+	std::string getAssetPath();
+	std::string modelPath();
+	std::string texturePath();
+	std::string shaderPath();
+
 	void sleep(uint32_t ms);
 
 	bool defaultDeviceSuitable(const vkw::PhysicalDevice & gpu, const vkw::Surface surface);
@@ -39,6 +45,15 @@ namespace example {
 		virtual void setup() = 0;
 		virtual void nextFrame();
 	protected:
+		struct Camera {
+			glm::mat4 perspective;
+			glm::mat4 view;
+		}camera;
+
+		struct FrameTimer {
+
+		}frameTimer;
+
 		Window & window;
 
 		vkw::Instance instance;
@@ -57,13 +72,14 @@ namespace example {
 		vkw::ImageView depthImageView;
 		
 		std::vector<vkw::FrameBuffer> renderFrameBuffers;
-		std::vector<vkw::CommandBuffer> renderCommandBuffers;
+		std::vector<vkw::CommandBuffer> drawCommandBuffers;
 		vkw::Semaphore renderSemaphore;
 		vkw::Fence renderFence;
 
 		vkw::PipelineCache pipelineCache;
 
 		MeshLoader meshloader;
+		TextureLoader textureLoader;
 
 		virtual void createInstance(const std::vector<const char*> & extensions, const std::vector<const char*> & layers, VkApplicationInfo * appInfo);
 		virtual void createSurface();

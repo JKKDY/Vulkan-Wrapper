@@ -21,6 +21,9 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExampleBase.h">
@@ -36,6 +39,9 @@
       <Filter>Source\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VkInitializers.hpp">
+      <Filter>Source\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
       <Filter>Source\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

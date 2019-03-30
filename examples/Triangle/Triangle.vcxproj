@@ -137,6 +137,7 @@
     <PreBuildEvent>
       <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
     </PreBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -156,17 +157,18 @@
     <PreBuildEvent>
       <Command>del "$(ProjectDir)intermediates\$(Platform)\$(Configuration)\*.*" /s /q</Command>
     </PreBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="init.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Vulkan Wraper.vcxproj">
       <Project>{c97cff6a-1557-4d3d-a7ef-3402d3961bd7}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="init.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

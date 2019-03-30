@@ -109,7 +109,7 @@ int main() {
 	// gli test
 	gli::texture_cube texCube(gli::load(texturePath + "cubemap_yokohama_bc3_unorm.ktx"));
 	assert(!texCube.empty());
-	std::cout << "gli test successful" << std::endl;
+	std::cout << "gli test successful" << std::endl; 
 
 
 

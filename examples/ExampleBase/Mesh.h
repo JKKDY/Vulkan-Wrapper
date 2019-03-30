@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 
 namespace example {
+	class MeshLoader;
+
 	enum VertexComponents : uint32_t {
 		VERTEX_COMPONENT_POSITION,
 		VERTEX_COMPONENT_NORMAL,
@@ -35,80 +37,63 @@ namespace example {
 
 
 	struct Mesh {
-		struct Data {
-			void * vertexData;
-			VkDeviceSize vertexDataSize;
-			void * indexData;
-			VkDeviceSize indexDataSize;
+		struct LoadInfo {
+			LoadInfo() = default;
+			LoadInfo(const std::string & filename, const VertexLayout & layout, Mesh * pMesh) : layout(layout), filePath(filename), pMesh(pMesh) {};
+			Mesh * pMesh;
+			VertexLayout layout;
+			std::string filePath;
+			unsigned int assimpFlags = aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals;
+			glm::vec3 center{ 0.0f };
+			glm::vec3 scale{ 1.0f };
+			glm::vec2 uvscale{ 1.0f };
 		};
 
 		struct Part {
-			uint32_t VertexCount;
+			uint32_t vertexCount;
 			uint32_t indexCount;
 			uint32_t vertexBase;
 			uint32_t indexBase;
 		};
 
-		std::vector<VkVertexInputAttributeDescription> getInputDescriptions(uint32_t binding);
-		VkVertexInputBindingDescription getBindingDescription(uint32_t binding, VkVertexInputRate inputRate = VK_VERTEX_INPUT_RATE_VERTEX);
+		//void clear();
+
+		std::vector<VkVertexInputAttributeDescription> vertexAttributes(uint32_t binding);
+		VkVertexInputBindingDescription vertexBinding(uint32_t binding, VkVertexInputRate inputRate = VK_VERTEX_INPUT_RATE_VERTEX);
+
+		uint64_t verticiesSize();
+		uint64_t indiciesSize();
 
 		VertexLayout layout;
 		std::vector<Part> parts;
 		uint32_t indexCount;
 		uint32_t vertexCount;
-		vkw::SubBuffer vertexSubBuffer;
-		vkw::SubBuffer indexSubBuffer;
-	};
-
-
-
-	struct MeshLoadInfo {
-		MeshLoadInfo() = default;
-		MeshLoadInfo(const VertexLayout & layout) : layout(layout) {};
-		VertexLayout layout;
-		unsigned int assimpFlags = aiProcess_FlipWindingOrder | 
-			aiProcess_Triangulate | 
-			aiProcess_PreTransformVertices | 
-			aiProcess_CalcTangentSpace | 
-			aiProcess_GenSmoothNormals;
-		glm::vec3 center{ 0.0f };
-		glm::vec3 scale{ 1.0f };
-		glm::vec2 uvscale{ 1.0f };
+		vkw::SubBuffer vertexBuffer;
+		vkw::SubBuffer indexBuffer;
+		//MeshLoader * meshLoader;
 	};
 
 
 	class MeshLoader {
-	public:
-		struct CreateInfo {
-			VkDeviceSize defaultVertexBufferSize;
-			VkDeviceSize defaultIndexBufferSize;
-			VkDeviceSize stagingBufferSize;
+		struct FreeSpace {
+			uint32_t bufferIndex;
+			uint32_t offset;
+			uint32_t size;
 		};
-
+	public:
 		MeshLoader() = default;
-		void create(const CreateInfo & info);
 
-		void changeDefaultVertexBufferSize(VkDeviceSize defaultVertexSize);
-		void changeDefaultIndexBufferSize(VkDeviceSize defaultIndexSize);
+		void setDefaultAllocSize(VkDeviceSize size);
 
-		Mesh loadFromFile(const std::string filename, const MeshLoadInfo & loadInfo);
-		void loadFromData(Mesh & mesh, const Mesh::Data & meshData);
+		void loadFromFile(const std::vector<Mesh::LoadInfo> & loadInfos);
 	private:
-		vkw::Buffer & getVertexBuffer();
-		vkw::Buffer & getIndexBuffer();
+		void loadMeshDataIntoMemory(const aiScene * pScene, std::vector<float> & verticies, std::vector<uint32_t> & indicies, const Mesh::LoadInfo & meshloadInfo);
 
-		uint32_t indexCount = 0;
-		uint32_t vertexCount = 0;
+		VkDeviceSize defaultAllocSize = 0;
+		std::vector<vkw::Memory> allocations;
+		std::vector<vkw::Buffer> indexBuffers;
+		std::vector<vkw::Buffer> vertexBuffers;	
 
-		VkDeviceSize defaultVertexSize;
-		VkDeviceSize defaultIndexSize;
-
-		vkw::Buffer vertexBuffers;
-		vkw::Buffer indexBuffers;
-
-		vkw::Memory allocations;
-
-		vkw::Memory stagingMemory;
-		vkw::Buffer stagingBuffer;
+		std::map<uint32_t, std::map<uint32_t, VkDeviceSize>> freeSpaces;
 	};
 }

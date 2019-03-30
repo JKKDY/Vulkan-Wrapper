@@ -13,6 +13,11 @@ namespace example {
 		return VK_FALSE;
 	}
 
+	std::string getAssetPath() { return "../data/";}
+	std::string modelPath() { return getAssetPath() + "models/"; }
+	std::string texturePath() { return getAssetPath() + "textures/"; }
+	std::string shaderPath() { return "shader/"; }
+
 	void sleep(uint32_t ms)
 	{
 		std::chrono::milliseconds timespan(ms);
@@ -65,7 +70,8 @@ namespace example {
 
 
 	ExampleBase::ExampleBase(Window & window):
-		window(window)
+		window(window),
+		textureLoader(physicalDevice)
 	{
 	}
 
@@ -102,7 +108,7 @@ namespace example {
 	{
 		uint32_t index = swapChain.getNextImage(VK_NULL_HANDLE, renderFence);
 		renderFence.wait();
-		renderCommandBuffers[index].submitCommandBuffer(device.graphicsQueue, { renderSemaphore });
+		drawCommandBuffers[index].submitCommandBuffer(device.graphicsQueue, { renderSemaphore });
 		swapChain.presentImage(index, { renderSemaphore });
 	}
 
@@ -297,7 +303,7 @@ namespace example {
 
 	void ExampleBase::allocateCommandBuffers()
 	{
-		renderCommandBuffers.resize(swapChain.imageCount);
-		vkw::CommandBuffer::allocateCommandBuffers(renderCommandBuffers, graphicsCommandPool);
+		drawCommandBuffers.resize(swapChain.imageCount);
+		vkw::CommandBuffer::allocateCommandBuffers(drawCommandBuffers, graphicsCommandPool);
 	}
 }
