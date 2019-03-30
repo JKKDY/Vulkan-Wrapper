@@ -358,7 +358,7 @@ namespace vkw {
 	void Memory::allocateMemory(AllocInfo & allocInfo)
 	{
 		memoryFlags_m = allocInfo.memoryFlags;
-		allocateMemory(allocInfo.buffers, allocInfo.images, 0, allocInfo.memoryType, allocInfo.additionalSize);
+		allocateMemory(allocInfo.buffers, allocInfo.images, allocInfo.memoryFlags, allocInfo.memoryType, allocInfo.additionalSize);
 	}
 
 	void Memory::allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers, std::vector<std::reference_wrapper<Image>> images, VkMemoryPropertyFlags memoryFlags, uint32_t memoryType, VkDeviceSize additionalSize)
@@ -612,12 +612,22 @@ namespace vkw {
 		commandBuffer.freeCommandBuffer();
 	}
 
+	VkDescriptorBufferInfo Buffer::bufferInfo(VkDeviceSize size, VkDeviceSize offset)
+	{
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = *pVkObject;
+		bufferInfo.range = size;
+		bufferInfo.offset = offset;
+		return bufferInfo;
+	}
+
 	SubBuffer Buffer::createSubBuffer(VkDeviceSize subBufferSize, VkDeviceSize offset)
 	{
 		VkDeviceSize realSize = subBufferSize == VK_WHOLE_SIZE ? size : subBufferSize;
 		VkDeviceSize realOffset = offset == std::numeric_limits<VkDeviceSize>::max() ? memoryRanges.add(subBufferSize) : offset;
 		return SubBuffer(realSize, realOffset, this);
 	}
+
 
 	//void Buffer::copyFrom(VkImage image, VkBufferCopy copyRegion, VkCommandPool cmdPool)
 	//{
@@ -743,6 +753,7 @@ namespace vkw {
 
 	void Image::createImage(const CreateInfo & createInfo)
 	{
+		this;
 		layout_m = createInfo.initialLayout;
 		extent_m = createInfo.extent;
 
@@ -812,15 +823,24 @@ namespace vkw {
 		return *this;
 	}
 
-	void Image::transitionImageLayout(VkImageLayout newLayout, VkCommandPool cmdPool, VkImageSubresourceRange range, VkAccessFlags srcAccess, VkAccessFlags dstAccess)
+	void Image::transitionImageLayout(VkImageLayout newLayout, VkImageAspectFlags aspectMask, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkCommandPool commandPool)
+	{
+		VkImageSubresourceRange range = {};
+		range.aspectMask = aspectMask;
+		range.baseArrayLayer = 0;
+		range.baseMipLevel = 0;
+		range.layerCount = arrayLayers;
+		range.levelCount = mipLevels;
+		transitionImageLayout(newLayout, range, srcStageMask, dstStageMask, commandPool);
+	}
+
+	void Image::transitionImageLayout(VkImageLayout newLayout, const VkImageSubresourceRange & range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkCommandPool cmdPool)
 	{
 		Fence fence(0);
 		VkCommandPool commandPool = cmdPool == VK_NULL_HANDLE ? registry.transferCommandPool : cmdPool;
 		CommandBuffer commandBuffer(commandPool);
 		commandBuffer.beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-		VkPipelineStageFlags sourceStage;
-		VkPipelineStageFlags destinationStage;
 
 		VkImageMemoryBarrier barrier = vkw::init::imageMemoryBarrier();
 		barrier.oldLayout = this->layout;
@@ -828,54 +848,107 @@ namespace vkw {
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = *pVkObject;
-
-		if (range.aspectMask & VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM) {
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;  // subrecourse range describes what the image's purpose is
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.subresourceRange.layerCount = arrayLayers;
-			barrier.subresourceRange.levelCount = mipLevels;
-		}
-		else {
-			barrier.subresourceRange = range;
-		}
+		barrier.subresourceRange = range;
 
 
-		if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-		}
-
-
-		if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		// Source layouts (old)
+		// Source access mask controls actions that have to be finished on the old layout
+		// before it will be transitioned to the new layout
+		switch (barrier.oldLayout)
+		{
+		case VK_IMAGE_LAYOUT_UNDEFINED:
+			// Image layout is undefined (or does not matter)
+			// Only valid as initial layout
+			// No flags required, listed only for completeness
 			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
 
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		}
-		else if (barrier.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		case VK_IMAGE_LAYOUT_PREINITIALIZED:
+			// Image is preinitialized
+			// Only valid as initial layout for linear images, preserves memory contents
+			// Make sure host writes have been finished
+			barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			// Image is a color attachment
+			// Make sure any writes to the color buffer have been finished
+			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			// Image is a depth/stencil attachment
+			// Make sure any writes to the depth/stencil buffer have been finished
+			barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+			// Image is a transfer source 
+			// Make sure any reads from the image have been finished
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			// Image is a transfer destination
+			// Make sure any writes to the image have been finished
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			// Image is read by a shader
+			// Make sure any shader reads from the image have been finished
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			break;
+		default:
+			// Other source layouts aren't handled (yet)
+			break;
+		}
+
+		// Target layouts (new)
+		// Destination access mask controls the dependency for the new image layout
+		switch (barrier.newLayout)
+		{
+		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			// Image will be used as a transfer destination
+			// Make sure any writes to the image have been finished
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+			// Image will be used as a transfer source
+			// Make sure any reads from the image have been finished
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			// Image will be used as a color attachment
+			// Make sure any writes to the color buffer have been finished
+			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			// Image layout will be used as a depth/stencil attachment
+			// Make sure any writes to depth/stencil buffer have been finished
+			barrier.dstAccessMask = barrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			// Image will be read in a shader (sampler, input attachment)
+			// Make sure any writes to the image have been finished
+			if (barrier.srcAccessMask == 0)
+			{
+				barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+			}
 			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		}
-		else if (barrier.oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		}
-		else {
-			throw std::invalid_argument("unsupported layout transition!");
+			break;
+		default:
+			// Other source layouts aren't handled (yet)
+			break;
 		}
 
 		vkCmdPipelineBarrier(
 			commandBuffer,
-			sourceStage, destinationStage,
+			srcStageMask, dstStageMask,
 			0,
 			0, nullptr,
 			0, nullptr,
@@ -1034,9 +1107,7 @@ namespace vkw {
 
 	void Sampler::createSampler(const CreateInfo & createInfo)
 	{
-		filter = createInfo.filter;
-		addressMode = createInfo.addressMode;
-		mipMap = createInfo.mipMap;
+		
 		borderColor = createInfo.borderColor;
 		anisotropyEnable = createInfo.anisotropyEnable;
 		maxAnisotropy = createInfo.maxAnisotropy;
@@ -1045,21 +1116,21 @@ namespace vkw {
 		compareOp = createInfo.compareOp;
 
 		VkSamplerCreateInfo samplerInfo = vkw::init::samplerCreateInfo();
-		samplerInfo.addressModeU = createInfo.addressMode.U;
-		samplerInfo.addressModeV = createInfo.addressMode.V;
-		samplerInfo.addressModeW = createInfo.addressMode.W;
-		samplerInfo.magFilter = createInfo.filter.magFilter;
-		samplerInfo.minFilter = createInfo.filter.minFilter;
+		samplerInfo.addressModeU = createInfo.addressModeU;
+		samplerInfo.addressModeV = createInfo.addressModeV;
+		samplerInfo.addressModeW = createInfo.addressModeW;
+		samplerInfo.magFilter = createInfo.magFilter;
+		samplerInfo.minFilter = createInfo.minFilter;
 		samplerInfo.anisotropyEnable = createInfo.anisotropyEnable;
 		samplerInfo.maxAnisotropy = createInfo.maxAnisotropy;
 		samplerInfo.borderColor = createInfo.borderColor;
 		samplerInfo.unnormalizedCoordinates = createInfo.unnormalizedCoordinates;
 		samplerInfo.compareEnable = createInfo.compareEnable;
 		samplerInfo.compareOp = createInfo.compareOp;
-		samplerInfo.mipmapMode = createInfo.mipMap.mipmapMode;
-		samplerInfo.mipLodBias = createInfo.mipMap.mipLodBias;
-		samplerInfo.minLod = createInfo.mipMap.minLod;
-		samplerInfo.maxLod = createInfo.mipMap.maxLod;
+		samplerInfo.mipmapMode = createInfo.mipmapMode;
+		samplerInfo.mipLodBias = createInfo.mipLodBias;
+		samplerInfo.minLod = createInfo.minLod;
+		samplerInfo.maxLod = createInfo.maxLod;
 
 		vkw::Debug::errorCodeCheck(vkCreateSampler(registry.device, &samplerInfo, nullptr, pVkObject), "Failed to create Sampler");
 	}

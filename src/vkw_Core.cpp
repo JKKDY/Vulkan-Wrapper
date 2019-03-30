@@ -74,7 +74,7 @@ namespace vkw {
 			Debug::errorCodeCheck(createDebugUtilsMessengerEXT(createInfo.debugMessengerInfos.at(i), nullptr, debugMessengers.at(i), false), std::string("Failed to create Debug Messenger, index: ",  i).c_str());
 		}
 
-		vkw::DebugInformationPrint::printSystemInformation(registry.instance);
+		vkw::DebugInformationPrint::printSystemInformation(this->registry.instance);
 
 		uint32_t deviceCount;
 		vkEnumeratePhysicalDevices(registry.instance, &deviceCount, nullptr);
@@ -111,6 +111,11 @@ namespace vkw {
 
 			physicalDevices_m.emplace_back(x, queueFamilyProperties, prop, features, memProp, queueFamTypes);
 		}
+	}
+
+	impl:: RegistryManager & Instance::getRegistry()
+	{
+		return this->registry;
 	}
 
 	VkResult Instance::createDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT & pCreateInfo, const VkAllocationCallbacks * pAllocator, VkDebugUtilsMessengerEXT & pCallback, bool automaticDestruction) {
@@ -304,6 +309,11 @@ namespace vkw {
 		}
 
 		createRegistry(createInfo);
+	}
+
+	impl::Registry & Device::getRegistry()
+	{
+		return *this->deviceRegistry;
 	}
 
 	void Device::createRegistry(const CreateInfo & createInfo)

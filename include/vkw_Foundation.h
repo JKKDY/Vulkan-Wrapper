@@ -161,7 +161,9 @@ namespace vkw {
 
 		template <typename T> struct VkReference {
 			VkReference(T *& ref) : reference(ref) {}
-			operator T () const { return reference ? *reference : VK_NULL_HANDLE;}
+			operator T () const {
+				return reference ? *reference : VK_NULL_HANDLE;
+			}
 		private:
 			T *& reference;
 		};

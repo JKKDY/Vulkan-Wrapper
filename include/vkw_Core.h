@@ -65,12 +65,12 @@ namespace vkw {
 
 		const std::vector<PhysicalDevice> & physicalDevices;
 
+		VULKAN_WRAPPER_API impl::RegistryManager & getRegistry();
 		VULKAN_WRAPPER_API VkResult createDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT & pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT &pCallback, bool automaticDestruction = true);
 		VULKAN_WRAPPER_API void destroyDebugUtilsMessengerEXT(VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator);
 
 		static VULKAN_WRAPPER_API std::vector<const char*> checkExtensions(const std::vector<const char*> & desiredExtensions, std::vector<const char*> * outMissingExtensions = nullptr);
 		static VULKAN_WRAPPER_API std::vector<const char*> checkLayers(const std::vector<const char*> & desiredLayers, std::vector<const char*> * outMissingLayers = nullptr);
-
 	private:
 		std::vector<PhysicalDevice> physicalDevices_m;
 		std::vector<VkDebugUtilsMessengerEXT> debugMessengers;
@@ -162,6 +162,7 @@ namespace vkw {
 		const std::vector<QueueInfo> & additionalQueues;
 
 		VULKAN_WRAPPER_API void createDevice(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API impl::Registry & getRegistry();
 	private:
 		impl::Registry * deviceRegistry;
 		QueueInfo graphicsQueue_m;

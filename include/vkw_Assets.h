@@ -145,7 +145,7 @@ namespace vkw {
 		VkShaderStageFlagBits stage;
 		VkShaderModuleCreateFlags flags = 0;
 
-		VULKAN_WRAPPER_API VkPipelineShaderStageCreateInfo pipelineShaderStageInfo(const VkSpecializationInfo* specializationInfo = nullptr, const char * name = "main");
+		VULKAN_WRAPPER_API VkPipelineShaderStageCreateInfo shaderStageInfo(const VkSpecializationInfo* specializationInfo = nullptr, const char * name = "main");
 	};
 
 

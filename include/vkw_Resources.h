@@ -115,13 +115,16 @@ namespace vkw {
 			uint32_t           descriptorCount;
 		};
 
+		struct UpdateInfo {
+			std::reference_wrapper<DescriptorSet> descriptor;
+			std::vector<WriteInfo> writeInfos;
+			std::vector<CopyInfo> copyInfos;
+		};
+
 		struct AllocInfo {
 			VkDescriptorPool descriptorPool;
 			DescriptorSetLayout layout;
 		};
-
-		// TODO: implement
-		VULKAN_WRAPPER_API static void allocateDescriptorSets(std::vector<DescriptorSet&> descriptorSets);	//TODO: impelement
 
 		VULKAN_WRAPPER_API DescriptorSet();
 		VULKAN_WRAPPER_API DescriptorSet(const AllocInfo & createInfo);
@@ -137,7 +140,10 @@ namespace vkw {
 		const DescriptorSetLayout *& layout;
 
 		VULKAN_WRAPPER_API void update(const std::vector<WriteInfo> & writeInfos, const std::vector<CopyInfo> & copyInfos); //TODO implement copying
-		VULKAN_WRAPPER_API void write(uint32_t dstBinding, uint32_t dstArrayElement, uint32_t descriptorCount, const VkDescriptorImageInfo * pImageInfo = nullptr, const VkDescriptorBufferInfo * pBufferInfo = nullptr, const VkBufferView * pTexelBufferView = nullptr);
+		//VULKAN_WRAPPER_API void write(uint32_t dstBinding, uint32_t dstArrayElement, uint32_t descriptorCount, const VkDescriptorImageInfo * pImageInfo = nullptr, const VkDescriptorBufferInfo * pBufferInfo = nullptr, const VkBufferView * pTexelBufferView = nullptr);
+		
+		VULKAN_WRAPPER_API static void allocateDescriptorSets(std::vector<DescriptorSet> descriptorSets);	//TODO: impelement
+		VULKAN_WRAPPER_API static void updateeDescriptorSets(std::vector<UpdateInfo> updateInfos);	//TODO: impelement
 	private:
 		const DescriptorSetLayout * layout_m = nullptr;
 	};
@@ -265,6 +271,8 @@ namespace vkw {
 		VULKAN_WRAPPER_API inline void invalidate();
 		VULKAN_WRAPPER_API void copyFromBuffer(VkBuffer srcBuffer, VkBufferCopy copyRegion = {}, VkCommandPool commandPool = VK_NULL_HANDLE);
 		//VULKAN_WRAPER_API void copyFrom(VkImage image, VkBufferCopy copyRegion, VkCommandPool commandPool = VK_NULL_HANDLE);
+
+		VULKAN_WRAPPER_API VkDescriptorBufferInfo bufferInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 	private:
 		VkDeviceSize size_m;
 		VkDeviceSize offset_m;
@@ -359,7 +367,9 @@ namespace vkw {
 		VkImageUsageFlags usage;
 		std::vector<uint32_t> familyQueueIndicies;
 
-		VULKAN_WRAPPER_API void transitionImageLayout(VkImageLayout newLayout, VkCommandPool commandPool = VK_NULL_HANDLE, VkImageSubresourceRange range = { 0x7FFFFFFF }, VkAccessFlags srcAccess = 0x7FFFFFFF, VkAccessFlags dstAccess = 0x7FFFFFFF);
+		VULKAN_WRAPPER_API void transitionImageLayout(VkImageLayout newLayout, VkImageAspectFlags aspectMask, VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VkCommandPool commandPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void transitionImageLayout(VkImageLayout newLayout, const VkImageSubresourceRange & range, VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VkCommandPool commandPool = VK_NULL_HANDLE);
+
 		VULKAN_WRAPPER_API void copyFromImage(const Image & srcImage, const std::vector<VkImageCopy> & regions = {}, VkCommandPool cmdPool = VK_NULL_HANDLE);
 		VULKAN_WRAPPER_API void copyFromBuffer(const VkBuffer & srcBuffer, const std::vector<VkBufferImageCopy> & copyRegions = {}, VkCommandPool commandPool = VK_NULL_HANDLE, VkQueue queue = VK_NULL_HANDLE);
 		// TODO: make function to copy from an image
@@ -411,28 +421,17 @@ namespace vkw {
 
 	/// Sampler
 	class Sampler : public impl::Entity<impl::VkwSampler> {
-		struct Filter {
+	public:
+		struct CreateInfo {
 			VkFilter magFilter = VK_FILTER_LINEAR;
 			VkFilter minFilter = VK_FILTER_LINEAR;
-		};
-
-		struct AddressMode {
-			VkSamplerAddressMode U = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			VkSamplerAddressMode V = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			VkSamplerAddressMode W = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		};
-
-		struct MipMap {
+			VkSamplerAddressMode addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			VkSamplerAddressMode addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			VkSamplerAddressMode addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 			VkSamplerMipmapMode mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 			float minLod = 0.0f;
 			float maxLod = 0.0f;
 			float mipLodBias = 0.0f;
-		};
-	public:
-		struct CreateInfo {
-			Filter filter;
-			AddressMode addressMode;
-			MipMap mipMap;
 			VkBorderColor borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 			VkBool32 anisotropyEnable = VK_FALSE;
 			float maxAnisotropy = 16;
@@ -447,10 +446,6 @@ namespace vkw {
 
 		VULKAN_WRAPPER_API void createSampler(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API void createSampler();
-
-		Filter filter;
-		AddressMode addressMode;
-		MipMap mipMap;
 
 		VkBorderColor borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 		VkBool32 anisotropyEnable = VK_FALSE;

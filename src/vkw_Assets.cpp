@@ -306,7 +306,7 @@ namespace vkw {
 		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &createInfo, nullptr, pVkObject), "Failed to create ShaderModule!");
 	}
 
-	VkPipelineShaderStageCreateInfo ShaderModule::pipelineShaderStageInfo(const VkSpecializationInfo* specializationInfo, const char * name)
+	VkPipelineShaderStageCreateInfo ShaderModule::shaderStageInfo(const VkSpecializationInfo* specializationInfo, const char * name)
 	{
 		VkPipelineShaderStageCreateInfo createInfo = init::pipelineShaderStageCreateInfo();
 		createInfo.module = *pVkObject;
