@@ -8,6 +8,15 @@
 
 namespace vkw {
 	namespace tools {
+		inline void alignedFree(void* data)
+		{
+#if	defined(_MSC_VER) || defined(__MINGW32__)
+			_aligned_free(data);
+#else 
+			free(data);
+#endif
+		}
+
 		inline void* alignedAlloc(size_t size, size_t alignment) {
 
 			void *data = nullptr;
@@ -19,6 +28,11 @@ namespace vkw {
 				data = nullptr;
 #endif
 			return data;
+		}
+
+
+		inline size_t allignementOf(size_t size, VkDeviceSize minAlligment) {
+			return  static_cast<size_t>(size / minAlligment) * minAlligment + (size % minAlligment) > 0 ? minAlligment : 0;
 		}
 
 

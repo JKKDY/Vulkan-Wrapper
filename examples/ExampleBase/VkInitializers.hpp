@@ -150,5 +150,51 @@ namespace example {
 			pipelineTessellationStateCreateInfo.patchControlPoints = patchControlPoints;
 			return pipelineTessellationStateCreateInfo;
 		}
+
+		inline VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding, uint32_t descriptorCount = 1, VkSampler * sampler = nullptr)
+		{
+			VkDescriptorSetLayoutBinding setLayoutBinding = {};
+			setLayoutBinding.descriptorType = type;
+			setLayoutBinding.stageFlags = stageFlags;
+			setLayoutBinding.binding = binding;
+			setLayoutBinding.descriptorCount = descriptorCount;
+			setLayoutBinding.pImmutableSamplers = sampler;
+			return setLayoutBinding;
+		}
+
+		inline VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo(const std::vector<VkVertexInputBindingDescription> & bindingDescr, const std::vector<VkVertexInputAttributeDescription>&  attributes) {
+			VkPipelineVertexInputStateCreateInfo vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
+			vertexInputState.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescr.size());
+			vertexInputState.pVertexBindingDescriptions = bindingDescr.data();
+			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
+			vertexInputState.pVertexAttributeDescriptions = attributes.data();
+			return vertexInputState;
+		}
+
+		inline VkVertexInputBindingDescription vertexInputBindingDescription(
+			uint32_t binding,
+			uint32_t stride,
+			VkVertexInputRate inputRate)
+		{
+			VkVertexInputBindingDescription vInputBindDescription{};
+			vInputBindDescription.binding = binding;
+			vInputBindDescription.stride = stride;
+			vInputBindDescription.inputRate = inputRate;
+			return vInputBindDescription;
+		}
+
+		inline VkVertexInputAttributeDescription vertexInputAttributeDescription(
+			uint32_t binding,
+			uint32_t location,
+			VkFormat format,
+			uint32_t offset)
+		{
+			VkVertexInputAttributeDescription vInputAttribDescription{};
+			vInputAttribDescription.location = location;
+			vInputAttribDescription.binding = binding;
+			vInputAttribDescription.format = format;
+			vInputAttribDescription.offset = offset;
+			return vInputAttribDescription;
+		}
 	}
 }

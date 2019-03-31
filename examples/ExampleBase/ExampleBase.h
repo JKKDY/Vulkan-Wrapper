@@ -5,6 +5,7 @@
 #include <thread>
 #include "Model.h"
 #include "Texture.h"
+#include "Scene.h"
 #include "Window.hpp"
 
 namespace example {
@@ -45,10 +46,7 @@ namespace example {
 		virtual void setup() = 0;
 		virtual void nextFrame();
 	protected:
-		struct Camera {
-			glm::mat4 perspective;
-			glm::mat4 view;
-		}camera;
+		Camera camera;
 
 		struct FrameTimer {
 

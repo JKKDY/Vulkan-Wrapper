@@ -24,6 +24,9 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Source\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExampleBase.h">
@@ -42,6 +45,9 @@
       <Filter>Source\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
+      <Filter>Source\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
       <Filter>Source\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

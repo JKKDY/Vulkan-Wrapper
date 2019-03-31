@@ -193,7 +193,8 @@ namespace vkw {
 		VULKAN_WRAPPER_API ~Memory() = default;
 
 		VULKAN_WRAPPER_API void allocateMemory(AllocInfo & allocInfo);
-		VULKAN_WRAPPER_API void allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers = {}, std::vector<std::reference_wrapper<Image>> images = {}, VkMemoryPropertyFlags memoryFlags = 0, uint32_t memoryType = std::numeric_limits<uint32_t>::max(), VkDeviceSize additionalSize = 0);
+		VULKAN_WRAPPER_API void allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers = {}, std::vector<std::reference_wrapper<Image>> images = {},  VkDeviceSize additionalSize = 0);
+		VULKAN_WRAPPER_API void allocateMemory(VkMemoryPropertyFlags memoryFlags, std::vector<std::reference_wrapper<Buffer>> buffers = {}, std::vector<std::reference_wrapper<Image>> images = {}, VkDeviceSize additionalSize = 0, uint32_t memoryType = std::numeric_limits<uint32_t>::max());
 
 		VULKAN_WRAPPER_API Memory & operator = (const Memory & rhs);
 
@@ -221,7 +222,7 @@ namespace vkw {
 		Mapped memoryMap_m;
 		VkMemoryPropertyFlags memoryFlags_m;
 		uint32_t memoryTypeBits_m = std::numeric_limits<uint32_t>::max();
-		uint32_t memoryType_m;
+		uint32_t memoryType_m = std::numeric_limits<uint32_t>::max();
 		MemoryRanges memoryRanges_m;
 
 		friend Buffer;

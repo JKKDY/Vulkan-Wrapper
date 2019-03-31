@@ -358,16 +358,14 @@ namespace vkw {
 	void Memory::allocateMemory(AllocInfo & allocInfo)
 	{
 		memoryFlags_m = allocInfo.memoryFlags;
-		allocateMemory(allocInfo.buffers, allocInfo.images, allocInfo.memoryFlags, allocInfo.memoryType, allocInfo.additionalSize);
+		allocateMemory(allocInfo.memoryFlags, allocInfo.buffers, allocInfo.images, allocInfo.additionalSize, allocInfo.memoryType);
 	}
 
-	void Memory::allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers, std::vector<std::reference_wrapper<Image>> images, VkMemoryPropertyFlags memoryFlags, uint32_t memoryType, VkDeviceSize additionalSize)
+	void Memory::allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers, std::vector<std::reference_wrapper<Image>> images, VkDeviceSize additionalSize)
 		// this has to be by reference otherwise memory cannot be set 
 		// IDEA: maybe make memory a shared state
 		// IDEA: maybe even go as far as giving every Object a customizable internal shared state
 	{	
-		if (memoryFlags != 0) memoryFlags_m = memoryFlags;
-
 		for (auto & x : buffers) setMemoryTypeBitsBuffer(x);
 		for (auto & x : images) setMemoryTypeBitsImage(x);
 
@@ -380,6 +378,14 @@ namespace vkw {
 
 		for (auto & x : buffers) bindBufferToMemory(x);
 		for (auto & x : images) bindImageToMemory(x);
+	}
+
+	void Memory::allocateMemory(VkMemoryPropertyFlags memoryFlags, std::vector<std::reference_wrapper<Buffer>> buffers, std::vector<std::reference_wrapper<Image>> images, VkDeviceSize additionalSize, uint32_t memoryType)
+	{
+		memoryFlags_m = memoryFlags;
+		memoryType_m = memoryType;
+
+		allocateMemory(buffers, images, memoryFlags);
 	}
 
 	Memory & Memory::operator=(const Memory & rhs)

@@ -205,23 +205,23 @@ void VkwExample::buildCommandBuffers()
 
 			vkCmdBeginRenderPass(drawCommandBuffers[i], &beginnInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkDeviceSize offsets[] = { 0 };
-			VkBuffer buffers[] = { cubeMesh.vertexBuffer };
-			vkCmdBindVertexBuffers(drawCommandBuffers[i], 0, 1, buffers, offsets);
-			vkCmdBindIndexBuffer(drawCommandBuffers[i], cubeMesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+				VkDeviceSize offsets[] = { 0 };
+				VkBuffer buffers[] = { cubeMesh.vertexBuffer };
+				vkCmdBindVertexBuffers(drawCommandBuffers[i], 0, 1, buffers, offsets);
+				vkCmdBindIndexBuffer(drawCommandBuffers[i], cubeMesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			VkViewport viewport = vkw::init::viewport(swapChain.extent);
-			vkCmdSetViewport(drawCommandBuffers[i], 0, 1, &viewport);
+				VkViewport viewport = vkw::init::viewport(swapChain.extent);
+				vkCmdSetViewport(drawCommandBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = { { 0,0 }, swapChain.extent };
-			vkCmdSetScissor(drawCommandBuffers[i], 0, 1, &scissor);
+				VkRect2D scissor = { { 0,0 }, swapChain.extent };
+				vkCmdSetScissor(drawCommandBuffers[i], 0, 1, &scissor);
 
-			vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+				vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-			for (auto cube : cubes) {
-				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, cube.descriptorSet.get(), 0, nullptr);
-				vkCmdDrawIndexed(drawCommandBuffers[i], cubeMesh.indexCount, 1, 0, 0, 0);
-			}
+				for (auto cube : cubes) {
+					vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, cube.descriptorSet.get(), 0, nullptr);
+					vkCmdDrawIndexed(drawCommandBuffers[i], cubeMesh.indexCount, 1, 0, 0, 0);
+				}
 
 			vkCmdEndRenderPass(drawCommandBuffers[i]);
 

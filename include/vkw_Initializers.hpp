@@ -153,6 +153,14 @@ namespace vkw {
 		}
 
 
+		inline VkRect2D rect2D(VkExtent2D extent, VkOffset2D offset = { 0,0 }) {
+			VkRect2D rect = {};
+			rect.extent = extent;
+			rect.offset = offset;
+			return rect;
+		}
+
+
 		inline VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo() {
 			VkPipelineViewportStateCreateInfo createInfo = {};
 			createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
