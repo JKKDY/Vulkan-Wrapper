@@ -5,7 +5,7 @@
 #include "Window.hpp"
 #include "VkInitializers.hpp"
 
-using namespace example;
+using namespace vkex;
 
 class VkwExample : public ExampleBase {
 public:
@@ -32,7 +32,7 @@ private:
 		vkw::Buffer uniformBuffer;
 		glm::vec3 rotation;
 	};
-	std::array<Cube, 2> cubes;
+	std::array<Cube, 2> cube;
 
 	Mesh cubeMesh;
 
@@ -74,10 +74,10 @@ void VkwExample::setup() {
 void VkwExample::loadAssets()
 {
 	Mesh::LoadInfo meshInfo(modelPath() + "cube.dae", { {VERTEX_COMPONENT_POSITION, VERTEX_COMPONENT_NORMAL, VERTEX_COMPONENT_UV, VERTEX_COMPONENT_COLOR} }, &cubeMesh);
-	meshloader.loadFromFile({ meshInfo });
+	meshLoader.loadFromFile({ meshInfo });
 
-	Texture2D::CreateInfo textureInfo1(texturePath() + "crate01_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, &cubes[0].texture);
-	Texture2D::CreateInfo textureInfo2(texturePath() + "crate02_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, &cubes[1].texture);
+	Texture2D::CreateInfo textureInfo1(texturePath() + "crate01_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, &cube[0].texture);
+	Texture2D::CreateInfo textureInfo2(texturePath() + "crate02_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, &cube[1].texture);
 	textureLoader.loadFromFile({ textureInfo1, textureInfo2 });
 }
 
@@ -85,14 +85,14 @@ void VkwExample::prepareUniformBuffers()
 {
 	uniformBufferMemory.setFlags(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	for (auto & x : cubes) {
+	for (auto & x : cube) {
 		x.uniformBuffer.createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, sizeof(Cube::Matrices));
 		uniformBufferMemory.setMemoryTypeBitsBuffer(x.uniformBuffer);
 	}
 
 	uniformBufferMemory.allocateMemory();
 
-	for (auto & x : cubes) uniformBufferMemory.bindBufferToMemory(x.uniformBuffer);
+	for (auto & x : cube) uniformBufferMemory.bindBufferToMemory(x.uniformBuffer);
 }
 
 void VkwExample::setupDescriptors()
@@ -113,14 +113,14 @@ void VkwExample::setupDescriptors()
 
 	
 	vkw::DescriptorPool::CreateInfo2 descriptorPoolCreateInfo = {};
-	descriptorPoolCreateInfo.uniformBufferCount = 1 + static_cast<uint32_t>(cubes.size());  // Uniform buffers : 1 for scene and 1 per object (scene and local matrices)
-	descriptorPoolCreateInfo.combinedImageSamplerCount = static_cast<uint32_t>(cubes.size()); 	// Combined image samples : 1 per mesh texture
-	descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(cubes.size());
+	descriptorPoolCreateInfo.uniformBufferCount = 1 + static_cast<uint32_t>(cube.size());  // Uniform buffers : 1 for scene and 1 per object (scene and local matrices)
+	descriptorPoolCreateInfo.combinedImageSamplerCount = static_cast<uint32_t>(cube.size()); 	// Combined image samples : 1 per mesh texture
+	descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(cube.size());
 	
 	descriptorPool.createDescriptorPool(descriptorPoolCreateInfo);
 
 
-	for (auto & cube : cubes) {
+	for (auto & cube : cube) {
 		cube.descriptorSet.allocateDescriptorSet(descriptorPool, descriptorSetLayout);
 
 		VkDescriptorBufferInfo bufferInfo = cube.uniformBuffer.bufferInfo();
@@ -218,7 +218,7 @@ void VkwExample::buildCommandBuffers()
 
 				vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-				for (auto cube : cubes) {
+				for (auto cube : cube) {
 					vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, cube.descriptorSet.get(), 0, nullptr);
 					vkCmdDrawIndexed(drawCommandBuffers[i], cubeMesh.indexCount, 1, 0, 0, 0);
 				}
@@ -236,13 +236,13 @@ void VkwExample::nextFrame() {
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	cubes[0].matrices.model = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
-	cubes[1].matrices.model = glm::translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 0.0f));
+	cube[0].matrices.model = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f));
+	cube[1].matrices.model = glm::translate(glm::mat4(1.0f), glm::vec3(1.5f, 0.5f, 0.0f));
 
-	cubes[0].matrices.model = glm::rotate(cubes[0].matrices.model, glm::radians(90.f * time),glm::vec3(0.0f, 1.0f, 0.0f));
-	cubes[1].matrices.model = glm::rotate(cubes[1].matrices.model, glm::radians(70.f * time),glm::vec3(1.0f, 0.0f, 0.0f));
+	cube[0].matrices.model = glm::rotate(cube[0].matrices.model, glm::radians(90.f * time),glm::vec3(0.0f, 1.0f, 0.0f));
+	cube[1].matrices.model = glm::rotate(cube[1].matrices.model, glm::radians(70.f * time),glm::vec3(1.0f, 0.0f, 0.0f));
 
-	for (auto & cube : cubes) {
+	for (auto & cube : cube) {
 		cube.matrices.view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -5));
 		cube.matrices.projection = glm::perspective(glm::radians(60.0f), swapChain.extent.width / (float)swapChain.extent.height, 0.1f, 10.0f);
 		

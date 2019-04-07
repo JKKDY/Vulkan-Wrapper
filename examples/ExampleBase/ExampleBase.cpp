@@ -1,7 +1,7 @@
 #include "ExampleBase.h"
 
 
-namespace example {
+namespace vkex {
 	VKAPI_ATTR VkBool32 VKAPI_CALL defaultDebugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -106,10 +106,16 @@ namespace example {
 
 	void ExampleBase::renderFrame()
 	{
+		auto startTime = std::chrono::high_resolution_clock::now();
+
 		uint32_t index = swapChain.getNextImage(VK_NULL_HANDLE, renderFence);
 		renderFence.wait();
 		drawCommandBuffers[index].submitCommandBuffer(device.graphicsQueue, { renderSemaphore });
 		swapChain.presentImage(index, { renderSemaphore });
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		frameTimer = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		time += frameTimer;
 	}
 
 

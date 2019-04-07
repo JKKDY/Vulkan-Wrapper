@@ -14,7 +14,7 @@
 
 #include "Mesh.h"
 
-namespace example {
+namespace vkex {
 	
 
 

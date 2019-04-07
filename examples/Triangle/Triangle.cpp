@@ -253,7 +253,7 @@ int main() {
 	vertexInputAttributs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 	vertexInputAttributs[1].offset = offsetof(Vertex, col);
 
-	auto vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
+	VkPipelineVertexInputStateCreateInfo vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
 	vertexInputState.pVertexAttributeDescriptions = vertexInputAttributs.data();
 	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributs.size());
 	vertexInputState.pVertexBindingDescriptions = &vertexInputBindingDescription;
@@ -263,25 +263,25 @@ int main() {
 	VkRect2D scissor = { { 0,0 }, swapChain.extent };
 	VkViewport viewport = vkw::init::viewport(swapChain.extent);
 
-	auto viewportState = pipelineViewportSatetCreateInfo(viewport, scissor);
+	VkPipelineViewportStateCreateInfo viewportState = pipelineViewportSatetCreateInfo(viewport, scissor);
 
 	// collor blend State
 	VkPipelineColorBlendAttachmentState colorBlendAttachement = {};
 	colorBlendAttachement.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachement.blendEnable = VK_FALSE;
 
-	auto colorBlendState = vkw::init::pipelineColorBlendStateCreateInfo();
+	VkPipelineColorBlendStateCreateInfo colorBlendState = vkw::init::pipelineColorBlendStateCreateInfo();
 	colorBlendState.attachmentCount = 1;
 	colorBlendState.pAttachments = &colorBlendAttachement;
 
 	// other pipeline States
-	auto inputAssemblyState = vkw::init::pipelineInputAssemblyStateCreateInfo();
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = vkw::init::pipelineInputAssemblyStateCreateInfo();
 	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssemblyState.primitiveRestartEnable = VK_FALSE;
 
-	auto rasterizationState = pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, 0, VK_FRONT_FACE_CLOCKWISE);
+	VkPipelineRasterizationStateCreateInfo rasterizationState = pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, 0, VK_FRONT_FACE_CLOCKWISE);
 
-	auto multisampleState = vkw::init::pipelineMultisampleStateCreateInfo();
+	VkPipelineMultisampleStateCreateInfo multisampleState = vkw::init::pipelineMultisampleStateCreateInfo();
 	multisampleState.sampleShadingEnable = VK_FALSE;
 	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 

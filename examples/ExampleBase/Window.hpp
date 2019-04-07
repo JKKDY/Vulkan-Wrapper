@@ -2,7 +2,7 @@
 #include<vulkan_wrapper.h>
 #include<glfw/glfw3.h>
 
-namespace example {
+namespace vkex {
 	class Window : public vkw::Window {
 	public:
 		using vkw::Window::Window;

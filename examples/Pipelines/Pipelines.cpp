@@ -8,7 +8,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-using namespace example;
+using namespace vkex;
 
 class PipelineExample : public ExampleBase {
 public:
@@ -78,6 +78,7 @@ void PipelineExample::setup() {
 	setupRenderCommanBuffers();
 }
 
+
 void  PipelineExample::loadModels() {
 	Mesh::LoadInfo meshInfo;
 	meshInfo.pMesh = &teapot;
@@ -88,7 +89,7 @@ void  PipelineExample::loadModels() {
 	meshInfo2.pMesh = &teapot2;
 	meshInfo2.layout = { VERTEX_COMPONENT_POSITION, VERTEX_COMPONENT_COLOR };
 	meshInfo2.center = glm::vec3(1, 1, 1);
-	meshloader.loadFromFile({ meshInfo, meshInfo2 });
+	meshLoader.loadFromFile({ meshInfo, meshInfo2 });
 }
 
 void  PipelineExample::createUBO() {
@@ -293,8 +294,6 @@ void PipelineExample::nextFrame() {
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-	std::cout << time << std::endl;
 	
 	UBO ubo = {};
 	ubo.model = glm::mat4(1.0);

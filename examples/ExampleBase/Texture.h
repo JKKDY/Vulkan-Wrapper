@@ -2,7 +2,8 @@
 #include <vulkan_wrapper.h>
 #include <gli/gli.hpp>
 
-namespace example {
+
+namespace vkex {
 	class Texture {
 	public:
 		VkDescriptorImageInfo descriptorInfo();

@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-namespace example {
+namespace vkex {
 	VertexLayout::VertexLayout(const std::vector<VertexComponents> & components) :components(components) {}
 
 	const std::vector<VertexComponents>& VertexLayout::operator=(const std::vector<VertexComponents>& components)

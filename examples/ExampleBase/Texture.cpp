@@ -1,7 +1,7 @@
 #include "Texture.h"
-
-
-namespace example {
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+namespace vkex {
 	VkDescriptorImageInfo Texture::descriptorInfo()
 	{
 		VkDescriptorImageInfo info = {};
@@ -17,33 +17,54 @@ namespace example {
 	void TextureLoader::loadFromFile(const std::vector<Texture2D::CreateInfo> & createInfos)
 	{
 		struct LoadInfo {
-			LoadInfo(const gli::texture & texture) : gliTexture(texture) {}
 			Texture2D * texture;
 			gli::texture2d gliTexture;
 			vkw::SubBuffer subStagingBuffer;
+			stbi_uc * pixels = nullptr;
+			size_t size;
 		};
+
 
 		std::vector<LoadInfo> loadInfos;
 		loadInfos.reserve(createInfos.size());
 		size_t totalStagingSize = 0;
 		size_t totalAllocationsSize = 0;
 
-		for (auto & x : createInfos) {
-			loadInfos.emplace_back(gli::load(x.fileName.c_str()));
-			LoadInfo & info = loadInfos.back();
-			info.texture = x.pTexture;
-			totalStagingSize += info.gliTexture.size();
 
+		for (auto & x : createInfos) {
+			LoadInfo info;
 			vkw::Image::CreateInfo createInfo;
 			createInfo.format = x.format;
 			createInfo.usage = x.usage;
 			if (!(createInfo.usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT)) createInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-			createInfo.extent = { static_cast<uint32_t>(info.gliTexture.extent().x), static_cast<uint32_t>(info.gliTexture.extent().y), 1 };
-			createInfo.mipLevels = static_cast<uint32_t>(info.gliTexture.levels());
 
+			std::string fileExt = vkw::tools::getFileExtension(x.fileName);
+			if (fileExt == "dds" || fileExt == "ktx") {
+				info.gliTexture = gli::texture2d(gli::load(x.fileName.c_str()));
+				info.size = info.gliTexture.size();
+	
+				createInfo.mipLevels = static_cast<uint32_t>(info.gliTexture.levels());
+				createInfo.extent = { static_cast<uint32_t>(info.gliTexture.extent().x), static_cast<uint32_t>(info.gliTexture.extent().y), 1 };
+			}
+			else {
+				int texWidth, texHeight, texChannels;
+				info.pixels = stbi_load(x.fileName.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
+				VKW_assert(info.pixels != nullptr, "Failed to load imgae");
+				info.size = 4 * texWidth * texHeight;
+
+				createInfo.extent = { (uint32_t)texWidth , (uint32_t)texHeight, 1 };
+				createInfo.mipLevels = 1;
+			}
+
+			totalStagingSize += info.size;
+
+			info.texture = x.pTexture;
 			info.texture->image.createImage(createInfo);
 			totalAllocationsSize += info.texture->image.sizeInMemory;
+			loadInfos.push_back(info);
 		}
+
 
 
 
@@ -72,8 +93,8 @@ namespace example {
 		stagingMemory.allocateMemory({ stagingBuffer });
 
 		for (auto & x : loadInfos) {
-			x.subStagingBuffer = stagingBuffer.createSubBuffer(x.gliTexture.size());
-			x.subStagingBuffer.write(x.gliTexture.data(), x.gliTexture.size());
+			x.subStagingBuffer = stagingBuffer.createSubBuffer(x.size);
+			x.subStagingBuffer.write(x.pixels == nullptr ? x.gliTexture.data() : x.pixels , x.size);
 			x.texture->image.transitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 
@@ -81,22 +102,35 @@ namespace example {
 
 		for (auto & x : loadInfos) {
 			std::vector<VkBufferImageCopy> bufferCopyRegions;
-			size_t offset = x.subStagingBuffer.offset;
-			for (uint32_t i = 0; i < x.gliTexture.levels(); i++)
-			{
+
+			if (x.pixels == nullptr) {
+				size_t offset = x.subStagingBuffer.offset;
+				for (uint32_t i = 0; i < x.texture->image.mipLevels; i++)
+				{
+					VkBufferImageCopy bufferCopyRegion = {};
+					bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					bufferCopyRegion.imageSubresource.mipLevel = i;
+					bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+					bufferCopyRegion.imageSubresource.layerCount = 1;
+					bufferCopyRegion.imageExtent.width = static_cast<uint32_t>(x.gliTexture[i].extent().x);
+					bufferCopyRegion.imageExtent.height = static_cast<uint32_t>(x.gliTexture[i].extent().y);
+					bufferCopyRegion.imageExtent.depth = 1;
+					bufferCopyRegion.bufferOffset = offset;
+
+					bufferCopyRegions.push_back(bufferCopyRegion);
+
+					offset += static_cast<size_t>(x.gliTexture[i].size());
+				}
+			}
+			else {
 				VkBufferImageCopy bufferCopyRegion = {};
 				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				bufferCopyRegion.imageSubresource.mipLevel = i;
+				bufferCopyRegion.imageSubresource.mipLevel = 0;
 				bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
 				bufferCopyRegion.imageSubresource.layerCount = 1;
-				bufferCopyRegion.imageExtent.width = static_cast<uint32_t>(x.gliTexture[i].extent().x);
-				bufferCopyRegion.imageExtent.height = static_cast<uint32_t>(x.gliTexture[i].extent().y);
-				bufferCopyRegion.imageExtent.depth = 1;
-				bufferCopyRegion.bufferOffset = offset;
-
+				bufferCopyRegion.imageExtent = x.texture->image.extent;
+				bufferCopyRegion.bufferOffset = 0;
 				bufferCopyRegions.push_back(bufferCopyRegion);
-
-				offset += static_cast<size_t>(x.gliTexture[i].size());
 			}
 
 			x.texture->image.copyFromBuffer(x.subStagingBuffer, bufferCopyRegions);
@@ -113,9 +147,9 @@ namespace example {
 			samplerCreateInfo.mipLodBias = 0.0f;
 			samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
 			samplerCreateInfo.minLod = 0.0f;
-			samplerCreateInfo.maxLod = static_cast<float>(x.gliTexture.levels());
+			samplerCreateInfo.maxLod = x.pixels == nullptr ? static_cast<float>(x.gliTexture.levels()) : 0.0f;
 			samplerCreateInfo.maxAnisotropy = pyhsicalDevice.properties.limits.maxSamplerAnisotropy;
-			samplerCreateInfo.anisotropyEnable = VK_TRUE;
+			samplerCreateInfo.anisotropyEnable = VK_FALSE;
 			samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 			x.texture->sampler.createSampler(samplerCreateInfo);
 
@@ -123,7 +157,7 @@ namespace example {
 			viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 			viewCreateInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 			viewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-			viewCreateInfo.subresourceRange.levelCount = static_cast<uint32_t>(x.gliTexture.levels());
+			viewCreateInfo.subresourceRange.levelCount = x.texture->image.mipLevels;
 			viewCreateInfo.image = x.texture->image;
 			x.texture->imageView.createImageView(viewCreateInfo);
 		}

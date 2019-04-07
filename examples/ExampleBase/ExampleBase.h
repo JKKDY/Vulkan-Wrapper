@@ -8,7 +8,7 @@
 #include "Scene.h"
 #include "Window.hpp"
 
-namespace example {
+namespace vkex {
 	std::string getAssetPath();
 	std::string modelPath();
 	std::string texturePath();
@@ -48,9 +48,8 @@ namespace example {
 	protected:
 		Camera camera;
 
-		struct FrameTimer {
-
-		}frameTimer;
+		float frameTimer = 0; // in seconds
+		float time = 0; // in seconds
 
 		Window & window;
 
@@ -76,7 +75,7 @@ namespace example {
 
 		vkw::PipelineCache pipelineCache;
 
-		MeshLoader meshloader;
+		MeshLoader meshLoader;
 		TextureLoader textureLoader;
 
 		virtual void createInstance(const std::vector<const char*> & extensions, const std::vector<const char*> & layers, VkApplicationInfo * appInfo);

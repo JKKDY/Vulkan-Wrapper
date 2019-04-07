@@ -17,6 +17,7 @@ namespace vkw {
 #endif
 		}
 
+
 		inline void* alignedAlloc(size_t size, size_t alignment) {
 
 			void *data = nullptr;
@@ -51,7 +52,7 @@ namespace vkw {
 
 		// gets biggest depth format
 		inline VkFormat getDepthFormat(const VkPhysicalDevice & physicalDevice) {
-			std::vector<VkFormat> depthFormats = {
+			const std::vector<VkFormat> depthFormats = {
 				VK_FORMAT_D32_SFLOAT_S8_UINT,
 				VK_FORMAT_D32_SFLOAT,
 				VK_FORMAT_D24_UNORM_S8_UINT,
@@ -70,6 +71,15 @@ namespace vkw {
 			}
 
 			return VK_FORMAT_UNDEFINED;
+		}
+
+
+		inline std::string getFileExtension(const std::string & filename) {
+			size_t pos = filename.find_last_of(".");
+			if (pos != std::string::npos)
+				return filename.substr(pos + 1);
+			else
+				return std::string();
 		}
 	}
 

@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace example {
+namespace vkex {
 	namespace initializers {
 		inline VkViewport viewport(
 			VkExtent2D extent,
@@ -195,6 +195,24 @@ namespace example {
 			vInputAttribDescription.format = format;
 			vInputAttribDescription.offset = offset;
 			return vInputAttribDescription;
+		}
+
+		inline vkw::DescriptorSet::WriteInfo descriptorSetWriteInfo(uint32_t dstBinding, VkDescriptorBufferInfo *bufferInfo, uint32_t descriptorCount = 1, uint32_t dstArrayElement = 0) {
+			vkw::DescriptorSet::WriteInfo writeInfo = {};
+			writeInfo.dstBinding = dstBinding;
+			writeInfo.descriptorCount = descriptorCount;
+			writeInfo.dstArrayElement = dstArrayElement;
+			writeInfo.pBufferInfo = bufferInfo;
+			return writeInfo;
+		}
+
+		inline vkw::DescriptorSet::WriteInfo descriptorSetWriteInfo(uint32_t dstBinding, VkDescriptorImageInfo *imageInfo, uint32_t descriptorCount = 1, uint32_t dstArrayElement = 0) {
+			vkw::DescriptorSet::WriteInfo writeInfo = {};
+			writeInfo.dstBinding = dstBinding;
+			writeInfo.descriptorCount = descriptorCount;
+			writeInfo.dstArrayElement = dstArrayElement;
+			writeInfo.pImageInfo = imageInfo;
+			return writeInfo;
 		}
 	}
 }

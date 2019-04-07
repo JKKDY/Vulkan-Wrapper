@@ -11,7 +11,7 @@
 
 #define OBJECT_INSTANCES 125
 
-using namespace example;
+using namespace vkex;
 
 class VkwExample : public ExampleBase {
 public:
