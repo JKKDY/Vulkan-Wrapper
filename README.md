@@ -16,7 +16,7 @@ The Examples use the following libraries:
  - [gli](https://github.com/g-truc/gli)
  - [glm](https://github.com/g-truc/glm)
 
-In the root folder there is a Visual Studio solution for building the Wrapper and running the Examples. For the Wrapper to link against the VulkanSDK, the header files and binaries need to be copied their respective folders "include", "lib32",  "lib64" in[/external/Vulkan](/external/Vulkan/). For the examples to link against their 3rd-Party libraries, these need to be downloaded (and in some cases built) into [/examples/external](/examples/external/. To help with this process two python scripts (setup_dependencies.py) have been created in [/external/setup_dependencies.py](/external/setup_dependencies.py) and [/examples/external/setup_dependencies.py](/examples/external/setup_dependencies.py). 
+In the root folder there is a Visual Studio solution for building the Wrapper and running the Examples. For the Wrapper to link against the VulkanSDK, the header files and binaries need to be copied their respective folders "include", "lib32",  "lib64" in[/external/Vulkan](/external/Vulkan/). For the examples to link against their 3rd-Party libraries, these need to be downloaded (and in some cases built) into [/examples/external](/examples/external/). To help with this process two python scripts [/external/setup_dependencies.py](/external/setup_dependencies.py) and [/examples/external/setup_dependencies.py](/examples/external/setup_dependencies.py) have been created. 
 
 
  # Design Architecture
