@@ -22,7 +22,6 @@ git_stb = 'https://github.com/nothings/stb.git'
 git_gli = 'https://github.com/g-truc/gli.git'
 git_glfw = 'https://github.com/glfw/glfw.git'
 git_assimp = 'https://github.com/assimp/assimp.git'
-git_tinyobjloader = 'https://github.com/syoyo/tinyobjloader.git'
 
 
 def maybe_mkdir(path):
@@ -48,7 +47,6 @@ def git_clone(repo, directory):
 git_clone(git_glm, dirname)
 git_clone(git_stb, dirname)
 git_clone(git_gli, dirname)
-git_clone(git_tinyobjloader, dirname)
 
 if windows:
     def maybe_copy(src, dst):

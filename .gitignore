@@ -260,7 +260,7 @@ paket-files/
 __pycache__/
 *.pyc
 
- 
+pre_doc.txt
 
 external/*
 examples/external/*
