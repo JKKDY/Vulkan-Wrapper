@@ -3,6 +3,7 @@
 + [Requirements](#Requirements)
 + [Setup Guide](#SetupGuide)
 + [File Paths](#FilePaths) 
+
 ## Requirements
 Building currently only works on windows.
 
@@ -18,7 +19,7 @@ The Examples require the following libraries:
 ## Setup Guide 
 1. Download/install/build all dependencies
 2. Move Include/library files etc. into their respective directories where compiler and linker can find them (see [File Paths](#FilePaths) for more info)
-3. Open [Vulkan Wrapper.sln](/VulkanWrapper.sln) with Visual Studio and build
+3. Open [Vulkan Wrapper.sln](VulkanWrapper.sln) with Visual Studio and build
 
 **For step 1 and 2 several scripts have been created to automate this process:** 
 
