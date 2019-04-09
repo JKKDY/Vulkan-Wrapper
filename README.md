@@ -5,7 +5,7 @@ This is a wrapper for the Vulkan API written in C++. It's main goal is to mitiga
 Alongside the Wrapper, there are a couple of examples showcasing the use of the API. These examples are mostly taken directly from [Sasha Willems Vulkan examples](https://github.com/SaschaWillems/Vulkan) and rewritten to use the Vulkan-Wrapper instead of Vulkan. 
 
 # Setup
-*A detailed guide on building  and setting up can be found in setup.md*
+*A detailed guide on building  and setting up can be found in [setup.md](setup.md)*
 
 The Wrapper itself requires that you have the [VulkanSDK](https://vulkan.lunarg.com/) installed and at least [Visual Studio](https://visualstudio.microsoft.com/de/downloads/) 2017.
 
