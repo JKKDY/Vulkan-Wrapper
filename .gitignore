@@ -266,8 +266,11 @@ external/*
 examples/external/*
 examples/external/assimp/*
 
+!examples/external/assimp/
 !venv.bat
-!setup_dependencies.bat
-!setup_dependencies.py
+!setup_dependencies_vkw.bat
+!setup_dependencies_examples.bat
+!setup_dependencies_vkw.py
+!setup_dependencies_examples.py
 !copy_libraries.bat
 !copy_libraries.py

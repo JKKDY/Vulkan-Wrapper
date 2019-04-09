@@ -3,13 +3,7 @@
 #include "vkw_Core.h"
 
 namespace vkw {
-	//class Window;
-	class Swapchain;
 
-	//add a CreateSurface
-
-
-	//add a createSwapchain
 	class Swapchain : public impl::Entity<impl::VkwSwapchainKHR> {
 	public:
 		struct CreateInfo {

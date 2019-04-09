@@ -1,65 +1,68 @@
-**Only works on Windows**
+
+# Overview
++ [Requirements](#Requirements)
++ [Setup Guide](#SetupGuide)
++ [File Paths](#FilePaths) 
+## Requirements
+Building currently only works on windows.
+
+The Vulkan-Wrapper itself requires that the [VulkanSDK](https://vulkan.lunarg.com/) and at least [Visual Studio](https://visualstudio.microsoft.com/de/downloads/) 2017 is installed.
+
+The Examples require the following libraries:
+ - [assimp](https://github.com/assimp/assimp)
+ - [glfw](https://github.com/glfw/glfw)
+ - [stb_image](https://github.com/nothings/stb)
+ - [gli](https://github.com/g-truc/gli)
+ - [glm](https://github.com/g-truc/glm)
+ 
+## Setup Guide 
+1. Download/install/build all dependencies
+2. Move Include/library files etc. into their respective directories where compiler and linker can find them (see [File Paths](#FilePaths) for more info)
+3. Open [Vulkan Wrapper.sln](/VulkanWrapper.sln) with Visual Studio and build
+
+**For step 1 and 2 several scripts have been created to automate this process:** 
+
+[/external/setup_dependencies_vkw.py](/external/setup_dependencies_vkw.py):
+ + finds the latest installed [VulkanSDK](https://vulkan.lunarg.com/) on the system and copies alle necessary files into their respective directories
+ 
+ [/examples/external/setup_dependencies_examples.py](/examples/external/setup_dependencies_examples.py):
+ + clones* the repositories of [assimp](https://github.com/assimp/assimp), [stb_image](https://github.com/nothings/stb), [gli](https://github.com/g-truc/gli) and [glm](https://github.com/g-truc/glm),
+ + downloads [glfw binaries]([https://www.glfw.org/download.html](https://www.glfw.org/download.html)) for windows and copies them into their respective directories.
+ + downloads [cmake]([https://github.com/Kitware/CMake](https://github.com/Kitware/CMake)) and automatically builds a Visual Studio solution for assimp for x86 and x64 in /examples/external/assimp/build and /examples/external/assimp/build64, respectively.
+
+[examples/external/assimp/copy_libraries.py](examples/external/assimp/copy_libraries.py):
++ copies assimp binaries in to their respective directories
+
+*this step requires either the installation of git on windows or GitPython. For this [venv.bat](/examples/external/venv.bat) will setup a virtual python envorment in /examples/external/env with GitPython installed 
+
+## File Paths
+The paths for compiler and linker for searching the dependencies are stored in two Visual Studio property sheets, [vulkan_client.props](/vulkan_client.props) and [vkw_examples.props](/examples/vkw_examples.props). These can easily be manually changed.
+
+**vulkan_client.props:**
+
+ - used by the wrapper and all examples
+ - holds the paths for using:
+  [VulkanSDK](https://vulkan.lunarg.com/):
+	 -  include files in /external/Vulkan/include
+	 - binaries for 32 bit applications in /external/Vulkan/lib32
+	 - binaries for 64 bit applications in /external/Vulkan/lib64
+
+**vkw_examples.props**
 
 
--------------Dependencies-------------
-Dependencies needed for the vulkan wrapper:
-  VulkanSDK
-  
-Dependencies needed for the examples:
-  assimp:           https://github.com/assimp/assimp.git
-  glfw:             https://github.com/glfw/glfw.git
-  tinyobjloader:    https://github.com/syoyo/tinyobjloader.git
-  stb_image:        https://github.com//nothings/stb.git
-  glm:              https://github.com/g-truc/glm
-  gli:              https://github.com/g-truc/gli.git
-  
-  
-  
-----------------Setup----------------
-You can download and setup the dependencies yourself or run the following python files:
-  /external/setup_dependencies.py
-  /examples/external/setup_dependencies.py
-  /examples/external/assimp/copy_libraries.py
-
-
-/external/setup_dependencies.py:
-  Dependencies:
-    Python
-    VulkanSDK
-  
-  Description:
-    Copies header files and librar files of the VulkanSDK into the /external/Vulkan directory
-    
-   
-/examples/external/setup_dependencies.py:
-  Dependencies:
-    git
-    python + Gitpython*
-    
-   Description:
-    Downloads Github repos of assimp, tinyobjloader, stb_image, glm, gli
-    Downloads glfw library
-    Downloads cmake
-    Creates Visual Studio Project of assimp (32 & 64bit), can then be compiled
-    
-    
-/examples/external/assimp/copy_libraries.py:
-  Dependencies:
-    Built assimp project (32 & 64bit)
-  
-  Description:
-    copys assimp library files into /examaples/external/assimp/build/ and /examaples/external/assimp/build64/
-
-
-
-
-***************************************
-*for the python dependecy Gitpython there is a venv.bat file wich will create a virtual enviroment with this package
-
-
-
-
-
-
-
-
+- used by all examples
+- holds the paths for using
+- [assimp](https://github.com/assimp/assimp)
+	 - include files in /examples/external/assimp/include
+	 - binaries for 32 bit applications in /examples/external/assimp/Win32
+	 - binaries for 64 bit applications in /examples/external/assimp/Win32
+ - [glfw](https://github.com/glfw/glfw)
+  	 -  include files in /examples/external/glfw/include
+	 - binaries for 32 bit applications in /examples/external/glfw/Win32
+	 - binaries for 64 bit applications in /examples/external/glfw/x64
+ - [stb_image](https://github.com/nothings/stb)
+  	 -  include files in /examples/external/stb
+ - [gli](https://github.com/g-truc/gli)
+   	 -  include files in /examples/external/gli/gli
+ - [glm](https://github.com/g-truc/glm)
+     -  include files in /examples/external/glm/glm
