@@ -19,7 +19,7 @@ The Examples require the following libraries:
 ## Setup Guide 
 1. Download/install/build all dependencies
 2. Move Include/library files etc. into their respective directories where compiler and linker can find them (see [File Paths](#FilePaths) for more info)
-3. Open [Vulkan Wrapper.sln](VulkanWrapper.sln) with Visual Studio and build
+3. Open [Vulkan Wrapper.sln](VulkanWrapper.sln) with Visual Studio and build. Binaries can be found in /bin/Win32 and /bin/x64, headers in /include.
 
 **For step 1 and 2 several scripts have been created to automate this process:** 
 
