@@ -128,7 +128,7 @@ void VkwExample::prepareUniformBuffers() {
 	glm::mat4 viewProj = camera.perspective * camera.view;
 	viewUniformBuffer.write(&viewProj, sizeof(glm::mat4));
 
-	std::default_random_engine rndEngine((unsigned)time(nullptr));
+	std::default_random_engine rndEngine((unsigned)::time(nullptr));
 	std::normal_distribution<float> rndDist(-1.0f, 1.0f);
 	for (uint32_t i = 0; i < OBJECT_INSTANCES; i++) {
 		rotations[i] = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine)) * 2.0f * (float)M_PI;

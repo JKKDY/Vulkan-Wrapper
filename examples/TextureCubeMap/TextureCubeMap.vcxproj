@@ -157,7 +157,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Example.cpp" />
+    <ClCompile Include="TextureCubeMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Vulkan Wraper.vcxproj">

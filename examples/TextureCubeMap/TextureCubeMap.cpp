@@ -5,11 +5,7 @@
 #include "Window.hpp"
 #include "VkInitializers.hpp"
 
-std::string dataPath = "../data/";
-std::string modelPath = dataPath + "Models/";
-std::string shaderPath = "shader/";
-
-using namespace example;
+using namespace vkex;
 
 class VkwExample : public ExampleBase {
 public:
@@ -35,7 +31,7 @@ VkwExample::VkwExample(Window & window) : ExampleBase(window) {
 VkwExample::~VkwExample()
 {
 	vkDeviceWaitIdle(device);
-	for (auto & x : renderCommandBuffers) x.destroyObject();
+	for (auto & x : drawCommandBuffers) x.destroyObject();
 }
 
 void VkwExample::setup() {

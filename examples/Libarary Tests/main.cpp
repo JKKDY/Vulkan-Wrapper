@@ -3,7 +3,6 @@
 #include <vulkan_wrapper.h>
 #include <glfw/glfw3.h>
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
 #include <glm/glm.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -72,22 +71,6 @@ int main() {
 	GlfwWindow::getWindowExtensions(instanceCreateInfo.desiredExtensions);
 	
 	vkw::Instance instance(instanceCreateInfo);
-
-
-	// tiny obj loader test
-	std::string inputfile = modelPath + "Teapot.obj";
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-
-	std::string warn;
-	std::string err;
-	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, inputfile.c_str());
-	if (!warn.empty()) std::cerr << warn << std::endl;
-	if (!err.empty()) std::cerr << err << std::endl; 
-	if (!ret) exit(1);
-	std::cout << "tiny obj loader test successful" << std::endl;
-
 
 
 	// stb test

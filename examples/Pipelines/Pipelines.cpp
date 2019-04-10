@@ -5,8 +5,6 @@
 #include "Window.hpp"
 #include "VkInitializers.hpp"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
 
 using namespace vkex;
 
