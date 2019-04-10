@@ -45,8 +45,11 @@ def git_clone(repo, directory):
 
 
 git_clone(git_glm, dirname)
+print("Downloaded glm")
 git_clone(git_stb, dirname)
+print("Downloaded stb")
 git_clone(git_gli, dirname)
+print("Downloaded gli")
 
 if windows:
     def maybe_copy(src, dst):
@@ -60,10 +63,11 @@ if windows:
 
     # cmake
     maybe_download(url_cmake, os.path.join(dirname, os.path.basename(url_cmake)))
-
+    print("Downloaded cmake")
     if not os.path.exists(os.path.join(dirname, os.path.basename(url_cmake)[:-4])):
         with zipfile.ZipFile(os.path.join(dirname, os.path.basename(url_cmake)), 'r') as zip_ref:
             zip_ref.extractall(dirname)
+    print("Extracted cmake")
              
     # glfw
     maybe_mkdir(path_glfw)
@@ -71,6 +75,7 @@ if windows:
     extract64 = os.path.join(path_glfw, 'glfw-3.2.1.bin.WIN64')
     maybe_download(url_glfw32, extract32 + '.zip')
     maybe_download(url_glfw64, extract64 + '.zip')
+    print("Downloaded glfw")
 
     # unzip
     if not os.path.exists(extract32):
@@ -80,19 +85,22 @@ if windows:
     if not os.path.exists(extract64):
         with zipfile.ZipFile(extract64 + '.zip', 'r') as zip_ref:
             zip_ref.extractall(path_glfw)
+    print("Extracted glfw")
 
     # copy libraries and headers
     maybe_copy(os.path.join(extract32, 'include/GLFW'), os.path.join(path_glfw, 'include', 'glfw'))
     maybe_copy(os.path.join(extract32, 'lib-vc2015'), os.path.join(path_glfw, 'Win32'))
     maybe_copy(os.path.join(extract64, 'lib-vc2015'), os.path.join(path_glfw, 'x64'))
+    print("Copied glfw files")
 
     # assimp
     assimp_name = git_clone(git_assimp, path_assimp)
+    print("Downloaded assimp")
 
     # copy headers
-    print(os.path.join(path_assimp, assimp_name, 'include', 'assimp'))
     maybe_copy(os.path.join(path_assimp, assimp_name, 'include', 'assimp'),
                os.path.join(path_assimp, 'include', 'assimp'))
+    print("copied assimp header files")
 
     # build
     maybe_mkdir(os.path.join(path_assimp, 'build'))
@@ -102,4 +110,5 @@ if windows:
     if len(os.listdir(os.path.join(path_assimp, 'build64'))) == 0:
         call([path_cmake_exe, '-G', 'Visual Studio 15 2017 Win64', '-S', os.path.join(path_assimp, assimp_name),
               '-B', os.path.join(path_assimp, 'build64')])
+    print("Built Visual Studio solution for assimp")
 

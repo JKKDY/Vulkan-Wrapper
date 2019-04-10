@@ -7,9 +7,16 @@ assimp_libs64 = os.path.join(dirname, 'build64', 'code')
 assimp_libs32 = os.path.join(dirname, 'build', 'code')
 
 
+def maybe_mkdir(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+
 def maybe_copy(src, dst):
-    if not os.path.exists(dst) and os.path.exists(src):
+    if os.path.exists(src) and not os.path.exists(dst):
         copytree(src, dst)
+    else:
+        print("Path " + src + " does not exist")
 
 
 if not os.path.exists(os.path.join(dirname, 'include', 'assimp', 'config.h')):

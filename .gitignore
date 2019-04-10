@@ -272,5 +272,5 @@ examples/external/assimp/*
 !setup_dependencies_examples.bat
 !setup_dependencies_vkw.py
 !setup_dependencies_examples.py
-!copy_libraries.bat
-!copy_libraries.py
+!copy_libraries_assimp.bat
+!copy_libraries_assimp.py
