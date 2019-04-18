@@ -205,7 +205,7 @@ void VkwExample::buildCommandBuffers() {
 				vkCmdBindIndexBuffer(drawCommandBuffers[i], scene.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 				vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.get(), 0, nullptr);
+				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.getPtr(), 0, nullptr);
 
 				vkCmdDrawIndexed(drawCommandBuffers[i], scene.indexCount, 1, 0, 0, 0);
 

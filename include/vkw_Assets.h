@@ -4,9 +4,9 @@
 
 namespace vkw {
 
-	class Swapchain : public impl::Entity<impl::VkwSwapchainKHR> {
+	class Swapchain : public impl::Object<impl::VkwSwapchainKHR> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			Surface & surface;
 			// more preferences should be added
 			VkSurfaceFormatKHR format;
@@ -50,9 +50,9 @@ namespace vkw {
 
 
 
-	class Semaphore : public impl::Entity<impl::VkwSemaphore> {
+	class Semaphore : public impl::Object<impl::VkwSemaphore> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			VkSemaphoreCreateFlags flags = 0;
 		};
 
@@ -70,9 +70,9 @@ namespace vkw {
 
 
 
-	class Fence : public impl::Entity<impl::VkwFence> {
+	class Fence : public impl::Object<impl::VkwFence> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			VkSemaphoreCreateFlags flags = 0;
 		};
 
@@ -95,9 +95,9 @@ namespace vkw {
 
 
 
-	class RenderPass : public impl::Entity<impl::VkwRenderPass>{
+	class RenderPass : public impl::Object<impl::VkwRenderPass>{
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			std::vector<VkSubpassDescription> subPasses;
 			std::vector<VkSubpassDependency> dependencys;
 			std::vector<VkAttachmentDescription> attachements;
@@ -119,9 +119,9 @@ namespace vkw {
 
 
 
-	class ShaderModule : public impl::Entity<impl::VkwShaderModule> {
+	class ShaderModule : public impl::Object<impl::VkwShaderModule> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			std::string filename; 
 			VkShaderStageFlagBits stage;
 			VkShaderModuleCreateFlags flags = 0;
@@ -145,9 +145,9 @@ namespace vkw {
 
 
 
-	class PipelineLayout : public impl::Entity<impl::VkwPipelineLayout>{
+	class PipelineLayout : public impl::Object<impl::VkwPipelineLayout>{
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			std::vector<VkDescriptorSetLayout> setLayouts;
 			std::vector<VkPushConstantRange> pushConstants;
 		};
@@ -168,32 +168,34 @@ namespace vkw {
 
 
 
-	class PipelineCache : public impl::Entity<impl::VkwPipelineCache> {
+	class PipelineCache : public impl::Object<impl::VkwPipelineCache> {
 	public:
-		struct CreateInfo {
-			size_t size;
-			void* data;
+		struct CreateInfo : impl::CreateInfo {
+			size_t initialSize;
+			void* initialData;
 			VkPipelineCacheCreateFlags flags = 0;
 		};
 
 		VULKAN_WRAPPER_API PipelineCache() = default;
 		VULKAN_WRAPPER_API PipelineCache(const CreateInfo & createInfo);
-		VULKAN_WRAPPER_API PipelineCache(size_t size, void* data, VkPipelineCacheCreateFlags flags = 0);
+		VULKAN_WRAPPER_API PipelineCache(size_t initialSize, void* initialData, VkPipelineCacheCreateFlags flags = 0);
 		VULKAN_WRAPPER_API ~PipelineCache() = default;
+
+		VULKAN_WRAPPER_API void createPipelineCache(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createPipelineCache(size_t initialSize = 0, void* initialData = nullptr, VkPipelineCacheCreateFlags flags = 0);
+
 
 		VkPipelineCacheCreateFlags flags = 0;
 		size_t size;
 		void* data;
-
-		VULKAN_WRAPPER_API void createPipelineCache();
 	};
 
 
 
 
-	class GraphicsPipeline : public impl::Entity<impl::VkwPipeline>{
+	class GraphicsPipeline : public impl::Object<impl::VkwPipeline>{
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			std::vector<VkPipelineShaderStageCreateInfo>	shaderStages;
 			VkPipelineLayout								layout;
 			VkRenderPass									renderPass;
@@ -232,7 +234,7 @@ namespace vkw {
 
 
 
-	class ComputePipeline : public vkw::impl::Entity<impl::VkwPipeline> {
+	class ComputePipeline : public impl::Object<impl::VkwPipeline> {
 	public:
 		/*VULKAN_WRAPER_API ComputePipeline() = default;
 		VULKAN_WRAPER_API ~ComputePipeline() = default;*/

@@ -130,8 +130,6 @@ namespace vkw {
 			return [=](T obj) {deletef(device, obj, nullptr); };
 		}
 
-	/*	template<> std::function<void(VkInstance)>				 Registry::getDeleter<VkwInstance>() { return instanceDeleter; }
-		template<> std::function<void(VkDevice)>				 Registry::getDeleter<VkwDevice>() { return deviceDeleter; }*/
 		template<> std::function<void(VkBuffer)>				 Registry::getDeleter<VkwBuffer>() { return bufferDeleter; }
 		template<> std::function<void(VkBufferView)>			 Registry::getDeleter<VkwBufferView>() { return bufferViewDeleter; }
 		template<> std::function<void(VkCommandPool)>			 Registry::getDeleter<VkwCommandPool>() { return commandPoolDeleter; }
@@ -392,7 +390,7 @@ namespace vkw {
 			return *pVkObject;
 		}
 
-		template<typename T, typename RegType> typename T::Type * Base<T, RegType>::get() const
+		template<typename T, typename RegType> typename T::Type * Base<T, RegType>::getPtr() const
 		{
 			return pVkObject;
 		}

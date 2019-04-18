@@ -117,6 +117,19 @@ namespace vkw {
 		};
 
 
+		template <typename T> struct PtrContainer {
+			PtrContainer() = default;
+			PtrContainer(T & obj) : pointer(&obj) {}
+			void operator = (T * obj) { pointer = obj; }
+			void operator = (T & obj) { pointer = &obj; } 
+			operator T & () const { return  *pointer; }
+			operator T * () const { return  pointer; }
+			T & get() const { return *pointer; }
+		private:
+			T * pointer;
+		};
+
+
 		// simple Timer
 		class Timer {
 		public:

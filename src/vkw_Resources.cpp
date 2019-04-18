@@ -65,10 +65,14 @@ namespace vkw {
 
 	void DescriptorPool::createDescriptorPool(const CreateInfo2 & createInfo)
 	{
+		CreateInfo info = {};
+		info.pNext = createInfo.pNext;
+		info.flags = createInfo.flags;
+		info.maxSets = createInfo.maxSets;
+
 		auto push_backMaybe = [&](int type) {
-			uint32_t count = createInfo(type);
-			if (count > 0)
-				poolSizes_m.push_back({ static_cast<VkDescriptorType>(type), createInfo(type) });
+			if (createInfo(type) > 0) 
+				info.poolSizes.push_back({ static_cast<VkDescriptorType>(type), createInfo(type) });
 		};
 
 		for (int descrSizeType = VK_DESCRIPTOR_TYPE_BEGIN_RANGE; descrSizeType != VK_DESCRIPTOR_TYPE_END_RANGE; descrSizeType++) {
@@ -78,28 +82,34 @@ namespace vkw {
 		push_backMaybe(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT);
 		push_backMaybe(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV);
 		
-		createDescriptorPool(poolSizes_m, createInfo.maxSets, createInfo.flags);
+
+		createDescriptorPool(info);
 	}
 
 	void DescriptorPool::createDescriptorPool(const CreateInfo & createInfo)
 	{
-		createDescriptorPool(createInfo.poolSizes, createInfo.maxSets, createInfo.flags);
+		poolSizes_m = createInfo.poolSizes;
+		maxSets_m = createInfo.maxSets;
+		flags_m = createInfo.flags;
+
+		VkDescriptorPoolCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		info.flags = createInfo.flags;
+		info.maxSets = createInfo.maxSets;
+		info.poolSizeCount = static_cast<uint32_t>(createInfo.poolSizes.size());
+		info.pPoolSizes = createInfo.poolSizes.data();
+		info.pNext = createInfo.pNext;
+
+		vkw::Debug::errorCodeCheck(vkCreateDescriptorPool(registry.device, &info, nullptr, pVkObject), "Failed to create Descriptor Pool");
 	}
 
 	void DescriptorPool::createDescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags)
 	{
-		poolSizes_m = poolSizes;
-		maxSets_m = maxSets;
-		flags_m = flags;
-
-		VkDescriptorPoolCreateInfo createInfo = {};
-		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		createInfo.flags = flags;
+		CreateInfo createInfo = {};
+		createInfo.poolSizes = poolSizes;
 		createInfo.maxSets = maxSets;
-		createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-		createInfo.pPoolSizes = poolSizes.data();
-
-		vkw::Debug::errorCodeCheck(vkCreateDescriptorPool(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Descriptor Pool");
+		createInfo.flags = flags;
+		createDescriptorPool(createInfo);
 	}
 
 	void DescriptorPool::resetDescriptorPool(VkDescriptorPoolResetFlags flags)
@@ -109,7 +119,7 @@ namespace vkw {
 
 	DescriptorPool & DescriptorPool::operator=(const DescriptorPool & p)
 	{
-		impl::Entity <impl::VkwDescriptorPool>::operator=(p);
+		impl::Object <impl::VkwDescriptorPool>::operator=(p);
 		poolSizes_m = p.poolSizes_m;
 		maxSets_m = p.maxSets_m;
 		flags_m = p.flags_m;
@@ -138,25 +148,29 @@ namespace vkw {
 
 	void DescriptorSetLayout::createDescriptorSetLayout(const CreateInfo & createInfo)
 	{
-		createDescriptorSetLayout(createInfo.layoutBindings, createInfo.flags);
-	}
-
-	void DescriptorSetLayout::createDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags)
-	{
-		for (auto x : bindings) {
+		for (auto x : createInfo.layoutBindings) {
 			layoutBindings_m[x.binding] = x;
 		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo = vkw::init::descriptorSetLayoutCreateInfo();
-		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-		layoutInfo.pBindings = bindings.data();
-		layoutInfo.flags = flags;
+		layoutInfo.bindingCount = static_cast<uint32_t>(createInfo.layoutBindings.size());
+		layoutInfo.pBindings = createInfo.layoutBindings.data();
+		layoutInfo.flags = createInfo.flags;
+		layoutInfo.pNext = createInfo.pNext;
 		vkw::Debug::errorCodeCheck(vkCreateDescriptorSetLayout(registry.device, &layoutInfo, nullptr, pVkObject), "Failed to create DescriptorSetLayout");
+	}
+
+	void DescriptorSetLayout::createDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags)
+	{
+		CreateInfo createInfo = {};
+		createInfo.flags = flags;
+		createInfo.layoutBindings = bindings;
+		createDescriptorSetLayout(createInfo);
 	}
 
 	DescriptorSetLayout & DescriptorSetLayout::operator=(const DescriptorSetLayout & rhs)
 	{
-		impl::Entity<impl::VkwDescriptorSetLayout>::operator=(rhs);
+		impl::Object<impl::VkwDescriptorSetLayout>::operator=(rhs);
 		layoutBindings_m = rhs.layoutBindings;
 		flags = rhs.flags;
 
@@ -183,25 +197,29 @@ namespace vkw {
 
 	void DescriptorSet::allocateDescriptorSet(const AllocInfo & createInfo)
 	{
-		allocateDescriptorSet(createInfo.descriptorPool, createInfo.layout);
-	}
-
-	void DescriptorSet::allocateDescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout)
-	{
-		layout_m = &layout;
-		this->descriptorPool = descriptorPool;
+		layout_m = createInfo.layout;
+		this->descriptorPool = createInfo.descriptorPool;
 
 		VkDescriptorSetAllocateInfo allocInfo = init::descriptorSetAllocateInfo();
-		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.pSetLayouts = layout.get();
+		allocInfo.descriptorPool = createInfo.descriptorPool;
+		allocInfo.pSetLayouts = createInfo.layout.get().getPtr();
+		allocInfo.pNext = createInfo.pNext;
 		allocInfo.descriptorSetCount = 1;
 
 		Debug::errorCodeCheck(vkAllocateDescriptorSets(registry.device, &allocInfo, pVkObject), "Failed to create Descriptor Set");
 	}
 
+	void DescriptorSet::allocateDescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout)
+	{
+		AllocInfo allocInfo;
+		allocInfo.descriptorPool = descriptorPool;
+		allocInfo.layout = (vkw::DescriptorSetLayout*)&layout;
+		allocateDescriptorSet(allocInfo);
+	}
+
 	DescriptorSet & DescriptorSet::operator=(const DescriptorSet & rhs)
 	{
-		impl::Entity <impl::VkwDescriptorSet>::operator=(rhs);
+		impl::Object <impl::VkwDescriptorSet>::operator=(rhs);
 		descriptorPool = rhs.descriptorPool;
 		layout_m = rhs.layout_m;
 
@@ -357,8 +375,19 @@ namespace vkw {
 
 	void Memory::allocateMemory(AllocInfo & allocInfo)
 	{
-		memoryFlags_m = allocInfo.memoryFlags;
-		allocateMemory(allocInfo.memoryFlags, allocInfo.buffers, allocInfo.images, allocInfo.additionalSize, allocInfo.memoryType);
+		for (auto & x : allocInfo.buffers) setMemoryTypeBitsBuffer(x);
+		for (auto & x : allocInfo.images) setMemoryTypeBitsImage(x);
+
+		VkMemoryAllocateInfo info = vkw::init::memoryAllocateInfo();
+		info.allocationSize = size + allocInfo.additionalSize;
+		info.memoryTypeIndex = allocInfo.memoryType == std::numeric_limits<uint32_t>::max() ? tools::findMemoryType(registry.physicalDevice.memoryProperties, memoryTypeBits, memoryFlags_m) : allocInfo.memoryType;
+		info.pNext = info.pNext;
+		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &info, nullptr, pVkObject), "Failed to allocate Memory");
+
+		memoryRanges_m.addMoreSize(size + allocInfo.additionalSize);
+
+		for (auto & x : allocInfo.buffers) bindBufferToMemory(x);
+		for (auto & x : allocInfo.images) bindImageToMemory(x);
 	}
 
 	void Memory::allocateMemory(std::vector<std::reference_wrapper<Buffer>> buffers, std::vector<std::reference_wrapper<Image>> images, VkDeviceSize additionalSize)
@@ -390,7 +419,7 @@ namespace vkw {
 
 	Memory & Memory::operator=(const Memory & rhs)
 	{
-		impl::Entity<impl::VkwDeviceMemory>::operator=(rhs);
+		impl::Object<impl::VkwDeviceMemory>::operator=(rhs);
 		memoryMap_m = rhs.memoryMap_m;
 		memoryFlags_m = rhs.memoryFlags_m;
 		size_m = rhs.size_m;
@@ -505,28 +534,24 @@ namespace vkw {
 
 	void Buffer::createBuffer(const CreateInfo & createInfo)
 	{
-		createBuffer(createInfo.usageFlags, createInfo.size, createInfo.sharingMode, createInfo.offset, createInfo.createflags);
-	}
-
-	void Buffer::createBuffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode, VkDeviceSize offset, VkBufferCreateFlags createflags)
-	{
-		this->usageFlags = usageFlags;
-		this->flags = createflags;
-		this->sharingMode = sharingMode;
-		this->size_m = size;
-		this->offset_m = offset;
+		this->usageFlags = createInfo.usageFlags;
+		this->flags = createInfo.createflags;
+		this->sharingMode = createInfo.sharingMode;
+		this->size_m = createInfo.size;
+		this->offset_m = createInfo.offset;
 
 		VkBufferCreateInfo bufferInfo = vkw::init::bufferCreateInfo();
-		bufferInfo.flags = createflags;
-		bufferInfo.size = size;
-		bufferInfo.sharingMode = sharingMode;
-		bufferInfo.usage = usageFlags;
+		bufferInfo.flags = createInfo.createflags;
+		bufferInfo.size = createInfo.size;
+		bufferInfo.sharingMode = createInfo.sharingMode;
+		bufferInfo.usage = createInfo.usageFlags;
+		bufferInfo.pNext = createInfo.pNext;
 		// NOTE: look at how this works
 		// bufferInfo.pQueueFamilyIndices = 
 		// bufferInfo.queueFamilyIndexCount = 
 
 		vkw::Debug::errorCodeCheck(vkCreateBuffer(registry.device, &bufferInfo, nullptr, pVkObject), "Failed to create buffer");
-	
+
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(registry.device, *pVkObject, &memoryRequirements);
 
@@ -536,9 +561,20 @@ namespace vkw {
 		memoryRanges.addMoreSize(memoryRequirements.size);
 	}
 
+	void Buffer::createBuffer(VkBufferUsageFlags usageFlags, VkDeviceSize size, VkSharingMode sharingMode, VkDeviceSize offset, VkBufferCreateFlags createflags)
+	{
+		CreateInfo createInfo = {};
+		createInfo.usageFlags = usageFlags;
+		createInfo.size = size;
+		createInfo.sharingMode = sharingMode;
+		createInfo.offset = offset;
+		createInfo.createflags = createflags;
+		createBuffer(createInfo);
+	}
+
 	Buffer & Buffer::operator=(const Buffer & rhs)
 	{
-		impl::Entity<impl::VkwBuffer>::operator=(rhs);
+		impl::Object<impl::VkwBuffer>::operator=(rhs);
 		usageFlags = rhs.usageFlags;
 		flags = rhs.flags;
 		sharingMode = rhs.sharingMode;
@@ -787,6 +823,7 @@ namespace vkw {
 		info.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.familyQueueIndicies.size());
 		info.pQueueFamilyIndices = createInfo.familyQueueIndicies.data();
 		info.initialLayout = createInfo.initialLayout;
+		info.pNext = createInfo.pNext;
 
 		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &info, nullptr, pVkObject), "Failed to create Image");
 
@@ -811,7 +848,7 @@ namespace vkw {
 
 	Image & Image::operator=(const Image & rhs)
 	{
-		impl::Entity<impl::VkwImage>::operator=(rhs);
+		impl::Object<impl::VkwImage>::operator=(rhs);
 		layout_m = rhs.layout_m;
 		extent_m = rhs.extent_m;
 		memory = rhs.memory;
@@ -1081,19 +1118,25 @@ namespace vkw {
 
 	void ImageView::createImageView(const CreateInfo & createInfo)
 	{
-		createImageView(createInfo.image, createInfo.subresourceRange, createInfo.viewType, createInfo.components);
+		VkImageViewCreateInfo info = vkw::init::imageViewCreateInfo();
+		info.image = createInfo.image;
+		info.format = createInfo.image.format;
+		info.viewType = createInfo.viewType;
+		info.subresourceRange = createInfo.subresourceRange;
+		info.components = createInfo.components;
+		info.pNext = createInfo.pNext;
+
+		vkw::Debug::errorCodeCheck(vkCreateImageView(registry.device, &info, nullptr, pVkObject), "Failed to create Image");
 	}
 
 	void ImageView::createImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType, VkComponentMapping components)
 	{
-		VkImageViewCreateInfo createInfo = vkw::init::imageViewCreateInfo();
+		CreateInfo createInfo = {};
 		createInfo.image = image;
-		createInfo.format = image.format;
-		createInfo.viewType = viewType;
 		createInfo.subresourceRange = subresource;
+		createInfo.viewType = viewType;
 		createInfo.components = components;
-
-		vkw::Debug::errorCodeCheck(vkCreateImageView(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Image");
+		createImageView(createInfo);
 	}
 
 
@@ -1137,6 +1180,7 @@ namespace vkw {
 		samplerInfo.mipLodBias = createInfo.mipLodBias;
 		samplerInfo.minLod = createInfo.minLod;
 		samplerInfo.maxLod = createInfo.maxLod;
+		samplerInfo.pNext = createInfo.pNext;
 
 		vkw::Debug::errorCodeCheck(vkCreateSampler(registry.device, &samplerInfo, nullptr, pVkObject), "Failed to create Sampler");
 	}
@@ -1157,27 +1201,27 @@ namespace vkw {
 
 	void FrameBuffer::createFrameBuffer(const CreateInfo & createInfo)
 	{
-		createFrameBuffer(createInfo.renderPass, createInfo.extent, createInfo.attachments, createInfo.layers, createInfo.flags);
+		this->flags = createInfo.flags;
+		this->renderPass = createInfo.renderPass;
+		this->attachments = createInfo.attachments;
+		this->extent = createInfo.extent;
+		this->layers = createInfo.layers;
+
+		VkFramebufferCreateInfo info = init::framebufferCreateInfo();
+		info.flags = createInfo.flags;
+		info.renderPass = createInfo.renderPass;
+		info.attachmentCount = static_cast<uint32_t>(createInfo.attachments.size());
+		info.pAttachments = createInfo.attachments.data();
+		info.width = createInfo.extent.width;
+		info.height = createInfo.extent.height;
+		info.layers = createInfo.layers;
+		info.pNext = createInfo.pNext;
+
+		vkw::Debug::errorCodeCheck(vkCreateFramebuffer(registry.device, &info, nullptr, pVkObject), "Failed to create FrameBuffer");
 	}
 
 	void FrameBuffer::createFrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers, VkFramebufferCreateFlags flags)
 	{
-		this->flags = flags;
-		this->renderPass = renderPass;
-		this->attachments = attachments;
-		this->extent = extent;
-		this->layers = layers;
-
-		VkFramebufferCreateInfo createInfo = init::framebufferCreateInfo();
-		createInfo.flags = flags;
-		createInfo.renderPass = renderPass;
-		createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-		createInfo.pAttachments = attachments.data();
-		createInfo.width = extent.width;
-		createInfo.height = extent.height;
-		createInfo.layers = layers;
-
-		vkw::Debug::errorCodeCheck(vkCreateFramebuffer(registry.device, &createInfo, nullptr, pVkObject), "Failed to create FrameBuffer");
+		
 	}
-
 }

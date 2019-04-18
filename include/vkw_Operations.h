@@ -6,9 +6,9 @@
 namespace vkw {
 	class CommandBuffer;
 
-	class CommandPool : public impl::Entity<impl::VkwCommandPool> {
+	class CommandPool : public impl::Object<impl::VkwCommandPool> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			uint32_t queueFamily;
 			VkCommandPoolCreateFlags flags = 0;
 		};
@@ -27,25 +27,25 @@ namespace vkw {
 
 
 
-	class CommandBuffer : public impl::Entity<impl::VkwCommandBuffer> {
+	class CommandBuffer : public impl::Object<impl::VkwCommandBuffer> {
 	public:
-		struct AllocationInfo {
+		struct AllocInfo : impl::CreateInfo{
 			VkCommandPool commandPool;
 			VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		};
 
 		VULKAN_WRAPPER_API static void allocateCommandBuffers(std::vector<CommandBuffer> & commandBuffers, VkCommandPool commandPool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-		VULKAN_WRAPPER_API static void allocateCommandBuffers(std::vector<CommandBuffer> & commandBuffers, const AllocationInfo & allocInfo);
+		VULKAN_WRAPPER_API static void allocateCommandBuffers(std::vector<CommandBuffer> & commandBuffers, const AllocInfo & allocInfo);
 		VULKAN_WRAPPER_API static void allocateCommandBuffers(std::vector<std::reference_wrapper<CommandBuffer>> commandBuffers, VkCommandPool commandPool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-		VULKAN_WRAPPER_API static void allocateCommandBuffers(std::vector<std::reference_wrapper<CommandBuffer>> commandBuffers, const AllocationInfo & allocInfo);
+		VULKAN_WRAPPER_API static void allocateCommandBuffers(std::vector<std::reference_wrapper<CommandBuffer>> commandBuffers, const AllocInfo & allocInfo);
 		//VULKAN_WRAPER_API static void freeCommandBuffers(std::vector<CommandBuffer> & commandBuffers);
 
 		VULKAN_WRAPPER_API CommandBuffer();
-		VULKAN_WRAPPER_API CommandBuffer(const AllocationInfo & allocInfo);
+		VULKAN_WRAPPER_API CommandBuffer(const AllocInfo & allocInfo);
 		VULKAN_WRAPPER_API CommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 		VULKAN_WRAPPER_API ~CommandBuffer() = default;
 
-		VULKAN_WRAPPER_API void allocateCommandBuffer(const AllocationInfo & allocInfo);
+		VULKAN_WRAPPER_API void allocateCommandBuffer(const AllocInfo & allocInfo);
 		VULKAN_WRAPPER_API void allocateCommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 		VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -64,9 +64,9 @@ namespace vkw {
 
 
 
-	class TransferCommandPool : public impl::Entity<impl::VkwTransferCommandPool> {
+	class TransferCommandPool : public impl::Object<impl::VkwTransferCommandPool> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			int queueFamilyIndex = VKW_DEFAULT_QUEUE;
 		};
 
@@ -75,14 +75,14 @@ namespace vkw {
 		VULKAN_WRAPPER_API TransferCommandPool(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API ~TransferCommandPool() = default;
 
-		VULKAN_WRAPPER_API void create(int queueFamilyIndex = -1);
-		VULKAN_WRAPPER_API void create(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createTransferCommandPool(int queueFamilyIndex = VKW_DEFAULT_QUEUE);
+		VULKAN_WRAPPER_API void createTransferCommandPool(const CreateInfo & createInfo);
 	};
 
 
-	class GraphicsCommandPool : public impl::Entity<impl::VkwGraphicsCommandPool> {
+	class GraphicsCommandPool : public impl::Object<impl::VkwGraphicsCommandPool> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			int queueFamilyIndex = VKW_DEFAULT_QUEUE;
 		};
 
@@ -91,14 +91,14 @@ namespace vkw {
 		VULKAN_WRAPPER_API GraphicsCommandPool(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API ~GraphicsCommandPool() = default;
 
-		VULKAN_WRAPPER_API void create(int queueFamilyIndex = -1);
-		VULKAN_WRAPPER_API void create(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createGraphicsCommandPool(int queueFamilyIndex = VKW_DEFAULT_QUEUE);
+		VULKAN_WRAPPER_API void createGraphicsCommandPool(const CreateInfo & createInfo);
 	};
 
 
-	class ComputeCommandPool : public impl::Entity<impl::VkwComputeCommandPool> {
+	class ComputeCommandPool : public impl::Object<impl::VkwComputeCommandPool> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			int queueFamilyIndex = VKW_DEFAULT_QUEUE;
 		};
 
@@ -107,7 +107,7 @@ namespace vkw {
 		VULKAN_WRAPPER_API ComputeCommandPool(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API ~ComputeCommandPool() = default;
 
-		VULKAN_WRAPPER_API void create(int queueFamilyIndex = -1);
-		VULKAN_WRAPPER_API void create(const CreateInfo & createInfo);
+		VULKAN_WRAPPER_API void createComputeCommandPool(int queueFamilyIndex = VKW_DEFAULT_QUEUE);
+		VULKAN_WRAPPER_API void createComputeCommandPool(const CreateInfo & createInfo);
 	};
 }

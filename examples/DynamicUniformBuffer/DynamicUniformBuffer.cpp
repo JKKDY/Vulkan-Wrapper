@@ -252,7 +252,7 @@ void VkwExample::buildCommandBuffers() {
 				for (uint32_t j = 0; j < OBJECT_INSTANCES; j++)
 				{
 					uint32_t dynamicOffset = j * static_cast<uint32_t>(dynamicAlignment);
-					vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.get(), 1, &dynamicOffset);
+					vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.getPtr(), 1, &dynamicOffset);
 
 					vkCmdDrawIndexed(drawCommandBuffers[i], indexCount, 1, 0, 0, 0);
 				}

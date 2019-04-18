@@ -29,6 +29,8 @@ namespace vkex {
 	class TextureCube : public Texture {
 	public:
 		struct CreateInfo {
+			CreateInfo() = default;
+			CreateInfo(const std::string & fileName, VkFormat format, Texture2D * TextureCube);
 			std::string fileName;
 			Texture2D * texture;
 			VkFormat format;

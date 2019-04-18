@@ -265,6 +265,7 @@ pre_doc.txt
 external/*
 examples/external/*
 examples/external/assimp/*
+test/
 
 !examples/external/assimp/
 !venv.bat

@@ -219,7 +219,7 @@ void VkwExample::buildCommandBuffers()
 				vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 				for (auto cube : cube) {
-					vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, cube.descriptorSet.get(), 0, nullptr);
+					vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, cube.descriptorSet.getPtr(), 0, nullptr);
 					vkCmdDrawIndexed(drawCommandBuffers[i], cubeMesh.indexCount, 1, 0, 0, 0);
 				}
 

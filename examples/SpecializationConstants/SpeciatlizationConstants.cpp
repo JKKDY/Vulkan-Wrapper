@@ -229,7 +229,7 @@ void VkwExample::buildCommandBuffers() {
 				vkCmdBindVertexBuffers(drawCommandBuffers[i], 0, 1, buffers, offsets);
 				vkCmdBindIndexBuffer(drawCommandBuffers[i], cube.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.get(), 0, nullptr);
+				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.getPtr(), 0, nullptr);
 
 				// Left
 				viewport.width = (float)swapChain.extent.width / 3.0f;

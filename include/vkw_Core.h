@@ -48,9 +48,9 @@ namespace vkw {
 	};
 
 
-	class Instance : public impl::CoreEntity<impl::VkwInstance>{
+	class Instance : public impl::CoreObject<impl::VkwInstance>{
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo{
 			std::vector<const char*> desiredExtensions;
 			std::vector<const char*> desiredLayers;
 			std::vector<VkDebugUtilsMessengerCreateInfoEXT> debugMessengerInfos;
@@ -79,9 +79,9 @@ namespace vkw {
 
 
 
-	class Surface : public impl::CoreEntity<impl::VkwSurfaceKHR> {
+	class Surface : public impl::CoreObject<impl::VkwSurfaceKHR> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			const Window & window; 
 		};
 
@@ -106,7 +106,7 @@ namespace vkw {
 
 
 
-	class Device : public impl::CoreEntity<impl::VkwDevice>{
+	class Device : public impl::CoreObject<impl::VkwDevice>{
 	public:
 		// TODO: add globalSystemPrority 
 		struct AdditionalQueueCreateInfo {
@@ -143,7 +143,7 @@ namespace vkw {
 			PreSetQueueCreateInfo compute;
 		};
 
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			PhysicalDevice physicalDevice;	// no multi gpu support available
 			PreSetQueuesCreateInfo preSetQueues;
 			std::vector<AdditionalQueueCreateInfo> additionalQueues;

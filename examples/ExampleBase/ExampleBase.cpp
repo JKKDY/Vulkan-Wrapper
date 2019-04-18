@@ -192,8 +192,8 @@ namespace vkex {
 
 	void ExampleBase::createDefaultCmdPools()
 	{
-		transferCommandPool.create();
-		graphicsCommandPool.create();
+		transferCommandPool.createTransferCommandPool();
+		graphicsCommandPool.createGraphicsCommandPool();
 	}
 
 
@@ -271,7 +271,7 @@ namespace vkex {
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 		depthImage.createImage(imageCreateInfo);
 		
-		depthStencilMemory.allocateMemory({}, {depthImage}, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		depthStencilMemory.allocateMemory(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, {}, {depthImage});
 
 		//depthImage.transitionImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 

@@ -103,6 +103,10 @@ namespace vkw {
 
 
 
+		struct CreateInfo {
+			void * pNext = nullptr;
+		};
+
 		template<typename T, typename RegType> class Base {
 			using Type = typename T::Type;
 		public:
@@ -117,14 +121,14 @@ namespace vkw {
 			VULKAN_WRAPPER_API Base<T, RegType> & operator = (const Base<T, RegType> & rhs);
 			//VULKAN_WRAPER_API Base<T, RegType> & operator = (Base<T, RegType> && rhs);
 			VULKAN_WRAPPER_API operator typename T::Type () const;
-			VULKAN_WRAPPER_API Type * get() const; // make const
+			VULKAN_WRAPPER_API Type * getPtr() const; // make const
 		protected:
 			RegType & registry;
 			VkPointer<T, RegType> pVkObject;
 		};
 
-		template <typename T> using Entity = Base<T, Registry>;
-		template <typename T> using CoreEntity = Base<T, RegistryManager>;
+		template <typename T> using Object = Base<T, Registry>;
+		template <typename T> using CoreObject = Base<T, RegistryManager>;
 
 
 

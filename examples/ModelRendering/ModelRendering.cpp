@@ -83,7 +83,7 @@ void VkwExample::loadAssets()
 	std::vector<uint32_t> indices;
 
 	Assimp::Importer importer;
-	const aiScene * pScene = importer.ReadFile(modelPath() + "samplescene.dae", aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+	const aiScene * pScene = importer.ReadFile(modelPath() + "chalet.obj", aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 
 	const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
 	for (unsigned int i = 0; i < pScene->mNumMeshes; i++)
@@ -279,7 +279,7 @@ void VkwExample::buildCommandBuffers() {
 		vkCmdBindIndexBuffer(drawCommandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		vkCmdBindPipeline(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.get() , 0, nullptr);
+		vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.getPtr() , 0, nullptr);
 		vkCmdDrawIndexed(drawCommandBuffers[i], indexCount, 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(drawCommandBuffers[i]);

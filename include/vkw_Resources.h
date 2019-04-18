@@ -11,15 +11,15 @@ namespace vkw {
 
 
 	/// Descriptor Pool
-	class DescriptorPool : public impl::Entity<impl::VkwDescriptorPool>{
+	class DescriptorPool : public impl::Object<impl::VkwDescriptorPool>{
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			std::vector<VkDescriptorPoolSize> poolSizes;
 			uint32_t maxSets;
 			VkDescriptorPoolCreateFlags flags = 0;
 		};
 
-		struct CreateInfo2 { 
+		struct CreateInfo2 : impl::CreateInfo { 
 			uint32_t samplerCount = 0;
 			uint32_t combinedImageSamplerCount = 0;
 			uint32_t sampledImageCount = 0;
@@ -66,9 +66,9 @@ namespace vkw {
 
 
 	/// Descriptor Set Layout
-	class DescriptorSetLayout : public impl::Entity<impl::VkwDescriptorSetLayout> {
+	class DescriptorSetLayout : public impl::Object<impl::VkwDescriptorSetLayout> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
 			VkDescriptorSetLayoutCreateFlags flags = 0;
 		};
@@ -95,7 +95,7 @@ namespace vkw {
 
 
 	/// Descriptor Set
-	class DescriptorSet : public impl::Entity<impl::VkwDescriptorSet> {
+	class DescriptorSet : public impl::Object<impl::VkwDescriptorSet> {
 	public:
 		struct WriteInfo {
 			uint32_t dstBinding;
@@ -121,9 +121,9 @@ namespace vkw {
 			std::vector<CopyInfo> copyInfos;
 		};
 
-		struct AllocInfo {
+		struct AllocInfo : impl::CreateInfo {
 			VkDescriptorPool descriptorPool;
-			DescriptorSetLayout layout;
+			tools::PtrContainer<DescriptorSetLayout> layout;
 		};
 
 		VULKAN_WRAPPER_API DescriptorSet();
@@ -166,19 +166,19 @@ namespace vkw {
 		std::map<VkDeviceSize, VkDeviceSize> freeRanges; // first: offset, second: sizes
 	};
 
-	class Memory : public impl::Entity<impl::VkwDeviceMemory> {
+	class Memory : public impl::Object<impl::VkwDeviceMemory> {
 		struct Mapped {
 			VkDeviceSize size = 0;
 			VkDeviceSize offset = 0;
 			void * mapped = nullptr; 
 		};
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			VkMemoryPropertyFlags memoryFlags;
 			VkDeviceSize size = 0;
 		};
 
-		struct AllocInfo {
+		struct AllocInfo : impl::CreateInfo {
 			VkMemoryPropertyFlags memoryFlags;
 			std::vector<std::reference_wrapper<Buffer>> buffers;
 			std::vector<std::reference_wrapper<Image>> images;
@@ -233,9 +233,9 @@ namespace vkw {
 
 
 	/// Buffer
-	class Buffer : public impl::Entity<impl::VkwBuffer> {
+	class Buffer : public impl::Object<impl::VkwBuffer> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			VkBufferUsageFlags usageFlags;
 			VkBufferCreateFlags createflags;
 			VkDeviceSize size; 
@@ -325,9 +325,9 @@ namespace vkw {
 
 
 	/// Image
-	class Image : public impl::Entity<impl::VkwImage> {
+	class Image : public impl::Object<impl::VkwImage> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			VkFormat                 format;
 			VkImageUsageFlags        usage;
 			VkExtent3D               extent;
@@ -392,9 +392,9 @@ namespace vkw {
 
 
 	/// Image View
-	class ImageView : public impl::Entity<impl::VkwImageView> {
+	class ImageView : public impl::Object<impl::VkwImageView> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			Image image;
 			VkImageViewType viewType;
 			VkImageSubresourceRange subresourceRange;
@@ -421,9 +421,9 @@ namespace vkw {
 
 
 	/// Sampler
-	class Sampler : public impl::Entity<impl::VkwSampler> {
+	class Sampler : public impl::Object<impl::VkwSampler> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			VkFilter magFilter = VK_FILTER_LINEAR;
 			VkFilter minFilter = VK_FILTER_LINEAR;
 			VkSamplerAddressMode addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -462,9 +462,9 @@ namespace vkw {
 
 
 	/// Frame Buffer
-	class FrameBuffer : public impl::Entity<impl::VkwFramebuffer> {
+	class FrameBuffer : public impl::Object<impl::VkwFramebuffer> {
 	public:
-		struct CreateInfo {
+		struct CreateInfo : impl::CreateInfo {
 			std::vector<VkImageView> attachments;
 			VkExtent2D extent;
 			VkFramebufferCreateFlags flags = 0;

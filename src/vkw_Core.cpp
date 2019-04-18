@@ -66,6 +66,7 @@ namespace vkw {
 		instanceCreateInfo.ppEnabledLayerNames = createInfo.desiredLayers.data();
 		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(createInfo.desiredExtensions.size());
 		instanceCreateInfo.ppEnabledExtensionNames = createInfo.desiredExtensions.data();
+		instanceCreateInfo.pNext = createInfo.pNext;
 
 		Debug::errorCodeCheck(vkCreateInstance(&instanceCreateInfo, nullptr, pVkObject), "Failed to create Instance");
 
@@ -113,7 +114,7 @@ namespace vkw {
 		}
 	}
 
-	impl:: RegistryManager & Instance::getRegistry()
+	impl::RegistryManager & Instance::getRegistry()
 	{
 		return this->registry;
 	}
@@ -289,6 +290,7 @@ namespace vkw {
 		deviceInfo.ppEnabledExtensionNames = createInfo.extensions.data();
 		deviceInfo.enabledLayerCount = 0;
 		deviceInfo.ppEnabledLayerNames = nullptr;
+		deviceInfo.pNext = createInfo.pNext;
 
 		Debug::errorCodeCheck(vkCreateDevice(createInfo.physicalDevice.physicalDevice, &deviceInfo, nullptr, pVkObject), "Failed to create Device");
 
@@ -586,9 +588,7 @@ namespace vkw {
 			}
 		}
 
-		for (auto & x : priorities) for (float & p : x.second) if (p == INVALID_PRIORITY) p = 0.0; // getting rid of DEFAULT_PRIO
+		for (auto & x : priorities) for (float & p : x.second) if (p == INVALID_PRIORITY) p = 0.0; // getting rid of INVALID_PRIORITY
 		return createInfos;
 	}
-	
 }
-

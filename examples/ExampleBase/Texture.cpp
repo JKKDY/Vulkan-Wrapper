@@ -162,6 +162,7 @@ namespace vkex {
 			x.texture->imageView.createImageView(viewCreateInfo);
 		}
 	}
+
 	void TextureLoader::setDefaultAllocSize(VkDeviceSize size)
 	{
 		defaultAllocSize = size;

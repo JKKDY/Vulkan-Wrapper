@@ -170,7 +170,12 @@ namespace vkw {
 
 	void Semaphore::createSemaphore(const CreateInfo & createInfo)
 	{
-		createSemaphore(createInfo.flags);
+		this->flags = createInfo.flags;
+
+		VkSemaphoreCreateInfo info = init::semaphoreCreateInfo();
+		info.flags = createInfo.flags;
+		info.pNext = createInfo.pNext;
+		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &info, nullptr, pVkObject), "Failed to create Semaphore");
 	}
 
 	void Semaphore::createSemaphore(VkSemaphoreCreateFlags flags) {
@@ -197,7 +202,12 @@ namespace vkw {
 
 	void Fence::createFence(const CreateInfo & createInfo)
 	{
-		createFence(createInfo.flags);
+		this->flags = createInfo.flags;
+
+		VkFenceCreateInfo info = init::fenceCreateInfo();
+		info.flags = flags;
+		info.pNext = createInfo.pNext;
+		Debug::errorCodeCheck(vkCreateFence(registry.device, &info, nullptr, pVkObject), "Failed to create Fence");
 	}
 
 	void Fence::createFence(VkFenceCreateFlags flags)
@@ -251,6 +261,7 @@ namespace vkw {
 
 		VkRenderPassCreateInfo renderPassInfo = init::renderPassCreateInfo();
 		renderPassInfo.flags = flags;
+		renderPassInfo.pNext = createInfo.pNext;
 		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachementsDescriptions.size());
 		renderPassInfo.pAttachments = attachementsDescriptions.data();
 		renderPassInfo.dependencyCount = static_cast<uint32_t>(subPassDependencys.size());
@@ -279,14 +290,9 @@ namespace vkw {
 
 	void ShaderModule::createShaderModule(const CreateInfo & createInfo)
 	{
-		createShaderModule(createInfo.filename, createInfo.stage, createInfo.flags);
-	}
-
-	void ShaderModule::createShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags)
-	{
-		this->filename = filename.c_str();
-		this->stage = stage;
-		this->flags = flags;
+		this->filename = createInfo.filename.c_str();
+		this->stage = createInfo.stage;
+		this->flags = createInfo.flags;
 
 		std::ifstream file(this->filename, std::ios::ate | std::ios::binary); // ate: start the end , binary:read the thing in binary
 
@@ -299,11 +305,21 @@ namespace vkw {
 		file.read(shaderCode.data(), fileSize);
 		file.close();
 
-		VkShaderModuleCreateInfo createInfo = init::shaderModuleCreateInfo();
-		createInfo.codeSize = shaderCode.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*> (shaderCode.data());
+		VkShaderModuleCreateInfo info = init::shaderModuleCreateInfo();
+		info.codeSize = shaderCode.size();
+		info.pCode = reinterpret_cast<const uint32_t*> (shaderCode.data());
+		info.pNext = createInfo.pNext;
 
-		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &createInfo, nullptr, pVkObject), "Failed to create ShaderModule!");
+		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &info, nullptr, pVkObject), "Failed to create ShaderModule!");
+	}
+
+	void ShaderModule::createShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags)
+	{
+		CreateInfo createInfo = {};
+		createInfo.filename = filename;
+		createInfo.stage = stage;
+		createInfo.flags = flags;
+		createShaderModule(createInfo);
 	}
 
 	VkPipelineShaderStageCreateInfo ShaderModule::shaderStageInfo(const VkSpecializationInfo* specializationInfo, const char * name)
@@ -334,21 +350,25 @@ namespace vkw {
 
 	void PipelineLayout::createPipelineLayout(const CreateInfo & createInfo)
 	{
-		createPipelineLayout(createInfo.setLayouts, createInfo.pushConstants);
+		descriptorSetLayouts = createInfo.setLayouts;
+		pushConstantRanges = createInfo.pushConstants;
+
+		VkPipelineLayoutCreateInfo info = init::pipelineLayoutCreateInfo();
+		info.pNext = createInfo.pNext;
+		info.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+		info.pSetLayouts = descriptorSetLayouts.data();
+		info.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
+		info.pPushConstantRanges = pushConstantRanges.data();
+
+		Debug::errorCodeCheck(vkCreatePipelineLayout(registry.device, &info, nullptr, pVkObject), "failed to create pipeline layout!");
 	}
 
 	void PipelineLayout::createPipelineLayout(const std::vector<VkDescriptorSetLayout>& setLayouts, const std::vector<VkPushConstantRange>& pushConstants)
 	{
-		descriptorSetLayouts = setLayouts;
-		pushConstantRanges = pushConstants;
-
-		VkPipelineLayoutCreateInfo createInfo = init::pipelineLayoutCreateInfo();
-		createInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		createInfo.pSetLayouts = descriptorSetLayouts.data();
-		createInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
-		createInfo.pPushConstantRanges = pushConstantRanges.data();
-
-		Debug::errorCodeCheck(vkCreatePipelineLayout(registry.device, &createInfo, nullptr, pVkObject), "failed to create pipeline layout!");
+		CreateInfo createInfo = {};
+		createInfo.setLayouts = setLayouts;
+		createInfo.pushConstants = pushConstants;
+		createPipelineLayout(createInfo);
 	}
 
 
@@ -356,25 +376,38 @@ namespace vkw {
 
 
 
-
-	PipelineCache::PipelineCache(const CreateInfo & createInfo) :
-		PipelineCache(createInfo.size, createInfo.data, createInfo.flags)
-	{}
 
 	/// Pipeline Cache
-	PipelineCache::PipelineCache(size_t size, void * data, VkPipelineCacheCreateFlags flags) :
-		size(size), data(data), flags(flags)
+	PipelineCache::PipelineCache(size_t initialSize, void * initialData, VkPipelineCacheCreateFlags flags)
 	{
-		createPipelineCache();
+		createPipelineCache(size, data, flags);
 	}
 
-	void PipelineCache::createPipelineCache()
+	PipelineCache::PipelineCache(const CreateInfo & createInfo)
 	{
-		VkPipelineCacheCreateInfo createInfo = init::pipelineCacheCreateInfo();
+		createPipelineCache(createInfo);
+	}
+
+	void PipelineCache::createPipelineCache(size_t initialSize, void * initialData, VkPipelineCacheCreateFlags flags)
+	{
+		CreateInfo createInfo = {};
+		createInfo.initialSize = size;
+		createInfo.initialData = data;
 		createInfo.flags = flags;
-		createInfo.initialDataSize = size;
-		createInfo.pInitialData = data;
-		Debug::errorCodeCheck(vkCreatePipelineCache(registry.device, &createInfo, nullptr, pVkObject));
+		createPipelineCache(createInfo);
+	}
+
+	void PipelineCache::createPipelineCache(const CreateInfo & createInfo)
+	{
+		flags = createInfo.flags;
+		size = createInfo.initialSize;
+		data = createInfo.initialData;
+
+		VkPipelineCacheCreateInfo info = init::pipelineCacheCreateInfo();
+		info.flags = createInfo.flags;
+		info.initialDataSize = createInfo.initialSize;
+		info.pInitialData = createInfo.initialData;
+		Debug::errorCodeCheck(vkCreatePipelineCache(registry.device, &info, nullptr, pVkObject));
 	}
 
 
@@ -401,6 +434,7 @@ namespace vkw {
 
 		VkGraphicsPipelineCreateInfo pipelineInfo = vkw::init::graphicsPipelineCreateInfo();
 		pipelineInfo.flags = flags;
+		pipelineInfo.pNext = createInfo.pNext;
 		pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineInfo.pStages = shaderStages.data();
 		pipelineInfo.pVertexInputState = createInfo.vertexInputState;

@@ -256,7 +256,7 @@ void  PipelineExample::setupRenderCommanBuffers() {
 				VkViewport viewport = vkw::init::viewport(swapChain.extent);
 				viewport.width = static_cast<float>(viewport.width) / 3;
 
-				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.get(), 0, nullptr);
+				vkCmdBindDescriptorSets(drawCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet.getPtr(), 0, nullptr);
 
 				// phong
 				viewport.x = 0;

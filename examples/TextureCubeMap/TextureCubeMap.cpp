@@ -14,15 +14,25 @@ public:
 	void nextFrame() override;
 private:
 	void setup() override;
+	void loadAssets();
 
 };
 
 VkwExample::VkwExample(Window & window) : ExampleBase(window) {
 	auto func = [](const vkw::PhysicalDevice& phys, const vkw::Surface& surf) {
-		return true;
+		return phys.features.samplerAnisotropy;
+	};
+
+	auto scoreFunc = [](const vkw::PhysicalDevice& phys, const vkw::Surface& surf) {
+		int score = 0;
+		if (phys.features.textureCompressionBC) score += 1000;
+		if (phys.features.textureCompressionASTC_LDR) score += 1000;
+		if (phys.features.textureCompressionETC2) score += 1000;
+		return score;
 	};
 
 	InitInfo initInfo = InitInfo();
+	initInfo.rateDevicefkt.push_back(scoreFunc);
 	initInfo.deviceSuitableFkt.push_back(func);
 	initVulkan(initInfo);
 	setup();
@@ -35,7 +45,11 @@ VkwExample::~VkwExample()
 }
 
 void VkwExample::setup() {
-	
+	loadAssets();
+}
+
+void VkwExample::loadAssets() {
+
 }
 
 void VkwExample::nextFrame() {
