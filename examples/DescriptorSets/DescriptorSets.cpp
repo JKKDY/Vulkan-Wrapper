@@ -5,7 +5,7 @@
 #include "Window.hpp"
 #include "VkInitializers.hpp"
 
-using namespace vkex;
+using namespace vkx;
 
 class VkwExample : public ExampleBase {
 public:
@@ -76,9 +76,8 @@ void VkwExample::loadAssets()
 	Mesh::LoadInfo meshInfo(modelPath() + "cube.dae", { {VERTEX_COMPONENT_POSITION, VERTEX_COMPONENT_NORMAL, VERTEX_COMPONENT_UV, VERTEX_COMPONENT_COLOR} }, &cubeMesh);
 	meshLoader.loadFromFile({ meshInfo });
 
-	Texture2D::CreateInfo textureInfo1(texturePath() + "crate01_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, &cube[0].texture);
-	Texture2D::CreateInfo textureInfo2(texturePath() + "crate02_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, &cube[1].texture);
-	textureLoader.loadFromFile({ textureInfo1, textureInfo2 });
+	cube[0].texture.loadFromFile(texturePath() + "crate01_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM);
+	cube[1].texture.loadFromFile(texturePath() + "crate02_color_height_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM);
 }
 
 void VkwExample::prepareUniformBuffers()

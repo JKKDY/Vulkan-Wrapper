@@ -372,7 +372,7 @@ namespace vkw {
 		VULKAN_WRAPPER_API void transitionImageLayout(VkImageLayout newLayout, const VkImageSubresourceRange & range, VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VkCommandPool commandPool = VK_NULL_HANDLE);
 
 		VULKAN_WRAPPER_API void copyFromImage(const Image & srcImage, const std::vector<VkImageCopy> & regions = {}, VkCommandPool cmdPool = VK_NULL_HANDLE);
-		VULKAN_WRAPPER_API void copyFromBuffer(const VkBuffer & srcBuffer, const std::vector<VkBufferImageCopy> & copyRegions = {}, VkCommandPool commandPool = VK_NULL_HANDLE, VkQueue queue = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void copyFromBuffer(const VkBuffer & srcBuffer, const std::vector<VkBufferImageCopy> & copyRegions, VkCommandPool commandPool = VK_NULL_HANDLE, VkQueue queue = VK_NULL_HANDLE);
 		// TODO: make function to copy from an image
 		// TODO: transitionImageLayout should be redone
 	private:
@@ -435,7 +435,7 @@ namespace vkw {
 			float mipLodBias = 0.0f;
 			VkBorderColor borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 			VkBool32 anisotropyEnable = VK_FALSE;
-			float maxAnisotropy = 16;
+			float maxAnisotropy = 0;
 			VkBool32 unnormalizedCoordinates = VK_FALSE;
 			VkBool32 compareEnable = VK_FALSE;
 			VkCompareOp compareOp = VK_COMPARE_OP_ALWAYS;

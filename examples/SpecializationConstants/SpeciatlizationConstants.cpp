@@ -6,7 +6,7 @@
 #include "VkInitializers.hpp"
 
 
-using namespace vkex;
+using namespace vkx;
 
 class VkwExample : public ExampleBase {
 public:
@@ -84,8 +84,7 @@ void VkwExample::loadAssets(){
 	meshInfo.scale = glm::vec3(0.1);
 	meshLoader.loadFromFile({ meshInfo });
 
-	Texture2D::CreateInfo textureInfo(texturePath() + "metalplate_nomips_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM, &texture);
-	textureLoader.loadFromFile({ textureInfo });
+	texture.loadFromFile(texturePath() + "metalplate_nomips_rgba.ktx", VK_FORMAT_R8G8B8A8_UNORM);
 }
 
 void VkwExample::prepareUniformBuffers()

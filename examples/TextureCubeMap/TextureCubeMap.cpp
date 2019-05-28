@@ -5,7 +5,7 @@
 #include "Window.hpp"
 #include "VkInitializers.hpp"
 
-using namespace vkex;
+using namespace vkx;
 
 class VkwExample : public ExampleBase {
 public:

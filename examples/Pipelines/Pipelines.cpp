@@ -6,7 +6,7 @@
 #include "VkInitializers.hpp"
 
 
-using namespace vkex;
+using namespace vkx;
 
 class PipelineExample : public ExampleBase {
 public:

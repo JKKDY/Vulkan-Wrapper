@@ -378,6 +378,8 @@ namespace vkw {
 		for (auto & x : allocInfo.buffers) setMemoryTypeBitsBuffer(x);
 		for (auto & x : allocInfo.images) setMemoryTypeBitsImage(x);
 
+		memoryFlags_m = allocInfo.memoryFlags != 0 ? allocInfo.memoryFlags : memoryFlags_m;
+
 		VkMemoryAllocateInfo info = vkw::init::memoryAllocateInfo();
 		info.allocationSize = size + allocInfo.additionalSize;
 		info.memoryTypeIndex = allocInfo.memoryType == std::numeric_limits<uint32_t>::max() ? tools::findMemoryType(registry.physicalDevice.memoryProperties, memoryTypeBits, memoryFlags_m) : allocInfo.memoryType;

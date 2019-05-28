@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace vkex {
+namespace vkx {
 	namespace initializers {
 		inline VkViewport viewport(
 			VkExtent2D extent,

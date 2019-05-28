@@ -8,7 +8,7 @@
 #include "Scene.h"
 #include "Window.hpp"
 
-namespace vkex {
+namespace vkx {
 	std::string getAssetPath();
 	std::string modelPath();
 	std::string texturePath();
@@ -76,7 +76,6 @@ namespace vkex {
 		vkw::PipelineCache pipelineCache;
 
 		MeshLoader meshLoader;
-		TextureLoader textureLoader;
 
 		virtual void createInstance(const std::vector<const char*> & extensions, const std::vector<const char*> & layers, VkApplicationInfo * appInfo);
 		virtual void createSurface();

@@ -10,7 +10,7 @@
 
 #include <glm/glm.hpp>
 
-namespace vkx {
+namespace vkex {
 	class MeshLoader;
 
 	enum VertexComponents : uint32_t {

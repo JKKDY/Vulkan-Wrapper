@@ -5,7 +5,7 @@
 #include "Window.hpp"
 #include "VkInitializers.hpp"
 
-using namespace vkex;
+using namespace vkx;
 
 class VkwExample : public ExampleBase {
 public:
@@ -76,8 +76,7 @@ void VkwExample::setup() {
 
 void VkwExample::loadAssets()
 {
-	Texture2D::CreateInfo textureInfo(texturePath() + "chalet.jpg", VK_FORMAT_R8G8B8A8_UNORM, &texture);
-	textureLoader.loadFromFile({ textureInfo });
+	texture.loadFromFile(texturePath() + "chalet.jpg", VK_FORMAT_R8G8B8A8_UNORM);
 
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;

@@ -267,6 +267,9 @@ examples/external/*
 examples/external/assimp/*
 test/
 
+!Archive
+!test
+
 !examples/external/assimp/
 !venv.bat
 !setup_dependencies_vkw.bat

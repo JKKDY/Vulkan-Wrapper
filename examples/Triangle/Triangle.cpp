@@ -24,6 +24,7 @@ public:
 		vkw::Debug::errorCodeCheck(glfwCreateWindowSurface(instance, (GLFWwindow*)window, nullptr, surface), "Failed to create Surface");
 	};
 
+	// returns required extensions
 	static void getWindowExtensions(std::vector<const char*> & ext) {
 		unsigned int glfwExtensionCount = 0;
 		const char** glfwExtensions;
@@ -45,6 +46,7 @@ public:
 const std::string shaderPath = "Shader/";
 
 
+// simple debug callback
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -72,10 +74,12 @@ int main() {
 	instanceCreateInfo.desiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
 	GlfwWindow::getWindowExtensions(instanceCreateInfo.desiredExtensions);
 
+	// query if extensions exist
 	std::vector<const char*> missingExtensions;
 	instanceCreateInfo.desiredExtensions = vkw::Instance::checkExtensions(instanceCreateInfo.desiredExtensions, &missingExtensions);
 	VKW_assert(missingExtensions.empty(), "Required Extensions missing");
 
+	// query if requried layers are supported
 	std::vector<const char*> missingLayers;
 	instanceCreateInfo.desiredLayers = vkw::Instance::checkLayers(instanceCreateInfo.desiredLayers, &missingLayers);
 	VKW_assert(missingLayers.empty(), "Required Layers missing");
@@ -83,48 +87,56 @@ int main() {
 	vkw::Instance instance(instanceCreateInfo);
 	vkw::Surface surface(window);
 
-	VKW_assert(instance.physicalDevices.size(), "failed to find GPUs with Vulkan support!");
+	VKW_assert(!instance.physicalDevices.empty(), "failed to find GPUs with Vulkan support!");
 	std::vector<vkw::PhysicalDevice> suitableDevices;
 
 	//check for suitability
-	for (auto & x : instance.physicalDevices) {
+	for (auto & physicalDevice : instance.physicalDevices) {
 		bool familiesFound = false;
-		for (uint32_t i = 0; i < x.queueFamilyProperties.size(); i++) {
+
+		// check for present support
+		for (uint32_t i = 0; i < physicalDevice.queueFamilyProperties.size(); i++) {
 			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(x, i, surface, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
 			if (presentSupport) familiesFound = true;
 		}
-		familiesFound = x.queueFamilyTypes.graphicFamilies.size() * x.queueFamilyTypes.transferFamilies.size();
+
+		// check for graphics and transfer capabilities
+		familiesFound = physicalDevice.queueFamilyTypes.graphicFamilies.size() * physicalDevice.queueFamilyTypes.transferFamilies.size();
 		
+		// check for required layers
 		std::vector<const char*> missingLayers;
-		x.checkLayers({ VK_KHR_SWAPCHAIN_EXTENSION_NAME }, &missingLayers);
+		physicalDevice.checkLayers({ VK_KHR_SWAPCHAIN_EXTENSION_NAME }, &missingLayers);
 		
-		if (familiesFound * surface.formats(x).size() * surface.presentModes(x).size() * missingLayers.empty()) 
-			suitableDevices.push_back(x);
+		if (familiesFound * surface.formats(physicalDevice).size() * surface.presentModes(physicalDevice).size() * missingLayers.empty()) 
+			suitableDevices.push_back(physicalDevice);
 	}
 
 	//select best device
 	std::map<int, vkw::PhysicalDevice*> candidates;
-	for (auto &x : suitableDevices) {
+	for (auto &physicalDevice : suitableDevices) {
 		int score = 0;
 
-		if (x.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 1000;
-		score += x.properties.limits.maxImageDimension2D;  //affects Image Quaity
+		// Discrete gpus generally perform better 
+		if (physicalDevice.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) score += 1000;
+		score += physicalDevice.properties.limits.maxImageDimension2D;  //affects Image Quaity
 
-		for (int index : x.queueFamilyTypes.transferFamilies) {
-			if (x.queueFamilyProperties.at(index).queueFlags == VK_QUEUE_TRANSFER_BIT) {
+		// dedicated transfer family are usually faster 
+		for (int index : physicalDevice.queueFamilyTypes.transferFamilies) {
+			if (physicalDevice.queueFamilyProperties.at(index).queueFlags == VK_QUEUE_TRANSFER_BIT) {
 				score += 500;
 				break;
 			}
 		}
 
-		for (int index : x.queueFamilyTypes.graphicFamilies) {
+		// graphics queue with present support perform generally better
+		for (int index : physicalDevice.queueFamilyTypes.graphicFamilies) {
 			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(x, index, surface, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, index, surface, &presentSupport);
 			if (presentSupport)  score += 500;
 		}
 
-		candidates.insert(std::make_pair(score, &x));
+		candidates.insert(std::make_pair(score, &physicalDevice));
 	}
 
 	vkw::PhysicalDevice & physicalDevice = *candidates.rbegin()->second;
@@ -137,7 +149,8 @@ int main() {
 	vkw::Device device(deviceCreateInfo);
 	vkw::Swapchain swapChain(surface);
 
-	vkw::TransferCommandPool transferCommandPool(VKW_DEFAULT_QUEUE);
+	// VKW_DEFAULT_QUEUE = let the implementation choose 
+	vkw::TransferCommandPool transferCommandPool(VKW_DEFAULT_QUEUE); 
 	vkw::GraphicsCommandPool graphicsCommandPool(VKW_DEFAULT_QUEUE);
 	vkw::ComputeCommandPool computeCommandPool(VKW_DEFAULT_QUEUE);
 
@@ -146,6 +159,7 @@ int main() {
 
 
 	/// Render Pass
+	// one subPass with one external dependency and one color attachment 
 	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;
@@ -188,6 +202,7 @@ int main() {
 		glm::vec3 col;
 	};
 
+	// vertices and indices of the triangle
 	const std::vector<Vertex> vertices = {
 		{ { 0.0f, -0.5f },{ 1.0f, 0.0f, 0.0f } },
 		{ { 0.5f, 0.5f },{ 0.0f, 1.0f, 0.0f } },
@@ -196,6 +211,7 @@ int main() {
 
 	const std::vector<uint16_t> indices = { 0, 1, 2 };
 
+	// allocating staging buffer (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) and vertex & index buffer (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	vkw::Memory vertexMemory(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	vkw::Buffer vertexBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, sizeof(Vertex) * vertices.size());
 	vertexMemory.allocateMemory({vertexBuffer});
@@ -211,16 +227,19 @@ int main() {
 	vkw::Memory indexStagingMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	vkw::Buffer indexStagingBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, sizeof(uint16_t) * indices.size());
 	indexStagingMemory.allocateMemory({indexStagingBuffer });
-
+	
+	// using Subbuffers for data writing and transfer 
 	vkw::SubBuffer subIndexStagingBuffer = indexStagingBuffer.createSubBuffer(indexStagingBuffer.size);
 	vkw::SubBuffer subVertesStagingBuffer = vertexStagingBuffer.createSubBuffer(vertexStagingBuffer.size);
 
 	vkw::SubBuffer subVertesBuffer = vertexBuffer.createSubBuffer(vertexBuffer.size);
 	vkw::SubBuffer subIndexBuffer = indexBuffer.createSubBuffer(indexBuffer.size);
 
+	// write to staging Buffers
 	subIndexStagingBuffer.write(indices.data(), indices.size() * sizeof(indices[0]));
 	subVertesStagingBuffer.write(vertices.data(), vertices.size() * sizeof(vertices[0]));
 
+	// transfer to device local buffers
 	subIndexBuffer.copyFrom(subIndexStagingBuffer);
 	subVertesBuffer.copyFrom(subVertesStagingBuffer);
 
@@ -232,7 +251,7 @@ int main() {
 	vkw::ShaderModule fragShaderModule(shaderPath + "shader.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);	// Shader Module for fragment Shader
 
 	/// Graphics Pipeline
-	// pipeline Layout
+	// pipeline Layout without any descriptorSetLayouts and pushConstants
 	vkw::PipelineLayout layout({}, {});
 
 	// vertex input state
@@ -306,6 +325,7 @@ int main() {
 
 
 	/// Frame Buffers
+	// Frame buffer with imageView from the swapchain as attachement
 	std::vector<vkw::FrameBuffer> framebuffers(swapChain.imageCount);
 	for (uint32_t i = 0; i < framebuffers.size(); i++) {
 		vkw::FrameBuffer::CreateInfo createInfo = {};
@@ -320,18 +340,20 @@ int main() {
 
 
 	/// Command Buffers
+	// commandbuffers for drawinf the triangle
 	std::vector<vkw::CommandBuffer> commandBuffers(swapChain.imageCount);
 	vkw::CommandBuffer::allocateCommandBuffers(commandBuffers, graphicsCommandPool);
 
-	for (uint32_t i = 0; i < commandBuffers.size(); i++) {
-		VkClearValue clearCol = { 0.0f, 0.0f, 0.0f, 1.0f };
+	VkClearValue clearCol = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-		VkRenderPassBeginInfo beginnInfo = vkw::init::renderPassBeginInfo();
-		beginnInfo.renderPass = renderPass;
-		beginnInfo.renderArea = { { 0,0 }, swapChain.extent };
+	VkRenderPassBeginInfo beginnInfo = vkw::init::renderPassBeginInfo();
+	beginnInfo.renderPass = renderPass;
+	beginnInfo.renderArea = { { 0,0 }, swapChain.extent };
+	beginnInfo.clearValueCount = 1;
+	beginnInfo.pClearValues = &clearCol;
+
+	for (uint32_t i = 0; i < commandBuffers.size(); i++) {
 		beginnInfo.framebuffer = framebuffers[i];
-		beginnInfo.clearValueCount = 1;
-		beginnInfo.pClearValues = &clearCol;
 
 		commandBuffers[i].beginCommandBuffer(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 

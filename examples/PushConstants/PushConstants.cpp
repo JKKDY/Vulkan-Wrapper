@@ -6,7 +6,7 @@
 #include "VkInitializers.hpp"
 
 
-using namespace vkex;
+using namespace vkx;
 
 class VkwExample : public ExampleBase {
 public:
@@ -29,7 +29,7 @@ private:
 
 	std::array<glm::vec4, 6> pushConstants;
 
-	vkex::Mesh scene;
+	vkx::Mesh scene;
 
 	vkw::Memory uniformBufferMemory;
 	vkw::Buffer uniformBuffer;
@@ -68,7 +68,7 @@ void VkwExample::setup() {
 
 
 void VkwExample::loadAssets() {
-	vkex::Mesh::LoadInfo meshInfo(modelPath() + "samplescene.dae", { {VERTEX_COMPONENT_POSITION, VERTEX_COMPONENT_NORMAL, VERTEX_COMPONENT_UV, VERTEX_COMPONENT_COLOR} }, &scene);
+	vkx::Mesh::LoadInfo meshInfo(modelPath() + "samplescene.dae", { {VERTEX_COMPONENT_POSITION, VERTEX_COMPONENT_NORMAL, VERTEX_COMPONENT_UV, VERTEX_COMPONENT_COLOR} }, &scene);
 	meshInfo.scale = glm::vec3(0.35f);
 
 	meshLoader.loadFromFile({ meshInfo });

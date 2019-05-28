@@ -1,7 +1,7 @@
 #include "ExampleBase.h"
 
 
-namespace vkex {
+namespace vkx {
 	VKAPI_ATTR VkBool32 VKAPI_CALL defaultDebugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -70,8 +70,7 @@ namespace vkex {
 
 
 	ExampleBase::ExampleBase(Window & window):
-		window(window),
-		textureLoader(physicalDevice)
+		window(window)
 	{
 	}
 
