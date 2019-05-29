@@ -105,7 +105,7 @@ namespace vkw {
 			return exististingDesired;
 		}
 
-		// makes class nn copyable
+		// makes class non copyable
 		class NonCopyable
 		{
 		protected:

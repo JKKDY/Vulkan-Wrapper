@@ -45,6 +45,7 @@ namespace vkw {
 		VULKAN_WRAPPER_API operator VkPhysicalDevice () const;
 
 		VULKAN_WRAPPER_API std::vector<const char*> checkLayers(const std::vector<const char*> & desiredLayers, std::vector<const char*> * outMissingLayers = nullptr) const;
+		VULKAN_WRAPPER_API VkPhysicalDeviceFeatures checkFeatures(const VkPhysicalDeviceFeatures & desiredFeatures, VkPhysicalDeviceFeatures * outMissingFeatures = nullptr);
 	};
 
 
@@ -163,6 +164,7 @@ namespace vkw {
 
 		VULKAN_WRAPPER_API void createDevice(const CreateInfo & createInfo);
 		VULKAN_WRAPPER_API impl::Registry & getRegistry();
+
 	private:
 		impl::Registry * deviceRegistry;
 		QueueInfo graphicsQueue_m;
