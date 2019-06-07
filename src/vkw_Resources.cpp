@@ -768,6 +768,11 @@ namespace vkw {
 		}
 	}
 
+	VkBuffer * SubBuffer::getPtr()
+	{
+		return buffer->getPtr();
+	}
+
 	void SubBuffer::flush() { buffer->flush(); }
 
 	void SubBuffer::invalidate() { buffer->invalidate(); }

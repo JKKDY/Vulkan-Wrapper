@@ -72,8 +72,9 @@ VkwExample::~VkwExample()
 }
 
 void VkwExample::setup() {
-	camera.perspective = glm::perspective(glm::radians(60.0f), (float)swapChain.extent.width / (float)swapChain.extent.height, 0.1f, 256.0f);
-	camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -30.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	camera.setPerspective(60.f, (float)swapChain.extent.width / (float)swapChain.extent.height, 0.1f, 256.0f);
+	camera.translate({ 0,0,-30 });
+
 	generateCube();
 	prepareUniformBuffers();
 	setupDescriptors();
@@ -125,6 +126,7 @@ void VkwExample::prepareUniformBuffers() {
 	dynamicUniformBuffer.createBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, bufferSize);
 	uniformBuffersMemory.allocateMemory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, { viewUniformBuffer, dynamicUniformBuffer });
 
+	camera.perspective;
 	glm::mat4 viewProj = camera.perspective * camera.view;
 	viewUniformBuffer.write(&viewProj, sizeof(glm::mat4));
 
@@ -149,7 +151,7 @@ void VkwExample::setupDescriptors() {
 	poolCreateInfo.uniformBufferDynamicCount = 1;
 	poolCreateInfo.uniformBufferCount = 1;
 	poolCreateInfo.combinedImageSamplerCount = 1;///----------
-	poolCreateInfo.maxSets = 2;
+	poolCreateInfo.maxSets = 1;
 	descriptorPool.createDescriptorPool(poolCreateInfo);
 
 	descriptorSet.allocateDescriptorSet(descriptorPool, descriptorSetLayout);

@@ -2,7 +2,7 @@
 #include "vkw_Config.h"
 
 #if VKW_DEBUG >= 1
-#	define	VKW_PRINT(expr) do {std::cout << (expr) << std::endl;} while(0)
+#	define VKW_PRINT(expr) do {std::cout << (expr) << std::endl;} while(0)
 #	define VKW_LOG(expr) do {std::cout << (expr) << " at line " << __LINE__ << " in file" << __FILE__ << std::endl;} while(0)
 #   define VKW_assert(Expr, Msg) vkw_Assert__(#Expr, Expr, __FILE__, __LINE__, Msg)
 

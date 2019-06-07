@@ -323,13 +323,13 @@ namespace vkw {
 			return *this;
 		}*/
 
-		template<typename T, typename RegType> VkPointer<T, RegType>::operator Type*() const
+		template<typename T, typename RegType> VkPointer<T, RegType>::operator Type*() const // "() op" -> get ptr
 		{
 			createNewObject();
 			return pObject->getPointer();
 		}
 
-		template<typename T, typename RegType> typename T::Type VkPointer<T, RegType>::operator * () const
+		template<typename T, typename RegType> typename T::Type VkPointer<T, RegType>::operator * () const // "dereference op" -> return object
 		{
 			createNewObject();
 			return pObject->getObject();

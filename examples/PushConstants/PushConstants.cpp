@@ -85,13 +85,11 @@ void VkwExample::setupDescriptors() {
 	uniformLayoutBinding.binding = 0;
 	uniformLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	uniformLayoutBinding.descriptorCount = 1;
-
 	descriptorSetLayout.createDescriptorSetLayout({ uniformLayoutBinding });
 
 	vkw::DescriptorPool::CreateInfo2 descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.uniformBufferCount = 1;
 	descriptorPoolCreateInfo.maxSets = 2; //----------
-
 	descriptorPool.createDescriptorPool(descriptorPoolCreateInfo);
 
 	descriptorSet.allocateDescriptorSet(descriptorPool, descriptorSetLayout);
@@ -101,7 +99,6 @@ void VkwExample::setupDescriptors() {
 	bufferWriteInfo.dstBinding = 0;
 	bufferWriteInfo.descriptorCount = 1;
 	bufferWriteInfo.pBufferInfo = &bufferInfo;
-
 	descriptorSet.update({ bufferWriteInfo }, {});
 }
 
@@ -128,11 +125,7 @@ void VkwExample::preparePipelines()
 	const std::vector<VkVertexInputBindingDescription> vertexBindings = { scene.vertexBinding(0) };
 	const std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = scene.vertexAttributes(0);
 
-	VkPipelineVertexInputStateCreateInfo vertexInputState = vkw::init::pipelineVertexInputStateCreateInfo();
-	vertexInputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindings.size());
-	vertexInputState.pVertexBindingDescriptions = vertexBindings.data();
-	vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
-	vertexInputState.pVertexAttributeDescriptions = vertexInputAttributes.data();
+	VkPipelineVertexInputStateCreateInfo vertexInputState = initializers::pipelineVertexInputStateCreateInfo(vertexBindings, vertexInputAttributes);
 
 	vkw::ShaderModule vertexShader(shaderPath() + "lights.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 	vkw::ShaderModule fragShader(shaderPath() + "lights.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);

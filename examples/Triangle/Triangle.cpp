@@ -62,30 +62,34 @@ int main() {
 	GlfwWindow window = GlfwWindow(800, 600);
 
 	/// Core
+	vkw::Instance::CreateInfo instanceCreateInfo = {};
+
+	// debug messenger
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = vkw::init::debugUtilsMessengerCreateInfoEXT();
 	debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	debugCreateInfo.pfnUserCallback = debugCallback;
 	debugCreateInfo.pUserData = nullptr;
-
-	vkw::Instance::CreateInfo instanceCreateInfo = {};
 	instanceCreateInfo.debugMessengerInfos = { debugCreateInfo };
-	instanceCreateInfo.desiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	instanceCreateInfo.desiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-	GlfwWindow::getWindowExtensions(instanceCreateInfo.desiredExtensions);
 
 	// query if extensions exist
+	std::vector<const char*> desiredExtensions = { VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
+	GlfwWindow::getWindowExtensions(desiredExtensions);
 	std::vector<const char*> missingExtensions;
-	instanceCreateInfo.desiredExtensions = vkw::Instance::checkExtensions(instanceCreateInfo.desiredExtensions, &missingExtensions);
+	instanceCreateInfo.desiredExtensions = vkw::Instance::checkExtensions(desiredExtensions, &missingExtensions);
 	VKW_assert(missingExtensions.empty(), "Required Extensions missing");
 
 	// query if requried layers are supported
+	std::vector<const char*> desiredLayers = { "VK_LAYER_LUNARG_standard_validation" };
 	std::vector<const char*> missingLayers;
-	instanceCreateInfo.desiredLayers = vkw::Instance::checkLayers(instanceCreateInfo.desiredLayers, &missingLayers);
+	instanceCreateInfo.desiredLayers = vkw::Instance::checkLayers(desiredLayers, &missingLayers);
 	VKW_assert(missingLayers.empty(), "Required Layers missing");
 
 	vkw::Instance instance(instanceCreateInfo);
+
+
 	vkw::Surface surface(window);
+
 
 	VKW_assert(!instance.physicalDevices.empty(), "failed to find GPUs with Vulkan support!");
 	std::vector<vkw::PhysicalDevice> suitableDevices;
@@ -141,6 +145,7 @@ int main() {
 
 	vkw::PhysicalDevice & physicalDevice = *candidates.rbegin()->second;
 
+
 	vkw::Device::CreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.physicalDevice = physicalDevice;
 	deviceCreateInfo.surfaces = { surface };
@@ -149,7 +154,7 @@ int main() {
 	vkw::Device device(deviceCreateInfo);
 	vkw::Swapchain swapChain(surface);
 
-	// VKW_DEFAULT_QUEUE = let the implementation choose 
+	// VKW_DEFAULT_QUEUE = let the wrapper choose 
 	vkw::TransferCommandPool transferCommandPool(VKW_DEFAULT_QUEUE); 
 	vkw::GraphicsCommandPool graphicsCommandPool(VKW_DEFAULT_QUEUE);
 	vkw::ComputeCommandPool computeCommandPool(VKW_DEFAULT_QUEUE);

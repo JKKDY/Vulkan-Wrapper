@@ -55,12 +55,9 @@ VkwExample::VkwExample(Window & window) : ExampleBase(window) {
 	initInfo.deviceSuitableFkt.push_back(func);
 	initVulkan(initInfo);
 
-	camera.perspective = glm::perspective(glm::radians(60.0f), ((float)swapChain.extent.width / 3.0f) / (float)swapChain.extent.height, 0.1f, 512.0f);
-	camera.view = glm::mat4(1.0);
-	camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -2.0f));
-	camera.view = glm::rotate(camera.view, glm::radians(-40.0f), glm::vec3(1.0, 0.0, 0.0));
-	camera.view = glm::rotate(camera.view, glm::radians(-90.0f), glm::vec3(0.0, 1.0, 0.0));
-	camera.view = glm::rotate(camera.view, glm::radians(0.0f), glm::vec3(0.0, 0.0, 1.0));
+	camera.setPerspective(60.0f, (swapChain.extent.width / 3.0f) / swapChain.extent.height, 0.1f, 512.0f);
+	camera.translate({ 0,0,-2 });
+	camera.rotate({ -40, -90, 0 });
 
 	setup();
 }

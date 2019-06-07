@@ -177,7 +177,7 @@ namespace vkx {
 		deviceCreateInfo.physicalDevice = physicalDevice;
 		deviceCreateInfo.surfaces = { surface };
 		deviceCreateInfo.extensions = deviceExtensions;
-		deviceCreateInfo.features = deviceFeatures;
+		deviceCreateInfo.features = physicalDevice.checkFeatures(deviceFeatures);
 		deviceCreateInfo.preSetQueues = preSetDeviceQueues;
 		deviceCreateInfo.additionalQueues = additionalDeviceQueues;
 

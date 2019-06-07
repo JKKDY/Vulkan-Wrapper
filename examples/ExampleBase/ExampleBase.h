@@ -48,8 +48,8 @@ namespace vkx {
 	protected:
 		Camera camera;
 
-		float frameTimer = 0; // in seconds
-		float time = 0; // in seconds
+		float frameTimer = 0; // time between frames
+		float time = 0; // time total
 
 		Window & window;
 

@@ -99,7 +99,7 @@ namespace vkw {
 	public:
 		struct WriteInfo {
 			uint32_t dstBinding;
-			uint32_t descriptorCount;
+			uint32_t descriptorCount = 1;
 			uint32_t dstArrayElement = 0;
 			const VkDescriptorImageInfo * pImageInfo = nullptr;
 			const VkDescriptorBufferInfo * pBufferInfo = nullptr;
@@ -303,11 +303,13 @@ namespace vkw {
 		//VULKAN_WRAPPER_API Buffer & parent() const;
 
 		VULKAN_WRAPPER_API void write(const void * data, size_t sizeOfData, bool leaveMapped = true);
-		VULKAN_WRAPPER_API inline void copyFrom(const SubBuffer & srcBuffer, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkCommandPool commandPool = VK_NULL_HANDLE);
-		VULKAN_WRAPPER_API inline void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
-		VULKAN_WRAPPER_API inline void flush();
-		VULKAN_WRAPPER_API inline void invalidate();
+		VULKAN_WRAPPER_API void copyFrom(const SubBuffer & srcBuffer, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkCommandPool commandPool = VK_NULL_HANDLE);
+		VULKAN_WRAPPER_API void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0);
+		VULKAN_WRAPPER_API void flush();
+		VULKAN_WRAPPER_API void invalidate();
 		VULKAN_WRAPPER_API void clear();
+
+		VULKAN_WRAPPER_API VkBuffer * getPtr();
 
 		const VkDeviceSize & size;
 		const VkDeviceSize & offset; // offset in buffer
