@@ -25,7 +25,7 @@ namespace vkw {
 
 		template<> VkObject<VkwInstance>* RegistryManager::getNew() { 
 			VkObject<VkwInstance> * obj = new VkObject<VkwInstance>(instanceDeleter, [](){});
-			instance_m = obj->getPointer();
+			instance_m = obj->getPtr();
 			return obj;
 		}
 
@@ -162,7 +162,7 @@ namespace vkw {
 
 		template<typename T> VkObject<T> * Registry::create(typename T::Type *& object) { 
 			VkObject<T> * obj = new VkObject<T>(getDeleter<T>(), [&]() { object = nullptr; });
-			object = obj->getPointer();
+			object = obj->getPtr();
 			return obj;
 		}
 
@@ -234,12 +234,12 @@ namespace vkw {
 			return static_cast<uint32_t>(references.size());
 		}
 
-		template<typename T> typename T::Type * VkObject<T>::getPointer()
+		template<typename T> typename T::Type * VkObject<T>::getPtr()
 		{
 			return &object;
 		}
 
-		template<class T> typename T::Type VkObject<T>::getObject()
+		template<class T> typename T::Type VkObject<T>::getObj()
 		{
 			return object;
 		}
@@ -258,13 +258,17 @@ namespace vkw {
 
 		
 		/// Vk Pointer
-		template<typename T, typename RegType> VkPointer<T, RegType>::VkPointer(RegType & reg) :
-			registry(reg)
+		template<typename T, typename RegType> VkPointer<T, RegType>::VkPointer(RegType & reg, DestructionControl & destrContr, std::function<void(Type)> deleterf) :
+			registry(reg),
+			destructionControl(destrContr),
+			deleterFunc(deleterf)
 		{}
 
 		template<typename T, typename RegType> VkPointer<T, RegType>::VkPointer(const VkPointer<T, RegType> & obj) :
 			pObject(obj.pObject),
-			registry(obj.registry)
+			registry(obj.registry),
+			destructionControl(obj.destructionControl),
+			deleterFunc(obj.deleterFunc)
 		{
 			if (!pObject) {
 				pObject = registry.getNew<T>();
@@ -277,41 +281,50 @@ namespace vkw {
 			}
 		}
 
-		template<typename T, typename RegType> void VkPointer<T, RegType>::copy(const VkPointer<T, RegType> & obj, DestructionControl destrContr)
+		template<typename T, typename RegType> void VkPointer<T, RegType>::copy(const VkPointer<T, RegType> & obj)
 		{
-			if(pObject) pObject->remove(pObject);
-			
-			pObject = obj.pObject;
+			deleterFunc = obj.deleterFunc;
 
+			if(pObject) pObject->remove(pObject, deleterFunc);
+			pObject = obj.pObject;
 			if(pObject) pObject->add(pObject); 
 		}
 
-		template<typename T, typename RegType> void VkPointer<T, RegType>::destroyObject(DestructionControl destrContr, std::function<void(Type)> deleterf) // gets called manually
+		template<typename T, typename RegType> void VkPointer<T, RegType>::destroyObject() // gets called manually
 		{
 			if (pObject) {
-				if (destrContr == VKW_DESTR_CONTRL_FIRST_OBJECT_CALLS_DELETER ||
-					destrContr == VKW_DESTR_CONTRL_EXCLUSIVE_DELETER_CALL ||
-					destrContr == VKW_DESTR_CONTRL_LAST_OBJECT_CALLS_DELETER && pObject->referenceCount() <= 1)
+				if (destructionControl == VKW_DESTR_CONTRL_FIRST_OBJECT_CALLS_DELETER ||
+					destructionControl == VKW_DESTR_CONTRL_EXCLUSIVE_DELETER_CALL ||
+					destructionControl == VKW_DESTR_CONTRL_LAST_OBJECT_CALLS_DELETER && pObject->referenceCount() <= 1)
 				{
-					pObject->deleteThis(deleterf); // set to nullptr automatically
+					pObject->deleteThis(deleterFunc); // pObject set to nullptr automatically
 				}
 				else {
-					pObject->remove(pObject, deleterf); // set to nullptr automatically
+					pObject->remove(pObject, deleterFunc); // pObject set to nullptr automatically
 				}
 			}
 		}
 
-		template<typename T, typename RegType> void VkPointer<T, RegType>::createNewObject() const
+		template<typename T, typename RegType> void VkPointer<T, RegType>::operator = (Type rhs) {
+			if (!pObject) {
+				pObject = registry.getNew<T>();
+				pObject->add(pObject);
+			}
+			*pObject = rhs;
+		}
+
+		template<typename T, typename RegType> typename T::Type * VkPointer<T, RegType>::createNew()
 		{
 			if (!pObject) {
 				pObject = registry.getNew<T>();
 				pObject->add(pObject);
 			}
-		}
+			else {
+				destroyObject();
+				pObject = registry.getNew<T>();
+			}
 
-		template<typename T, typename RegType> void VkPointer<T, RegType>::operator = (Type rhs) {
-			createNewObject();
-			*pObject = rhs;
+			return pObject->getPtr();
 		}
 
 	/*	template<typename T, typename RegType> VkPointer<T, RegType>& VkPointer<T, RegType>::operator=(VkPointer<T, RegType>& rhs)
@@ -323,16 +336,20 @@ namespace vkw {
 			return *this;
 		}*/
 
-		template<typename T, typename RegType> VkPointer<T, RegType>::operator Type*() const // "() op" -> get ptr
+		template<typename T, typename RegType> VkPointer<T, RegType>::operator Type*() const // "() op" -> return ptr
 		{
-			createNewObject();
-			return pObject->getPointer();
+			if (pObject)
+				return pObject->getPtr();
+			else
+				return nullptr;
 		}
 
 		template<typename T, typename RegType> typename T::Type VkPointer<T, RegType>::operator * () const // "dereference op" -> return object
 		{
-			createNewObject();
-			return pObject->getObject();
+			if (pObject)
+				return pObject->getObj();
+			else
+				return VK_NULL_HANDLE;
 		}
 
 
@@ -340,9 +357,9 @@ namespace vkw {
 
 
 		/// Vk Object
-		template<typename T, typename RegType> Base<T, RegType>::Base() :
+		template<typename T, typename RegType> Base<T, RegType>::Base(std::function<void(Type)> deleterf) :
 			registry(getRegistry<RegType>()),
-			pVkObject(registry)
+			pVkObject(registry, destructionControl, deleterf)
 		{}
 
 		template<typename T, typename RegType> Base<T, RegType>::Base(const Base<T, RegType> & rhs):
@@ -362,7 +379,7 @@ namespace vkw {
 			passOnVkObject = rhs.passOnVkObject;
 
 			if (passOnVkObject) {
-				pVkObject.copy(rhs.pVkObject, destructionControl);
+				pVkObject.copy(rhs.pVkObject);
 
 				destructionControl = (rhs.destructionControl == VKW_DESTR_CONTRL_EXCLUSIVE_DELETER_CALL && passOnVkObject) ? VKW_DESTR_CONTRL_DO_NOTHING : rhs.destructionControl;
 			} 
@@ -382,7 +399,7 @@ namespace vkw {
 
 		template<typename T, typename RegType> void Base<T, RegType>::destroyObject()
 		{
-			pVkObject.destroyObject(destructionControl);
+			pVkObject.destroyObject();
 		}
 
 		template<typename T, typename RegType>  Base<T, RegType>::operator typename T::Type () const

@@ -23,7 +23,7 @@ namespace vkw {
 		info.queueFamilyIndex = queueFamily;
 		info.pNext = createInfo.pNext;
 
-		vkw::Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject), "Failed to create Command Pool");
+		vkw::Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Command Pool");
 	}
 
 	void CommandPool::createCommandPool(uint32_t queueFamily, VkCommandPoolCreateFlags flags)
@@ -87,9 +87,13 @@ namespace vkw {
 	}
 
 	CommandBuffer::CommandBuffer():
+		Base([&](VkCommandBuffer obj) {
+		if (commandPool != VK_NULL_HANDLE)
+			vkFreeCommandBuffers(registry.device, commandPool_m, 1, &obj);
+		}),
 		commandPool(commandPool_m)
 	{
-		//destructionControl = VKW_DESTR_CONTRL_DO_NOTHING;
+		//destructionControl = VKW_DESTR_CONTRL_DO_NOTHING; // review if this should be set or not
 	}
 
 	CommandBuffer::CommandBuffer(const AllocInfo & allocInfo):
@@ -114,7 +118,7 @@ namespace vkw {
 		info.commandBufferCount = 1;
 		info.pNext = allocInfo.pNext;
 
-		vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(registry.device, &info, pVkObject), "Failed to allocate Command Buffer");
+		vkw::Debug::errorCodeCheck(vkAllocateCommandBuffers(registry.device, &info, pVkObject.createNew()), "Failed to allocate Command Buffer");
 	}
 
 	void CommandBuffer::allocateCommandBuffer(VkCommandPool commandPool, VkCommandBufferLevel level)
@@ -127,7 +131,7 @@ namespace vkw {
 
 	void CommandBuffer::freeCommandBuffer()
 	{
-		pVkObject.destroyObject(destructionControl, [=](VkCommandBuffer obj) {vkFreeCommandBuffers(registry.device, commandPool_m, 1, &obj); });
+		pVkObject.destroyObject();
 	}
 
 	void CommandBuffer::beginCommandBuffer(VkCommandBufferUsageFlags flags, VkCommandBufferInheritanceInfo * inheritanceInfo)
@@ -180,7 +184,7 @@ namespace vkw {
 		info.queueFamilyIndex = createInfo.queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.transferQueue.family : createInfo.queueFamilyIndex;
 		info.pNext = info.pNext;
 
-		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject), "Failed to create Transfer Command Pool");
+		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Transfer Command Pool");
 	}
 
 	void TransferCommandPool::createTransferCommandPool(int queueFamilyIndex)
@@ -209,7 +213,7 @@ namespace vkw {
 		info.queueFamilyIndex = createInfo.queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.graphicsQueue.family : createInfo.queueFamilyIndex;
 		info.pNext = info.pNext;
 
-		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject), "Failed to create Transfer Command Pool");
+		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Transfer Command Pool");
 	}
 
 	void GraphicsCommandPool::createGraphicsCommandPool(int queueFamilyIndex)
@@ -238,7 +242,7 @@ namespace vkw {
 		info.queueFamilyIndex = createInfo.queueFamilyIndex == VKW_DEFAULT_QUEUE ? registry.computeQueue.family : createInfo.queueFamilyIndex;
 		info.pNext = info.pNext;
 
-		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject), "Failed to create Transfer Command Pool");
+		Debug::errorCodeCheck(vkCreateCommandPool(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Transfer Command Pool");
 	}
 
 	void ComputeCommandPool::createComputeCommandPool(int queueFamilyIndex)

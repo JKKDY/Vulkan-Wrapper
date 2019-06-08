@@ -135,7 +135,7 @@ namespace vkw {
 		instanceCreateInfo.ppEnabledExtensionNames = createInfo.desiredExtensions.data();
 		instanceCreateInfo.pNext = createInfo.pNext;
 
-		Debug::errorCodeCheck(vkCreateInstance(&instanceCreateInfo, nullptr, pVkObject), "Failed to create Instance");
+		Debug::errorCodeCheck(vkCreateInstance(&instanceCreateInfo, nullptr, pVkObject.createNew()), "Failed to create Instance");
 
 		debugMessengers.resize(createInfo.debugMessengerInfos.size());
 		for (size_t i = 0; i < debugMessengers.size(); i++) {
@@ -247,7 +247,7 @@ namespace vkw {
 	void Surface::createSurface(const Window & window)
 	{
 		this->window = &window;
-		window.createSurface(registry.instance, pVkObject);
+		window.createSurface(registry.instance, pVkObject.createNew());
 	}
 
 	std::vector<VkSurfaceFormatKHR> Surface::formats(VkPhysicalDevice gpu)const
@@ -359,7 +359,7 @@ namespace vkw {
 		deviceInfo.ppEnabledLayerNames = nullptr;
 		deviceInfo.pNext = createInfo.pNext;
 
-		Debug::errorCodeCheck(vkCreateDevice(createInfo.physicalDevice.physicalDevice, &deviceInfo, nullptr, pVkObject), "Failed to create Device");
+		Debug::errorCodeCheck(vkCreateDevice(createInfo.physicalDevice.physicalDevice, &deviceInfo, nullptr, pVkObject.createNew()), "Failed to create Device");
 
 		if (graphicsQueue_m.family >= 0) vkGetDeviceQueue(*pVkObject, graphicsQueue_m.family, graphicsQueue_m.index, &graphicsQueue_m.queue);
 		if (transferQueue_m.family >= 0) vkGetDeviceQueue(*pVkObject, transferQueue_m.family, transferQueue_m.index, &transferQueue_m.queue);

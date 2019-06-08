@@ -65,7 +65,7 @@ namespace vkw {
 			createInfo.pQueueFamilyIndices = nullptr; // Optional
 		}
 
-		vkw::Debug::errorCodeCheck(vkCreateSwapchainKHR(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Swapchain");
+		vkw::Debug::errorCodeCheck(vkCreateSwapchainKHR(registry.device, &createInfo, nullptr, pVkObject.createNew()), "Failed to create Swapchain");
 
 		vkGetSwapchainImagesKHR(registry.device, *pVkObject, &imageCount_m, nullptr); // get the swapchainImages
 		swapChainImages.resize(imageCount);
@@ -175,7 +175,7 @@ namespace vkw {
 		VkSemaphoreCreateInfo info = init::semaphoreCreateInfo();
 		info.flags = createInfo.flags;
 		info.pNext = createInfo.pNext;
-		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &info, nullptr, pVkObject), "Failed to create Semaphore");
+		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Semaphore");
 	}
 
 	void Semaphore::createSemaphore(VkSemaphoreCreateFlags flags) {
@@ -183,7 +183,7 @@ namespace vkw {
 
 		VkSemaphoreCreateInfo createInfo = init::semaphoreCreateInfo();
 		createInfo.flags = flags;
-		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Semaphore");
+		Debug::errorCodeCheck(vkCreateSemaphore(registry.device, &createInfo, nullptr, pVkObject.createNew()), "Failed to create Semaphore");
 	}
 
 
@@ -207,7 +207,7 @@ namespace vkw {
 		VkFenceCreateInfo info = init::fenceCreateInfo();
 		info.flags = flags;
 		info.pNext = createInfo.pNext;
-		Debug::errorCodeCheck(vkCreateFence(registry.device, &info, nullptr, pVkObject), "Failed to create Fence");
+		Debug::errorCodeCheck(vkCreateFence(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Fence");
 	}
 
 	void Fence::createFence(VkFenceCreateFlags flags)
@@ -216,7 +216,7 @@ namespace vkw {
 
 		VkFenceCreateInfo createInfo = init::fenceCreateInfo();
 		createInfo.flags = flags;
-		Debug::errorCodeCheck(vkCreateFence(registry.device, &createInfo, nullptr, pVkObject), "Failed to create Fence");
+		Debug::errorCodeCheck(vkCreateFence(registry.device, &createInfo, nullptr, pVkObject.createNew()), "Failed to create Fence");
 	}
 
 	void Fence::wait(bool reset, uint64_t timeOut)
@@ -269,7 +269,7 @@ namespace vkw {
 		renderPassInfo.subpassCount = static_cast<uint32_t>(subPassDescriptions.size());
 		renderPassInfo.pSubpasses = subPassDescriptions.data();
 
-		Debug::errorCodeCheck(vkCreateRenderPass(registry.device, &renderPassInfo, nullptr, pVkObject), "Failed to create Render Pass");
+		Debug::errorCodeCheck(vkCreateRenderPass(registry.device, &renderPassInfo, nullptr, pVkObject.createNew()), "Failed to create Render Pass");
 	}
 
 
@@ -310,7 +310,7 @@ namespace vkw {
 		info.pCode = reinterpret_cast<const uint32_t*> (shaderCode.data());
 		info.pNext = createInfo.pNext;
 
-		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &info, nullptr, pVkObject), "Failed to create ShaderModule!");
+		Debug::errorCodeCheck(vkCreateShaderModule(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create ShaderModule!");
 	}
 
 	void ShaderModule::createShaderModule(std::string filename, VkShaderStageFlagBits stage, VkShaderModuleCreateFlags flags)
@@ -360,7 +360,7 @@ namespace vkw {
 		info.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
 		info.pPushConstantRanges = pushConstantRanges.data();
 
-		Debug::errorCodeCheck(vkCreatePipelineLayout(registry.device, &info, nullptr, pVkObject), "failed to create pipeline layout!");
+		Debug::errorCodeCheck(vkCreatePipelineLayout(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create pipeline layout!");
 	}
 
 	void PipelineLayout::createPipelineLayout(const std::vector<VkDescriptorSetLayout>& setLayouts, const std::vector<VkPushConstantRange>& pushConstants)
@@ -407,7 +407,7 @@ namespace vkw {
 		info.flags = createInfo.flags;
 		info.initialDataSize = createInfo.initialSize;
 		info.pInitialData = createInfo.initialData;
-		Debug::errorCodeCheck(vkCreatePipelineCache(registry.device, &info, nullptr, pVkObject));
+		Debug::errorCodeCheck(vkCreatePipelineCache(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Pipeline Cache");
 	}
 
 
@@ -452,6 +452,6 @@ namespace vkw {
 		pipelineInfo.basePipelineHandle = basePipelineHandle;
 		pipelineInfo.basePipelineIndex = basePipelineIndex;
 
-		Debug::errorCodeCheck(vkCreateGraphicsPipelines(registry.device, cache, 1, &pipelineInfo, nullptr, pVkObject), "Failed to create Pipeline");
+		Debug::errorCodeCheck(vkCreateGraphicsPipelines(registry.device, cache, 1, &pipelineInfo, nullptr, pVkObject.createNew()), "Failed to create Pipeline");
 	};
 }

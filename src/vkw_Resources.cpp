@@ -82,7 +82,6 @@ namespace vkw {
 		push_backMaybe(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT);
 		push_backMaybe(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV);
 		
-
 		createDescriptorPool(info);
 	}
 
@@ -100,7 +99,7 @@ namespace vkw {
 		info.pPoolSizes = createInfo.poolSizes.data();
 		info.pNext = createInfo.pNext;
 
-		vkw::Debug::errorCodeCheck(vkCreateDescriptorPool(registry.device, &info, nullptr, pVkObject), "Failed to create Descriptor Pool");
+		vkw::Debug::errorCodeCheck(vkCreateDescriptorPool(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Descriptor Pool");
 	}
 
 	void DescriptorPool::createDescriptorPool(const std::vector<VkDescriptorPoolSize> & poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags)
@@ -157,7 +156,7 @@ namespace vkw {
 		layoutInfo.pBindings = createInfo.layoutBindings.data();
 		layoutInfo.flags = createInfo.flags;
 		layoutInfo.pNext = createInfo.pNext;
-		vkw::Debug::errorCodeCheck(vkCreateDescriptorSetLayout(registry.device, &layoutInfo, nullptr, pVkObject), "Failed to create DescriptorSetLayout");
+		vkw::Debug::errorCodeCheck(vkCreateDescriptorSetLayout(registry.device, &layoutInfo, nullptr, pVkObject.createNew()), "Failed to create DescriptorSetLayout");
 	}
 
 	void DescriptorSetLayout::createDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding> & bindings, VkDescriptorSetLayoutCreateFlags flags)
@@ -206,7 +205,7 @@ namespace vkw {
 		allocInfo.pNext = createInfo.pNext;
 		allocInfo.descriptorSetCount = 1;
 
-		Debug::errorCodeCheck(vkAllocateDescriptorSets(registry.device, &allocInfo, pVkObject), "Failed to create Descriptor Set");
+		Debug::errorCodeCheck(vkAllocateDescriptorSets(registry.device, &allocInfo, pVkObject.createNew()), "Failed to create Descriptor Set");
 	}
 
 	void DescriptorSet::allocateDescriptorSet(VkDescriptorPool descriptorPool, const DescriptorSetLayout & layout)
@@ -384,7 +383,7 @@ namespace vkw {
 		info.allocationSize = size + allocInfo.additionalSize;
 		info.memoryTypeIndex = allocInfo.memoryType == std::numeric_limits<uint32_t>::max() ? tools::findMemoryType(registry.physicalDevice.memoryProperties, memoryTypeBits, memoryFlags_m) : allocInfo.memoryType;
 		info.pNext = info.pNext;
-		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &info, nullptr, pVkObject), "Failed to allocate Memory");
+		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to allocate Memory");
 
 		memoryRanges_m.addMoreSize(size + allocInfo.additionalSize);
 
@@ -403,7 +402,7 @@ namespace vkw {
 		VkMemoryAllocateInfo allocInfo = vkw::init::memoryAllocateInfo();
 		allocInfo.allocationSize = size + additionalSize;
 		allocInfo.memoryTypeIndex = memoryType == std::numeric_limits<uint32_t>::max() ? tools::findMemoryType(registry.physicalDevice.memoryProperties, memoryTypeBits, memoryFlags_m) : memoryType;
-		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, pVkObject), "Failed to allocate Memory");
+		Debug::errorCodeCheck(vkAllocateMemory(registry.device, &allocInfo, nullptr, pVkObject.createNew()), "Failed to allocate Memory");
 
 		memoryRanges_m.addMoreSize(size + additionalSize);
 
@@ -552,7 +551,7 @@ namespace vkw {
 		// bufferInfo.pQueueFamilyIndices = 
 		// bufferInfo.queueFamilyIndexCount = 
 
-		vkw::Debug::errorCodeCheck(vkCreateBuffer(registry.device, &bufferInfo, nullptr, pVkObject), "Failed to create buffer");
+		vkw::Debug::errorCodeCheck(vkCreateBuffer(registry.device, &bufferInfo, nullptr, pVkObject.createNew()), "Failed to create buffer");
 
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(registry.device, *pVkObject, &memoryRequirements);
@@ -605,7 +604,7 @@ namespace vkw {
 
 		memoryRanges.reset();
 
-		pVkObject.destroyObject(destructionControl);
+		pVkObject.destroyObject();
 	}
 
 	void Buffer::write(const void * data, size_t sizeOfData, VkDeviceSize offset, bool leaveMapped) // offset is not relative to the bound memory block but to the start of the buffer 
@@ -832,7 +831,7 @@ namespace vkw {
 		info.initialLayout = createInfo.initialLayout;
 		info.pNext = createInfo.pNext;
 
-		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &info, nullptr, pVkObject), "Failed to create Image");
+		vkw::Debug::errorCodeCheck(vkCreateImage(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Image");
 
 		VkMemoryRequirements memoryRequirements;
 		vkGetImageMemoryRequirements(registry.device, *pVkObject, &memoryRequirements);
@@ -1133,7 +1132,7 @@ namespace vkw {
 		info.components = createInfo.components;
 		info.pNext = createInfo.pNext;
 
-		vkw::Debug::errorCodeCheck(vkCreateImageView(registry.device, &info, nullptr, pVkObject), "Failed to create Image");
+		vkw::Debug::errorCodeCheck(vkCreateImageView(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create Image");
 	}
 
 	void ImageView::createImageView(const Image & image, VkImageSubresourceRange subresource, VkImageViewType viewType, VkComponentMapping components)
@@ -1189,7 +1188,7 @@ namespace vkw {
 		samplerInfo.maxLod = createInfo.maxLod;
 		samplerInfo.pNext = createInfo.pNext;
 
-		vkw::Debug::errorCodeCheck(vkCreateSampler(registry.device, &samplerInfo, nullptr, pVkObject), "Failed to create Sampler");
+		vkw::Debug::errorCodeCheck(vkCreateSampler(registry.device, &samplerInfo, nullptr, pVkObject.createNew()), "Failed to create Sampler");
 	}
 
 
@@ -1224,7 +1223,7 @@ namespace vkw {
 		info.layers = createInfo.layers;
 		info.pNext = createInfo.pNext;
 
-		vkw::Debug::errorCodeCheck(vkCreateFramebuffer(registry.device, &info, nullptr, pVkObject), "Failed to create FrameBuffer");
+		vkw::Debug::errorCodeCheck(vkCreateFramebuffer(registry.device, &info, nullptr, pVkObject.createNew()), "Failed to create FrameBuffer");
 	}
 
 	void FrameBuffer::createFrameBuffer(VkRenderPass renderPass, VkExtent2D extent, std::vector<VkImageView> attachments, uint32_t layers, VkFramebufferCreateFlags flags)

@@ -139,6 +139,9 @@
     <ProjectReference Include="..\SpecializationConstants\SpecializationConstants.vcxproj">
       <Project>{817f80b0-fb41-486f-976a-824736e36a24}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\TextureCubeMap\TextureCubeMap.vcxproj">
+      <Project>{196dc1a3-7e3f-48e8-b9c9-fd9c1dd00522}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\TextureMapping\TextureMapping.vcxproj">
       <Project>{d78316b6-9711-4219-9cd8-00e8eeb4a61c}</Project>
     </ProjectReference>

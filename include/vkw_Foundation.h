@@ -63,12 +63,12 @@ namespace vkw {
 			~VkObject();
 
 			void add(VkObject<T> *& ref);
-			void remove(VkObject<T> *& ref, std::function<void(Type)> deleterf = 0);
-			void deleteThis(std::function<void(Type)> deleterf = 0);  //delterf = overwrite to ::deleterFunc 
+			void remove(VkObject<T> *& ref, std::function<void(Type)> deleterf);
+			void deleteThis(std::function<void(Type)> deleterf);  //delterf = overwrite to ::deleterFunc 
 			uint32_t referenceCount();
 
-			Type * getPointer();
-			Type getObject();
+			Type * getPtr();
+			Type getObj();
 			operator typename T::Type();
 
 			void operator = (const Type & rhs);
@@ -84,21 +84,24 @@ namespace vkw {
 		template<typename T, typename RegType> class VkPointer {
 			using Type = typename T::Type;
 		public:
-			VkPointer(RegType & reg);
+			VkPointer(RegType & reg, DestructionControl & destrContr, std::function<void(Type)> deleterf);
 			VkPointer(const VkPointer<T, RegType> & obj);
 
-			void copy(const VkPointer<T, RegType> & obj, DestructionControl destrContr);
-			void destroyObject(DestructionControl destrContr, std::function<void(Type)> deleterf = 0);
+			void copy(const VkPointer<T, RegType> & obj);
+			void destroyObject();
 
 			operator Type * () const;
 			Type operator *() const;
 			void operator = (Type rhs);
+
+			Type * createNew();
 			//VkPointer<T, RegType> & operator = (VkPointer<T, RegType> & rhs);
 
 		private:
 			RegType & registry;
-			virtual void createNewObject() const;
 			mutable VkObject<T> * pObject = nullptr;
+			DestructionControl & destructionControl;
+			std::function<void(Type)> deleterFunc;
 		};
 
 
@@ -110,7 +113,7 @@ namespace vkw {
 		template<typename T, typename RegType> class Base {
 			using Type = typename T::Type;
 		public:
-			Base();
+			Base(std::function<void(Type)> deleterf = 0);
 			VULKAN_WRAPPER_API Base(const Base<T, RegType> & rhs);
 			VULKAN_WRAPPER_API ~Base();
 
@@ -121,7 +124,7 @@ namespace vkw {
 			VULKAN_WRAPPER_API Base<T, RegType> & operator = (const Base<T, RegType> & rhs);
 			//VULKAN_WRAPER_API Base<T, RegType> & operator = (Base<T, RegType> && rhs);
 			VULKAN_WRAPPER_API operator typename T::Type () const;
-			VULKAN_WRAPPER_API Type * getPtr() const; // make const
+			VULKAN_WRAPPER_API Type * getPtr() const; 
 		protected:
 			RegType & registry;
 			VkPointer<T, RegType> pVkObject;

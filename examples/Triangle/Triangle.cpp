@@ -58,6 +58,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	return VK_FALSE;
 }
 
+
 int main() {
 	GlfwWindow window = GlfwWindow(800, 600);
 
