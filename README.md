@@ -20,7 +20,7 @@ In the root folder there is a Visual Studio solution for building the Wrapper an
 
 
  # Design Architecture
- Since there is no documentation (yet), here is quick and very basic overview of the Wrapper:
+ Since I havent written a documentation, here is quick and very basic overview of the Wrapper:
  
 All functions and classes reside in the vkw namespace or have a vkw prefix. (Almost) every Vulkan Handle is wrapped into its own class. This class has the same name as the object, minus the "vk", e.g. ``VkCommandPool -> vkw::CommandPool``. 
  
@@ -32,12 +32,3 @@ Additionally every object stores data associated with it. For Example ``vkw::Ima
 # Development process and motivation
 
 I started this sometime in 2017 when i was still attending high school because I wanted to learn C++ and Vulkan, but I was somewhat annoyed by the verbosity of Vulkan, so I decided to write library on top to make it easier to use and to further my C++ skills. Since then I work on this project whenever I have time and feel like it. Over the course of development I restarted this project a couple times and made major changes to it but now I think im pretty ok with where it's at currently from design standpoint (who knows what i'll do/think in future``¯\_(ツ)_/¯``) but as far as functionality goes it's still lacking. 
-
-
-# TO-DOs
-Stuff I should probably do ~~someday~~.
-
-- make building process cross-platform
-- write documentation
-- enable the use of multiple logical devices (currently only theoretically possible)
-- implement proper error handling system and debugger
