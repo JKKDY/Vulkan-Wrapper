@@ -68,6 +68,10 @@ VkwExample::VkwExample(Window & window) : ExampleBase(window) {
 	initInfo.deviceFeatures.textureCompressionASTC_LDR = VK_TRUE;
 	initInfo.deviceFeatures.textureCompressionETC2 = VK_TRUE;
 	initVulkan(initInfo);
+
+	camera.setPerspective(80, (float)swapChain.extent.width / (float)swapChain.extent.width, 0.001f, 256.0f);
+	camera.translate({ 0,0,-4 });
+
 	setup();
 }
 
@@ -358,31 +362,30 @@ void VkwExample::nextFrame() {
 	renderFrame();
 	
 	UBO ubo = {};
+	ubo.projection = camera.perspective;
 
 	// sphere
-	glm::mat4 viewMatrix = glm::mat4(1.0f);
-	ubo.projection = glm::perspective(glm::radians(60.0f), (float)swapChain.extent.width / (float)swapChain.extent.width, 0.001f, 256.0f);
-	viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -4.0));
+	glm::mat4 viewMatrix = camera.view;
 
-	ubo.model = glm::mat4(1.0f);
-	ubo.model = viewMatrix * glm::translate(ubo.model, glm::vec3(0, 0, 0));
+	ubo.model = viewMatrix *  glm::mat4(1.0f);
 	ubo.model = glm::rotate(ubo.model, glm::radians(-7.25f), glm::vec3(1.0f, 0.0f, 0.0f));
-	ubo.model = glm::rotate(ubo.model, glm::radians(-120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ubo.model = glm::rotate(ubo.model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	ubo.model = glm::rotate(ubo.model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	sphereUniformBuffer.write(&ubo, sizeof(ubo));
 
 	// Skybox
 	viewMatrix = glm::mat4(1.0f);
-	ubo.projection = glm::perspective(glm::radians(60.0f), (float)swapChain.extent.width / (float)swapChain.extent.width, 0.001f, 256.0f);
 
 	ubo.model = glm::mat4(1.0f);
 	ubo.model = viewMatrix * glm::translate(ubo.model, glm::vec3(0, 0, 0));
 	ubo.model = glm::rotate(ubo.model, glm::radians(-7.25f), glm::vec3(1.0f, 0.0f, 0.0f));
-	ubo.model = glm::rotate(ubo.model, glm::radians(-120.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	ubo.model = glm::rotate(ubo.model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.model = glm::rotate(ubo.model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ubo.model = glm::rotate(viewMatrix, glm::radians(20 * time), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	skyboxUniformBuffer.write(&ubo, sizeof(ubo));
+
+	camera.rotate({0, frameTimer * 20, 0});
 }
 
 struct foo {

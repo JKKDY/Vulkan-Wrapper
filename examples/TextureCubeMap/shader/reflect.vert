@@ -27,7 +27,7 @@ void main()
 	gl_Position = ubo.projection * ubo.model * vec4(inPos.xyz, 1.0);
 	
 	outPos = vec3(ubo.model * vec4(inPos, 1.0));
-	outNormal = mat3(ubo.model) * inNormal;	
+	outNormal = mat3(ubo.model) * inNormal;
 	outLodBias = ubo.lodBias;
 	
 	outInvModelView = inverse(ubo.model);
